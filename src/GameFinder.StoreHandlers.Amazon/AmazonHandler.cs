@@ -160,6 +160,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
             {
                 string path = "";
                 string launch = "";
+                string icon = "";
                 string uninst = "";
                 string id = prodRdr.GetString(2);
                 while (instRdr.Read())
@@ -170,12 +171,20 @@ public class AmazonHandler : AHandler<AmazonGame, string>
                         if (installedOnly && string.IsNullOrEmpty(path))
                         {
                             games.Add(Result.FromError<GameEx>($"GameInstallInfo for {id} does not have the value \"InstallDirectory\""));
-                            continue;
+                            break;
                         }
-                        ParseRegistryForIdEx(_registry, id);
+                        launch = "amazon-games://play/" + id;
+                        icon = ParseFuelFile(path);
+                        Result<GameEx> regGameEx = ParseRegistryForIdEx(_registry, id);
+                        if (regGameEx.Game is not null)
+                        {
+                            if (string.IsNullOrEmpty(icon))
+                                icon = regGameEx.Game.Icon;
+                            uninst = regGameEx.Game.Uninstall;
+                        }
                     }
                 }
-
+                
                 GameEx game = new(
                     Id: id,
                     Name: prodRdr.GetString(4),
@@ -186,13 +195,15 @@ public class AmazonHandler : AHandler<AmazonGame, string>
                     Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
                     {
                         ["Description"] = new() { prodRdr.GetString(0) },
+                        ["IconUrl"] = new() { prodRdr.GetString(1) },
                         ["Publisher"] = new() { prodRdr.GetString(3) },
+                        // should massage the AgeRating to get a consistent format?
                         ["AgeRating"] = new() { prodRdr.GetString(6) },
                         ["Developers"] = GetJsonArray(@prodRdr.GetString(5)),
                         ["Players"] = GetJsonArray(@prodRdr.GetString(7)),
                         ["Genres"] = GetJsonArray(@prodRdr.GetString(8)),
                         ["ReleaseDate"] = new() { prodRdr.GetString(10) },
-                        // should massage the format of e.g., "2020-04-03T24:00:00Z" to get a valid DateTime
+                        // should massage the ReleaseDate format (e.g., "2020-04-03T24:00:00Z") to get a valid DateTime.ToString?
                         //["ReleaseDate"] = new() { prodRdr.GetDateTime(10).ToString(CultureInfo.InvariantCulture) },
                     });
                 games.Add(Result.FromGame(game));
@@ -275,6 +286,34 @@ public class AmazonHandler : AHandler<AmazonGame, string>
             Result.FromException<GameEx>("Exception looking for Amazon games in registry", e);
         }
         return Result.FromError<GameEx>("ID not found");
+    }
+
+    private string ParseFuelFile(string dir)
+    {
+        try
+        {
+            string file = Path.Combine(dir, "fuel.json");
+            if (File.Exists(file))
+            {
+                string strDocumentData = File.ReadAllText(file);
+
+                if (!string.IsNullOrEmpty(strDocumentData))
+                {
+                    using (JsonDocument document = JsonDocument.Parse(@strDocumentData, _jsonDocumentOptions))
+                    {
+                        JsonElement root = document.RootElement;
+                        if (root.TryGetProperty("Main", out JsonElement main) && main.TryGetProperty("Command", out JsonElement command))
+                        {
+                            string? exe = command.GetString();
+                            if (!string.IsNullOrEmpty(exe))
+                                return Path.Combine(dir, exe);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception) { }
+        return "";
     }
 
     private List<string> GetJsonArray(string json)
