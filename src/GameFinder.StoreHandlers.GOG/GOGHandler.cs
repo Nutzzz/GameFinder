@@ -47,6 +47,21 @@ public class GOGHandler : AHandler<GOGGame, long>
     /// <inheritdoc/>
     public override IEnumerable<Result<GOGGame>> FindAllGames()
     {
+        var games = new List<Result<GOGGame>>();
+        foreach (var gameEx in FindAllGamesEx(installedOnly: true).OnlyGames())
+        {
+            games.Add(Result.FromGame(new GOGGame(gameEx.Id, gameEx.Name, gameEx.Path)));
+        }
+        return games;
+    }
+
+    /// <summary>
+    /// Finds all games installed with this store. The return type <see cref="Result{TGame}"/>
+    /// will always be a non-null game or a non-null error message.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<Result<GOGGame>> FindAllGamesEx(bool installedOnly = true)
+    {
         try
         {
             var localMachine =_registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Abstractions;
@@ -216,7 +216,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, string>
         };
     }
 
-    internal static Result<EADesktopGame> InstallInfoToGame(InstallInfo installInfo, int i, string installInfoFilePath)
+    internal static Result<EADesktopGame> InstallInfoToGame(InstallInfo installInfo, int i, string installInfoFilePath, bool installedOnly = true)
     {
         var num = i.ToString(CultureInfo.InvariantCulture);
 
@@ -234,13 +234,15 @@ public class EADesktopHandler : AHandler<EADesktopGame, string>
 
         var baseSlug = installInfo.BaseSlug;
 
-        if (string.IsNullOrEmpty(installInfo.BaseInstallPath))
+        if (string.IsNullOrEmpty(installInfo.BaseInstallPath) && installedOnly)
         {
             return Result.FromError<EADesktopGame>($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"baseInstallPath\"");
         }
 
         var baseInstallPath = installInfo.BaseInstallPath;
-        if (baseInstallPath.EndsWith('\\'))
+        if (string.IsNullOrEmpty(baseInstallPath))
+            baseInstallPath = "";
+        else if (baseInstallPath.EndsWith('\\'))
             baseInstallPath = baseInstallPath[..^1];
 
         var game = new EADesktopGame(

@@ -7,6 +7,8 @@ using System.Runtime.InteropServices;
 using CommandLine;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
+using GameFinder.StoreHandlers.Amazon;
+using GameFinder.StoreHandlers.Arc;
 using GameFinder.StoreHandlers.EADesktop;
 using GameFinder.StoreHandlers.EADesktop.Crypto;
 using GameFinder.StoreHandlers.EADesktop.Crypto.Windows;
@@ -14,6 +16,22 @@ using GameFinder.StoreHandlers.EGS;
 using GameFinder.StoreHandlers.GOG;
 using GameFinder.StoreHandlers.Origin;
 using GameFinder.StoreHandlers.Steam;
+/*
+using GameFinder.StoreHandlers.BattleNet;
+using GameFinder.StoreHandlers.BigFish;
+using GameFinder.StoreHandlers.GameJolt;
+using GameFinder.StoreHandlers.Humble;
+using GameFinder.StoreHandlers.Indiegala;
+using GameFinder.StoreHandlers.Itch;
+using GameFinder.StoreHandlers.Legacy;
+using GameFinder.StoreHandlers.Oculus;
+using GameFinder.StoreHandlers.Paradox;
+using GameFinder.StoreHandlers.Plarium;
+using GameFinder.StoreHandlers.Riot;
+using GameFinder.StoreHandlers.Rockstar;
+using GameFinder.StoreHandlers.Ubisoft;
+using GameFinder.StoreHandlers.WargamingNet;
+*/
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Config;
@@ -52,53 +70,39 @@ public static class Program
     {
         if (File.Exists("log.log")) File.Delete("log.log");
 
-        if (options.GOG)
+        options.Amazon = true;
+        options.Arc = true;
+        //options.EADesktop = false;
+        //options.EGS = false;
+        //options.GOG = false;
+        options.Origin = false;
+        //options.Steam = false;
+
+        if (options.Amazon)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                logger.LogError("GOG Galaxy is only supported on Windows!");
+                logger.LogError("* Amazon Games is only supported on Windows!");
             }
             else
             {
-                var handler = new GOGHandler();
+                logger.LogDebug("* Amazon Games");
+                var handler = new AmazonHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors(results, logger);
             }
         }
 
-        if (options.EGS)
+        if (options.Arc)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                logger.LogError("Epic Games Store is only supported on Windows!");
+                logger.LogError("* Arc is only supported on Windows!");
             }
             else
             {
-                var handler = new EGSHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
-            }
-        }
-
-        if (options.Steam)
-        {
-            var handler = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? new SteamHandler(new WindowsRegistry())
-                : new SteamHandler(registry: null);
-
-            var results = handler.FindAllGames();
-            LogGamesAndErrors(results, logger);
-        }
-
-        if (options.Origin)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                logger.LogError("Origin is only supported on Windows!");
-            }
-            else
-            {
-                var handler = new OriginHandler();
+                logger.LogDebug("* Arc");
+                var handler = new ArcHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors(results, logger);
             }
@@ -108,19 +112,288 @@ public static class Program
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                logger.LogError("EA Desktop is only supported on Windows!");
+                logger.LogError("* EA Desktop is only supported on Windows!");
             }
             else
             {
+                logger.LogDebug("* EA Desktop");
                 var decryptionKey = Decryption.CreateDecryptionKey(new HardwareInfoProvider());
                 var sDecryptionKey = Convert.ToHexString(decryptionKey).ToLower(CultureInfo.InvariantCulture);
-                logger.LogDebug("EA Decryption Key: {}", sDecryptionKey);
+                logger.LogDebug("EA decryption key: {}", sDecryptionKey);
 
                 var handler = new EADesktopHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors(results, logger);
             }
         }
+
+        if (options.EGS)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Epic Games Store is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Epic Games Store");
+                var handler = new EGSHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.GOG)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* GOG Galaxy is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* GOG Galaxy");
+                var handler = new GOGHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Origin)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* EA Origin is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* EA Origin");
+                var handler = new OriginHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Steam)
+        {
+            logger.LogDebug("* Steam");
+            var handler = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? new SteamHandler(new WindowsRegistry())
+                : new SteamHandler(registry: null);
+
+            var results = handler.FindAllGames();
+            LogGamesAndErrors(results, logger);
+        }
+
+        /*
+        if (options.BattleNet)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Blizzard Battle.net is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Blizzard Battle.net");
+                var handler = new BattleNetHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.BigFish)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Big Fish Games is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Big Fish Games");
+                var handler = new BigFishHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.GameJolt)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Game Jolt Client is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Game Jolt Client");
+                var handler = new GameJoltHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Humble)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Humble App is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Humble App");
+                var handler = new HumbleHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Indiegala)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Indiegala Client is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Indiegala Client");
+                var handler = new IndiegalaHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Itch)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* itch is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* itch");
+                var handler = new ItchHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Legacy)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Legacy Games is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Legacy Games");
+                var handler = new LegacyHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Oculus)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Oculus is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Oculus");
+                var handler = new OculusHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Paradox)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Paradox Launcher is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Paradox Launcher");
+                var handler = new ParadoxHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Plarium)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Plarium is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Plarium");
+                var handler = new PlariumHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Riot)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Riot Client is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Riot Client");
+                var handler = new RiotHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Rockstar)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Rockstar Games Launcher is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Rockstar Games Launcher");
+                var handler = new RockstarHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.Ubisoft)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Ubisoft Connect is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Ubisoft Connect");
+                var handler = new UbisoftHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+
+        if (options.WargamingNet)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Wargaming.net Game Center is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Wargaming.net Game Center");
+                var handler = new WargamingNetHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors(results, logger);
+            }
+        }
+        */
     }
 
     private static void LogGamesAndErrors<TGame>(IEnumerable<Result<TGame>> results, ILogger logger)

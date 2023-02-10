@@ -52,27 +52,42 @@ public class OriginHandler : AHandler<OriginGame, string>
     /// <inheritdoc/>
     public override IEnumerable<Result<OriginGame>> FindAllGames()
     {
+        var games = new List<Result<OriginGame>>();
+        foreach (var gameEx in FindAllGamesEx(installedOnly: true).OnlyGames())
+        {
+            games.Add(Result.FromGame(new OriginGame(gameEx.Id, gameEx.Path)));
+        }
+        return games;
+    }
+
+    /// <summary>
+    /// Finds all games installed with this store. The return type <see cref="Result{TGame}"/>
+    /// will always be a non-null game or a non-null error message.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<Result<GameEx>> FindAllGamesEx(bool installedOnly = true)
+    {
         var manifestDir = GetManifestDir(_fileSystem);
 
         if (!manifestDir.Exists)
         {
-            yield return Result.FromError<OriginGame>($"Manifest folder {manifestDir.FullName} does not exist!");
+            yield return Result.FromError<GameEx>($"Manifest folder {manifestDir.FullName} does not exist!");
             yield break;
         }
 
         var mfstFiles = manifestDir.EnumerateFiles("*.mfst", SearchOption.AllDirectories).ToList();
         if (mfstFiles.Count == 0)
         {
-            yield return Result.FromError<OriginGame>($"Manifest folder {manifestDir.FullName} does not contain any .mfst files");
+            yield return Result.FromError<GameEx>($"Manifest folder {manifestDir.FullName} does not contain any .mfst files");
             yield break;
         }
 
         foreach (var mfstFile in mfstFiles)
         {
-            var (game, error) = ParseMfstFile(mfstFile);
+            var (game, error) = ParseMfstFileEx(_fileSystem, mfstFile);
             if (error is not null)
             {
-                yield return Result.FromError<OriginGame>(error);
+                yield return Result.FromError<GameEx>(error);
                 continue;
             }
 
@@ -91,7 +106,7 @@ public class OriginHandler : AHandler<OriginGame, string>
         return games.CustomToDictionary(game => game.Id, game => game, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static Result<OriginGame> ParseMfstFile(IFileInfo fileInfo)
+    private static Result<GameEx> ParseMfstFileEx(IFileSystem fileSystem, IFileInfo fileInfo)
     {
         try
         {
@@ -102,25 +117,25 @@ public class OriginHandler : AHandler<OriginGame, string>
             var ids = query.GetValues("id");
             if (ids is null || ids.Length == 0)
             {
-                return Result.FromError<OriginGame>($"Manifest {fileInfo.FullName} does not have a value \"id\"");
+                return Result.FromError<GameEx>($"Manifest {fileInfo.FullName} does not have a value \"id\"");
             }
 
             var id = ids[0];
             if (id.EndsWith("@steam", StringComparison.OrdinalIgnoreCase))
-                return new Result<OriginGame>();
+                return new Result<GameEx>();
 
             var installPaths = query.GetValues("dipInstallPath");
             if (installPaths is null || installPaths.Length == 0)
             {
-                return Result.FromError<OriginGame>($"Manifest {fileInfo.FullName} does not have a value \"dipInstallPath\"");
+                return Result.FromError<GameEx>($"Manifest {fileInfo.FullName} does not have a value \"dipInstallPath\"");
             }
 
-            var game = new OriginGame(id, installPaths[0]);
+            var game = new GameEx(Id: id, Name: fileSystem.Path.GetFileName(installPaths[0]), Path: installPaths[0]);
             return Result.FromGame(game);
         }
         catch (Exception e)
         {
-            return Result.FromException<OriginGame>($"Exception while parsing {fileInfo.FullName}", e);
+            return Result.FromException<GameEx>($"Exception while parsing {fileInfo.FullName}", e);
         }
     }
 }

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding games installed with Amazon Games.</Description>
+        <PackageTags>amazon amazon-games games</PackageTags>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DocumentationFile>bin\Debug\GameFinder.StoreHandlers.Amazon.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DocumentationFile>bin\Release\GameFinder.StoreHandlers.Amazon.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
+        <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameFinder.StoreHandlers.Amazon.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
+      <PackageReference Include="System.IO.Abstractions" Version="19.1.5" />
+    </ItemGroup>
+</Project>

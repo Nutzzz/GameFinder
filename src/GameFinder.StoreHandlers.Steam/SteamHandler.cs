@@ -82,17 +82,33 @@ public class SteamHandler : AHandler<SteamGame, int>
     /// <inheritdoc/>
     public override IEnumerable<Result<SteamGame>> FindAllGames()
     {
+        var games = new List<Result<SteamGame>>();
+        foreach (var gameEx in FindAllGamesEx(installedOnly: true).OnlyGames())
+        {
+            _ = int.TryParse(gameEx.Id, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id);
+            games.Add(Result.FromGame(new SteamGame(id, gameEx.Name, gameEx.Path)));
+        }
+        return games;
+    }
+
+    /// <summary>
+    /// Finds all games installed with this store. The return type <see cref="Result{TGame}"/>
+    /// will always be a non-null game or a non-null error message.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<Result<GameEx>> FindAllGamesEx(bool installedOnly = true)
+    {
         var (libraryFoldersFile, steamSearchError) = FindSteam();
         if (libraryFoldersFile is null)
         {
-            yield return Result.FromError<SteamGame>(steamSearchError ?? "Unable to find Steam!");
+            yield return Result.FromError<GameEx>(steamSearchError ?? "Unable to find Steam!");
             yield break;
         }
 
         var libraryFolderPaths = ParseLibraryFoldersFile(libraryFoldersFile);
         if (libraryFolderPaths is null || libraryFolderPaths.Count == 0)
         {
-            yield return Result.FromError<SteamGame>($"Found no Steam Libraries in {libraryFoldersFile.FullName}");
+            yield return Result.FromError<GameEx>($"Found no Steam Libraries in {libraryFoldersFile.FullName}");
             yield break;
         }
 
@@ -101,7 +117,7 @@ public class SteamHandler : AHandler<SteamGame, int>
             var libraryFolder = _fileSystem.DirectoryInfo.New(libraryFolderPath);
             if (!libraryFolder.Exists)
             {
-                yield return Result.FromError<SteamGame>($"Steam Library {libraryFolder.FullName} does not exist!");
+                yield return Result.FromError<GameEx>($"Steam Library {libraryFolder.FullName} does not exist!");
                 continue;
             }
 
@@ -111,13 +127,13 @@ public class SteamHandler : AHandler<SteamGame, int>
 
             if (acfFiles.Length == 0)
             {
-                yield return Result.FromError<SteamGame>($"Library folder {libraryFolder.FullName} does not contain any manifests");
+                yield return Result.FromError<GameEx>($"Library folder {libraryFolder.FullName} does not contain any manifests");
                 continue;
             }
 
             foreach (var acfFile in acfFiles)
             {
-                yield return ParseAppManifestFile(acfFile, libraryFolder);
+                yield return ParseAppManifestFileEx(acfFile, libraryFolder);
             }
         }
     }
@@ -278,7 +294,7 @@ public class SteamHandler : AHandler<SteamGame, int>
         }
     }
 
-    private Result<SteamGame> ParseAppManifestFile(IFileInfo manifestFile, IDirectoryInfo libraryFolder)
+    private Result<GameEx> ParseAppManifestFileEx(IFileInfo manifestFile, IDirectoryInfo libraryFolder)
     {
         try
         {
@@ -289,25 +305,25 @@ public class SteamHandler : AHandler<SteamGame, int>
 
             if (!data.Name.Equals("AppState", StringComparison.OrdinalIgnoreCase))
             {
-                return Result.FromError<SteamGame>($"Manifest {manifestFile.FullName} is not a valid format!");
+                return Result.FromError<GameEx>($"Manifest {manifestFile.FullName} is not a valid format!");
             }
 
             var appIdValue = data["appid"];
             if (appIdValue is null)
             {
-                return Result.FromError<SteamGame>($"Manifest {manifestFile.FullName} does not have the value \"appid\"");
+                return Result.FromError<GameEx>($"Manifest {manifestFile.FullName} does not have the value \"appid\"");
             }
 
             var nameValue = data["name"];
             if (nameValue is null)
             {
-                return Result.FromError<SteamGame>($"Manifest {manifestFile.FullName} does not have the value \"name\"");
+                return Result.FromError<GameEx>($"Manifest {manifestFile.FullName} does not have the value \"name\"");
             }
 
             var installDirValue = data["installdir"];
             if (installDirValue is null)
             {
-                return Result.FromError<SteamGame>($"Manifest {manifestFile.FullName} does not have the value \"installdir\"");
+                return Result.FromError<GameEx>($"Manifest {manifestFile.FullName} does not have the value \"installdir\"");
             }
 
             var appId = appIdValue.ToInt32(NumberFormatInfo.InvariantInfo);
@@ -320,12 +336,12 @@ public class SteamHandler : AHandler<SteamGame, int>
                 installDir
             );
 
-            var game = new SteamGame(appId, name, gamePath);
+            var game = new GameEx(appId.ToString(CultureInfo.InvariantCulture), name, gamePath);
             return Result.FromGame(game);
         }
         catch (Exception e)
         {
-            return Result.FromException<SteamGame>($"Exception while parsing file {manifestFile.FullName}", e);
+            return Result.FromException<GameEx>($"Exception while parsing file {manifestFile.FullName}", e);
         }
     }
 }
