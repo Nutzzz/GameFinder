@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -50,7 +50,8 @@ public class GOGHandler : AHandler<GOGGame, long>
         var games = new List<Result<GOGGame>>();
         foreach (var gameEx in FindAllGamesEx(installedOnly: true).OnlyGames())
         {
-            games.Add(Result.FromGame(new GOGGame(gameEx.Id, gameEx.Name, gameEx.Path)));
+            _ = long.TryParse(gameEx.Id, NumberStyles.Integer, CultureInfo.InvariantCulture, out long id);
+            games.Add(Result.FromGame(new GOGGame(id, gameEx.Name, gameEx.Path)));
         }
         return games;
     }
@@ -60,7 +61,7 @@ public class GOGHandler : AHandler<GOGGame, long>
     /// will always be a non-null game or a non-null error message.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<Result<GOGGame>> FindAllGamesEx(bool installedOnly = true)
+    public IEnumerable<Result<GameEx>> FindAllGamesEx(bool installedOnly = true)
     {
         try
         {
@@ -71,7 +72,7 @@ public class GOGHandler : AHandler<GOGGame, long>
             {
                 return new[]
                 {
-                    Result.FromError<GOGGame>($"Unable to open HKEY_LOCAL_MACHINE\\{GOGRegKey}"),
+                    Result.FromError<GameEx>($"Unable to open HKEY_LOCAL_MACHINE\\{GOGRegKey}"),
                 };
             }
 
@@ -80,7 +81,7 @@ public class GOGHandler : AHandler<GOGGame, long>
             {
                 return new[]
                 {
-                    Result.FromError<GOGGame>($"Registry key {gogKey.GetName()} has no sub-keys"),
+                    Result.FromError<GameEx>($"Registry key {gogKey.GetName()} has no sub-keys"),
                 };
             }
 
@@ -90,7 +91,7 @@ public class GOGHandler : AHandler<GOGGame, long>
         }
         catch (Exception e)
         {
-            return new[] { Result.FromException<GOGGame>("Exception looking for GOG games", e) };
+            return new[] { Result.FromException<GameEx>("Exception looking for GOG games", e) };
         }
     }
 
@@ -103,42 +104,63 @@ public class GOGHandler : AHandler<GOGGame, long>
         return games.CustomToDictionary(game => game.Id, game => game);
     }
 
-    private static Result<GOGGame> ParseSubKey(IRegistryKey gogKey, string subKeyName)
+    /// <summary>
+    /// Calls <see cref="FindAllGamesEx"/> and converts the result into a dictionary where
+    /// the key is the id of the game.
+    /// </summary>
+    /// <param name="errors"></param>
+    /// <returns></returns>
+    public IDictionary<string, GameEx> FindAllGamesByIdEx(out string[] errors)
+    {
+        var (gamesEx, allErrors) = FindAllGamesEx().SplitResults();
+        errors = allErrors;
+
+        return gamesEx.CustomToDictionary(gameEx => gameEx.Id, gameEx => gameEx);
+    }
+
+    private static Result<GameEx> ParseSubKey(IRegistryKey gogKey, string subKeyName)
     {
         try
         {
             using var subKey = gogKey.OpenSubKey(subKeyName);
             if (subKey is null)
             {
-                return Result.FromError<GOGGame>($"Unable to open {gogKey}\\{subKeyName}");
+                return Result.FromError<GameEx>($"Unable to open {gogKey}\\{subKeyName}");
             }
 
             if (!subKey.TryGetString("gameID", out var sId))
             {
-                return Result.FromError<GOGGame>($"{subKey.GetName()} doesn't have a string value \"gameID\"");
+                return Result.FromError<GameEx>($"{subKey.GetName()} doesn't have a string value \"gameID\"");
             }
 
             if (!long.TryParse(sId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id))
             {
-                return Result.FromError<GOGGame>($"The value \"gameID\" of {subKey.GetName()} is not a number: \"{sId}\"");
+                return Result.FromError<GameEx>($"The value \"gameID\" of {subKey.GetName()} is not a number: \"{sId}\"");
             }
 
             if (!subKey.TryGetString("gameName", out var name))
             {
-                return Result.FromError<GOGGame>($"{subKey.GetName()} doesn't have a string value \"gameName\"");
+                return Result.FromError<GameEx>($"{subKey.GetName()} doesn't have a string value \"gameName\"");
             }
 
             if (!subKey.TryGetString("path", out var path))
             {
-                return Result.FromError<GOGGame>($"{subKey.GetName()} doesn't have a string value \"path\"");
+                return Result.FromError<GameEx>($"{subKey.GetName()} doesn't have a string value \"path\"");
             }
 
-            var game = new GOGGame(id, name, path);
+            subKey.TryGetString("launchCommand", out var launch);
+            launch ??= "";
+            subKey.TryGetString("exe", out var icon);
+            icon ??= "";
+            subKey.TryGetString("uninstallCommand", out var uninst);
+            uninst ??= "";
+
+            var game = new GameEx(sId, name, path, launch, icon, uninst);
             return Result.FromGame(game);
         }
         catch (Exception e)
         {
-            return Result.FromException<GOGGame>($"Exception while parsing registry key {gogKey}\\{subKeyName}", e);
+            return Result.FromException<GameEx>($"Exception while parsing registry key {gogKey}\\{subKeyName}", e);
         }
     }
 }

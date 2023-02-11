@@ -12,7 +12,7 @@
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.BigFish\GameFinder.StoreHandlers.BigFish.csproj" />
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.GameJolt\GameFinder.StoreHandlers.GameJolt.csproj" />
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.Humble\GameFinder.StoreHandlers.Humble.csproj" />
-        <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.Indiegala\GameFinder.StoreHandlers.Indiegala.csproj" />
+        <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.IGClient\GameFinder.StoreHandlers.IGClient.csproj" />
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.Itch\GameFinder.StoreHandlers.Itch.csproj" />
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.Legacy\GameFinder.StoreHandlers.Legacy.csproj" />
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.Oculus\GameFinder.StoreHandlers.Oculus.csproj" />

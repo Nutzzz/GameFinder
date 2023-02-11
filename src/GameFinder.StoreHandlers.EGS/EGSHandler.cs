@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -68,10 +69,25 @@ public class EGSHandler : AHandler<EGSGame, string>
     /// <inheritdoc/>
     public override IEnumerable<Result<EGSGame>> FindAllGames()
     {
+        var games = new List<Result<EGSGame>>();
+        foreach (var gameEx in FindAllGamesEx(installedOnly: true).OnlyGames())
+        {
+            games.Add(Result.FromGame(new EGSGame(gameEx.Id, gameEx.Name, gameEx.Path)));
+        }
+        return games;
+    }
+
+    /// <summary>
+    /// Finds all games installed with this store. The return type <see cref="Result{TGame}"/>
+    /// will always be a non-null game or a non-null error message.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<Result<GameEx>> FindAllGamesEx(bool installedOnly = true)
+    {
         var manifestDir = _fileSystem.DirectoryInfo.New(GetManifestDir());
         if (!manifestDir.Exists)
         {
-            yield return Result.FromError<EGSGame>($"The manifest directory {manifestDir.FullName} does not exist!");
+            yield return Result.FromError<GameEx>($"The manifest directory {manifestDir.FullName} does not exist!");
             yield break;
         }
 
@@ -81,7 +97,7 @@ public class EGSHandler : AHandler<EGSGame, string>
 
         if (itemFiles.Length == 0)
         {
-            yield return Result.FromError<EGSGame>($"The manifest directory {manifestDir.FullName} does not contain any .item files");
+            yield return Result.FromError<GameEx>($"The manifest directory {manifestDir.FullName} does not contain any .item files");
             yield break;
         }
 
@@ -100,42 +116,63 @@ public class EGSHandler : AHandler<EGSGame, string>
         return games.CustomToDictionary(game => game.CatalogItemId, game => game, StringComparer.OrdinalIgnoreCase);
     }
 
-    private Result<EGSGame> DeserializeGame(IFileInfo itemFile)
+    /// <summary>
+    /// Calls <see cref="FindAllGamesEx"/> and converts the result into a dictionary where
+    /// the key is the id of the game.
+    /// </summary>
+    /// <param name="errors"></param>
+    /// <returns></returns>
+    public IDictionary<string, GameEx> FindAllGamesByIdEx(out string[] errors)
+    {
+        var (gamesEx, allErrors) = FindAllGamesEx().SplitResults();
+        errors = allErrors;
+
+        return gamesEx.CustomToDictionary(gameEx => gameEx.Id, gameEx => gameEx, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private Result<GameEx> DeserializeGame(IFileInfo itemFile)
     {
         using var stream = itemFile.OpenRead();
 
         try
         {
-            var game = JsonSerializer.Deserialize<EGSGame>(stream, _jsonSerializerOptions);
+            var game = JsonSerializer.Deserialize<ItemFile>(stream, _jsonSerializerOptions);
 
             if (game is null)
             {
-                return Result.FromError<EGSGame>($"Unable to deserialize file {itemFile.FullName}");
+                return Result.FromError<GameEx>($"Unable to deserialize file {itemFile.FullName}");
             }
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (game.CatalogItemId is null)
             {
-                return Result.FromError<EGSGame>($"Manifest {itemFile.FullName} does not have a value \"CatalogItemId\"");
+                return Result.FromError<GameEx>($"Manifest {itemFile.FullName} does not have a value \"CatalogItemId\"");
             }
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (game.DisplayName is null)
             {
-                return Result.FromError<EGSGame>($"Manifest {itemFile.FullName} does not have a value \"DisplayName\"");
+                return Result.FromError<GameEx>($"Manifest {itemFile.FullName} does not have a value \"DisplayName\"");
             }
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (game.InstallLocation is null)
             {
-                return Result.FromError<EGSGame>($"Manifest {itemFile.FullName} does not have a value \"InstallLocation\"");
+                return Result.FromError<GameEx>($"Manifest {itemFile.FullName} does not have a value \"InstallLocation\"");
             }
 
-            return Result.FromGame(game);
+            string launch = "";
+            if (game.LaunchExecutable is not null) // DLCs won't have a LaunchExecutable
+            {
+                launch = Path.Combine(game.InstallLocation, game.LaunchExecutable);
+            }
+
+            var gameEx = new GameEx(Id: game.CatalogItemId, Name: game.DisplayName, Path: game.InstallLocation, Launch: launch, Icon: launch);
+            return Result.FromGame(gameEx);
         }
         catch (Exception e)
         {
-            return Result.FromError<EGSGame>($"Unable to deserialize file {itemFile.FullName}:\n{e}");
+            return Result.FromError<GameEx>($"Unable to deserialize file {itemFile.FullName}:\n{e}");
         }
     }
 

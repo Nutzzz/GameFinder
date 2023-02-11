@@ -95,7 +95,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
             yield break;
         }
 
-        foreach (var gameEx in ParseDatabaseEx(prodDb, instDb, installedOnly).OnlyGames())
+        foreach (var gameEx in ParseDatabase(prodDb, instDb, installedOnly).OnlyGames())
         {
             yield return Result.FromGame(gameEx);
         }
@@ -124,7 +124,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
         return gamesEx.CustomToDictionary(gameEx => gameEx.Id, gameEx => gameEx, StringComparer.OrdinalIgnoreCase);
     }
 
-    private IEnumerable<Result<GameEx>> ParseDatabaseEx(string prodDb, string instDb, bool installedOnly = false)
+    private IEnumerable<Result<GameEx>> ParseDatabase(string prodDb, string instDb, bool installedOnly = false)
     {
         List<Result<GameEx>> games = new();
         try
@@ -175,7 +175,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
                         }
                         launch = "amazon-games://play/" + id;
                         icon = ParseFuelFile(path);
-                        Result<GameEx> regGameEx = ParseRegistryForIdEx(_registry, id);
+                        Result<GameEx> regGameEx = ParseRegistryForId(_registry, id);
                         if (regGameEx.Game is not null)
                         {
                             if (string.IsNullOrEmpty(icon))
@@ -185,14 +185,14 @@ public class AmazonHandler : AHandler<AmazonGame, string>
                     }
                 }
                 
-                GameEx game = new(
+                GameEx gameEx = new(
                     Id: id,
                     Name: prodRdr.GetString(4),
                     Path: path,
                     Launch: launch,
-                    Icon: launch,
+                    Icon: icon,
                     Uninstall: uninst,
-                    Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+                    Metadata: new(StringComparer.Ordinal)
                     {
                         ["Description"] = new() { prodRdr.GetString(0) },
                         ["IconUrl"] = new() { prodRdr.GetString(1) },
@@ -206,7 +206,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
                         // should massage the ReleaseDate format (e.g., "2020-04-03T24:00:00Z") to get a valid DateTime.ToString?
                         //["ReleaseDate"] = new() { prodRdr.GetDateTime(10).ToString(CultureInfo.InvariantCulture) },
                     });
-                games.Add(Result.FromGame(game));
+                games.Add(Result.FromGame(gameEx));
             }
             return games;
         }
@@ -216,7 +216,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
         }
     }
 
-    private IEnumerable<Result<GameEx>> ParseRegistryEx(IRegistry registry)
+    private IEnumerable<Result<GameEx>> ParseRegistry(IRegistry registry)
     {
         try
         {
@@ -242,7 +242,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
             }
 
             return subKeyNames
-                .Select(subKeyName => ParseSubKeyEx(unKey, subKeyName))
+                .Select(subKeyName => ParseSubKey(unKey, subKeyName))
                 .ToArray();
         }
         catch (Exception e)
@@ -251,7 +251,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
         }
     }
 
-    private static Result<GameEx> ParseRegistryForIdEx(IRegistry registry, string id)
+    private static Result<GameEx> ParseRegistryForId(IRegistry registry, string id)
     {
         try
         {
@@ -273,7 +273,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
 
                 foreach (var subKeyName in subKeyNames)
                 {
-                    var gameEx = ParseSubKeyEx(unKey, subKeyName, id);
+                    var gameEx = ParseSubKey(unKey, subKeyName, id);
                     if (gameEx.Game is not null)
                     {
                         return gameEx;
@@ -330,21 +330,7 @@ public class AmazonHandler : AHandler<AmazonGame, string>
     }
 
 
-    private static Result<AmazonGame> ParseSubKey(IRegistryKey unKey, string subKeyName)
-    {
-        var gameEx = ParseSubKeyEx(unKey, subKeyName);
-        if (gameEx.Game is null)
-        {
-            if (gameEx.Error is not null)
-            {
-                return Result.FromError<AmazonGame>(gameEx.Error);
-            }
-            return Result.FromException<AmazonGame>(new());
-        }
-        return Result.FromGame(new AmazonGame(gameEx.Game.Id, gameEx.Game.Name, gameEx.Game.Path));
-    }
-
-    private static Result<GameEx> ParseSubKeyEx(IRegistryKey unKey, string subKeyName, string id = "")
+    private static Result<GameEx> ParseSubKey(IRegistryKey unKey, string subKeyName, string id = "")
     {
         try
         {

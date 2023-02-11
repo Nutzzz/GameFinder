@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
@@ -16,9 +17,12 @@ internal class InstallInfo
 {
     public string? BaseInstallPath { get; init; }
     public string? BaseSlug { get; init; }
+    public string? DLCSubPath { get; init; }
     public string? InstallCheck { get; init; }
     [JsonPropertyName("softwareId")]
     public string? SoftwareID { get; init; }
+    public string? ExecutableCheck { get; init; }
+    public JsonElement LocalUninstallProperties { get; init; }
 }
 
 [UsedImplicitly]

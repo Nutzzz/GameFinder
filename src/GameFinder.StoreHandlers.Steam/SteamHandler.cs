@@ -9,6 +9,7 @@ using System.Runtime.Versioning;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
+//using Microsoft.Win32;
 using ValveKeyValue;
 
 namespace GameFinder.StoreHandlers.Steam;
@@ -20,6 +21,7 @@ namespace GameFinder.StoreHandlers.Steam;
 public class SteamHandler : AHandler<SteamGame, int>
 {
     internal const string RegKey = @"Software\Valve\Steam";
+    internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
     private readonly IRegistry? _registry;
     private readonly IFileSystem _fileSystem;
@@ -133,7 +135,7 @@ public class SteamHandler : AHandler<SteamGame, int>
 
             foreach (var acfFile in acfFiles)
             {
-                yield return ParseAppManifestFileEx(acfFile, libraryFolder);
+                yield return ParseAppManifestFile(acfFile, libraryFolder, _registry);
             }
         }
     }
@@ -294,7 +296,7 @@ public class SteamHandler : AHandler<SteamGame, int>
         }
     }
 
-    private Result<GameEx> ParseAppManifestFileEx(IFileInfo manifestFile, IDirectoryInfo libraryFolder)
+    private Result<GameEx> ParseAppManifestFile(IFileInfo manifestFile, IDirectoryInfo libraryFolder, IRegistry? registry)
     {
         try
         {
@@ -336,7 +338,27 @@ public class SteamHandler : AHandler<SteamGame, int>
                 installDir
             );
 
-            var game = new GameEx(appId.ToString(CultureInfo.InvariantCulture), name, gamePath);
+            var id = appId.ToString(CultureInfo.InvariantCulture);
+            string? icon = "";
+            string? uninst = "";
+            if (registry is not null)
+            {
+                var localMachine64 = registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                var localMachine32 = registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                using var subKey64 = localMachine64.OpenSubKey(Path.Combine(UninstallRegKey, "Steam App " + id));
+                using var subKey32 = localMachine32.OpenSubKey(Path.Combine(UninstallRegKey, "Steam App " + id));
+                if (subKey64 is not null)
+                {
+                    icon = subKey64.GetString("DisplayIcon");
+                }
+                if (string.IsNullOrEmpty(icon) && subKey32 is not null)
+                {
+                    icon = subKey32.GetString("DisplayIcon");
+                }
+                icon ??= "";
+            }
+
+            var game = new GameEx(id, name, gamePath, "steam://rungameid/" + id, icon, "steam://uninstall/" + id);
             return Result.FromGame(game);
         }
         catch (Exception e)

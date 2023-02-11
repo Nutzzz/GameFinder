@@ -85,7 +85,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameFinder.StoreHandlers.Ga
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameFinder.StoreHandlers.Humble", "src\GameFinder.StoreHandlers.Humble\GameFinder.StoreHandlers.Humble.csproj", "{C824C165-BE87-4B3D-A560-71AE53E7187E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameFinder.StoreHandlers.Indiegala", "src\GameFinder.StoreHandlers.Indiegala\GameFinder.StoreHandlers.Indiegala.csproj", "{610CB45B-A395-454E-8512-6DED25DB772B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameFinder.StoreHandlers.IGClient", "src\GameFinder.StoreHandlers.Indiegala\GameFinder.StoreHandlers.IGClient.csproj", "{610CB45B-A395-454E-8512-6DED25DB772B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameFinder.StoreHandlers.Itch", "src\GameFinder.StoreHandlers.Itch\GameFinder.StoreHandlers.Itch.csproj", "{3334535C-2D99-40CB-BE86-A7979BFBE18B}"
 EndProject

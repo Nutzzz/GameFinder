@@ -83,7 +83,7 @@ public class ArcHandler : AHandler<ArcGame, long>
 
         foreach (var subKeyName in subKeyNames)
         {
-            yield return ParseSubKeyEx(arcKey, subKeyName);
+            yield return ParseSubKey(arcKey, subKeyName);
         }
     }
 
@@ -110,22 +110,7 @@ public class ArcHandler : AHandler<ArcGame, long>
         return gamesEx.CustomToDictionary(gameEx => gameEx.Id, gameEx => gameEx);
     }
 
-    private static Result<ArcGame> ParseSubKey(IRegistryKey arcKey, string subKeyName)
-    {
-        var gameEx = ParseSubKeyEx(arcKey, subKeyName);
-        if (gameEx.Game is null)
-        {
-            if (gameEx.Error is not null)
-            {
-                return Result.FromError<ArcGame>(gameEx.Error);
-            }
-            return Result.FromException<ArcGame>(new());
-        }
-        _ = long.TryParse(gameEx.Game.Id, NumberStyles.Integer, CultureInfo.InvariantCulture, out long id);
-        return Result.FromGame(new ArcGame(id, gameEx.Game.Name, gameEx.Game.Path));
-    }
-
-    private static Result<GameEx> ParseSubKeyEx(IRegistryKey arcKey, string subKeyName)
+    private static Result<GameEx> ParseSubKey(IRegistryKey arcKey, string subKeyName)
     {
         try
         {

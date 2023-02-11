@@ -21,7 +21,7 @@ using GameFinder.StoreHandlers.BattleNet;
 using GameFinder.StoreHandlers.BigFish;
 using GameFinder.StoreHandlers.GameJolt;
 using GameFinder.StoreHandlers.Humble;
-using GameFinder.StoreHandlers.Indiegala;
+using GameFinder.StoreHandlers.IGClient;
 using GameFinder.StoreHandlers.Itch;
 using GameFinder.StoreHandlers.Legacy;
 using GameFinder.StoreHandlers.Oculus;
@@ -88,8 +88,8 @@ public static class Program
             {
                 logger.LogDebug("* Amazon Games");
                 var handler = new AmazonHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Amazon", results, logger);
             }
         }
 
@@ -103,8 +103,8 @@ public static class Program
             {
                 logger.LogDebug("* Arc");
                 var handler = new ArcHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Arc", results, logger);
             }
         }
 
@@ -122,8 +122,8 @@ public static class Program
                 logger.LogDebug("EA decryption key: {}", sDecryptionKey);
 
                 var handler = new EADesktopHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("EADesktop", results, logger);
             }
         }
 
@@ -137,8 +137,8 @@ public static class Program
             {
                 logger.LogDebug("* Epic Games Store");
                 var handler = new EGSHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("EGS", results, logger);
             }
         }
 
@@ -152,8 +152,8 @@ public static class Program
             {
                 logger.LogDebug("* GOG Galaxy");
                 var handler = new GOGHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("GOG", results, logger);
             }
         }
 
@@ -167,8 +167,8 @@ public static class Program
             {
                 logger.LogDebug("* EA Origin");
                 var handler = new OriginHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Origin", results, logger);
             }
         }
 
@@ -179,8 +179,8 @@ public static class Program
                 ? new SteamHandler(new WindowsRegistry())
                 : new SteamHandler(registry: null);
 
-            var results = handler.FindAllGames();
-            LogGamesAndErrors(results, logger);
+            var results = handler.FindAllGamesEx();
+            LogGamesAndErrors("Steam", results, logger);
         }
 
         /*
@@ -194,8 +194,8 @@ public static class Program
             {
                 logger.LogDebug("* Blizzard Battle.net");
                 var handler = new BattleNetHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("BattleNet", results, logger);
             }
         }
 
@@ -209,8 +209,8 @@ public static class Program
             {
                 logger.LogDebug("* Big Fish Games");
                 var handler = new BigFishHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("BigFish", results, logger);
             }
         }
 
@@ -224,8 +224,8 @@ public static class Program
             {
                 logger.LogDebug("* Game Jolt Client");
                 var handler = new GameJoltHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("GameJolt", results, logger);
             }
         }
 
@@ -239,12 +239,12 @@ public static class Program
             {
                 logger.LogDebug("* Humble App");
                 var handler = new HumbleHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Humble", results, logger);
             }
         }
 
-        if (options.Indiegala)
+        if (options.IGClient)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -253,9 +253,9 @@ public static class Program
             else
             {
                 logger.LogDebug("* Indiegala Client");
-                var handler = new IndiegalaHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var handler = new IGClientHandler();
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("IGClient", results, logger);
             }
         }
 
@@ -269,8 +269,8 @@ public static class Program
             {
                 logger.LogDebug("* itch");
                 var handler = new ItchHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Itch", results, logger);
             }
         }
 
@@ -284,8 +284,8 @@ public static class Program
             {
                 logger.LogDebug("* Legacy Games");
                 var handler = new LegacyHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Legacy", results, logger);
             }
         }
 
@@ -299,8 +299,8 @@ public static class Program
             {
                 logger.LogDebug("* Oculus");
                 var handler = new OculusHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Oculus", results, logger);
             }
         }
 
@@ -314,8 +314,8 @@ public static class Program
             {
                 logger.LogDebug("* Paradox Launcher");
                 var handler = new ParadoxHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Paradox", results, logger);
             }
         }
 
@@ -329,8 +329,8 @@ public static class Program
             {
                 logger.LogDebug("* Plarium");
                 var handler = new PlariumHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Plarium", results, logger);
             }
         }
 
@@ -344,8 +344,8 @@ public static class Program
             {
                 logger.LogDebug("* Riot Client");
                 var handler = new RiotHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Riot", results, logger);
             }
         }
 
@@ -359,8 +359,8 @@ public static class Program
             {
                 logger.LogDebug("* Rockstar Games Launcher");
                 var handler = new RockstarHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Rockstar", results, logger);
             }
         }
 
@@ -374,8 +374,8 @@ public static class Program
             {
                 logger.LogDebug("* Ubisoft Connect");
                 var handler = new UbisoftHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("Ubisoft", results, logger);
             }
         }
 
@@ -389,21 +389,21 @@ public static class Program
             {
                 logger.LogDebug("* Wargaming.net Game Center");
                 var handler = new WargamingNetHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors(results, logger);
+                var results = handler.FindAllGamesEx();
+                LogGamesAndErrors("WargamingNet", results, logger);
             }
         }
         */
     }
 
-    private static void LogGamesAndErrors<TGame>(IEnumerable<Result<TGame>> results, ILogger logger)
+    private static void LogGamesAndErrors<TGame>(string handler, IEnumerable<Result<TGame>> results, ILogger logger)
         where TGame: class
     {
         foreach (var (game, error) in results)
         {
             if (game is not null)
             {
-                logger.LogInformation("Found {}", game);
+                logger.LogInformation("Found {} {}", handler, game);
             }
             else
             {
