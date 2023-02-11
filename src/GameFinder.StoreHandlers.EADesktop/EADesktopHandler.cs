@@ -282,7 +282,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, string>
         {
             int j = executableCheck.IndexOf(']');
             if (j > 1)
-                sRegKey = executableCheck.Substring(1, j);
+                sRegKey = executableCheck.Substring(1, j - 1);
             executable = Path.Combine(baseInstallPath, executableCheck[(j + 1)..]);
         }
         string? uninstall = "";
@@ -303,11 +303,13 @@ public class EADesktopHandler : AHandler<EADesktopGame, string>
             try
             {
                 int k = sRegKey.IndexOf('\\', StringComparison.Ordinal);
-                if (k > 1)
+                int l = sRegKey.LastIndexOf('\\');
+                if (k > 1 && l > k)
                 {
-                    var regRoot = registry.OpenBaseKey(RegistryHelpers.RegistryHiveFromString(sRegKey[..k].ToUpperInvariant()), RegistryView.Registry64);
-                    var subKey = regRoot.OpenSubKey(sRegKey[(k + 1)..]);
-                    name = subKey?.GetString("DisplayName");
+                    var regRoot = registry.OpenBaseKey(RegistryHelpers.RegistryHiveFromString(sRegKey[..k].ToUpperInvariant()), RegistryView.Registry32);
+                    string sSubKey = sRegKey[(k + 1)..l];
+                    var subKey = regRoot.OpenSubKey(sSubKey);
+                    subKey?.TryGetString("DisplayName", out name);
                 }
             }
             catch (Exception) { }

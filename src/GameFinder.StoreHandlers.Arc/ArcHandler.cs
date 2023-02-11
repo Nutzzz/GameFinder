@@ -65,7 +65,7 @@ public class ArcHandler : AHandler<ArcGame, long>
     /// <returns></returns>
     public IEnumerable<Result<GameEx>> FindAllGamesEx(bool installedOnly = true)
     {
-        var localMachine =_registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        var localMachine = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 
         using var arcKey = localMachine.OpenSubKey(ArcRegKey);
         if (arcKey is null)
@@ -83,7 +83,11 @@ public class ArcHandler : AHandler<ArcGame, long>
 
         foreach (var subKeyName in subKeyNames)
         {
-            yield return ParseSubKey(arcKey, subKeyName);
+            // TODO: Multiple languages often exist for each game, but just picking English isn't the best solution
+            if (subKeyName.EndsWith("en", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return ParseSubKey(arcKey, subKeyName);
+            }
         }
     }
 
