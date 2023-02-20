@@ -7,8 +7,8 @@
         <PackageReadmeFile>docs\README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-        <PackageProjectUrl>https://github.com/erri120/GameFinder</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/erri120/GameFinder.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/Nutzzz/GameCollector</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Nutzzz/GameCollector.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
 
         <IncludeSymbols>true</IncludeSymbols>
@@ -24,6 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="GameFinder.Tests" />
+        <InternalsVisibleTo Include="GameCollector.Tests" />
     </ItemGroup>
 </Project>

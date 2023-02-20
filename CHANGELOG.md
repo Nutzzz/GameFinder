@@ -4,9 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog][Keep a Changelog] and this project adheres to [Semantic Versioning][Semantic Versioning].
 
-## [Unreleased]
+## [GameCollector unreleased]
 
-## [Released]
+## [3.0.0]
+
+First GameCollector release, expanding scope of upstream GameFinder:
+
+- Added support for Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, Indiegala, itch, Legacy Games, Oculus, Paradox, Plarium, Riot, Rockstar, Ubisoft, and Wargaming.net
+- Re-added deprecated Bethesda.net and Xbox packages for posterity
+- Now using a generic Game record rather than a different type for each handler
+- Game records now include additional fields (for some handlers): Launch, Icon, Uninstall, and various Metadata
+- FindAllGames (for some handlers) can optionally return owned but not-installed games
+
+## [GameCollector releases]
+
+None
+
+## [GameFinder releases]
 
 ## [2.5.0] - 2023-01-17
 

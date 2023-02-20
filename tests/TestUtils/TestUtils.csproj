@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-      <ProjectReference Include="..\..\src\GameFinder.Common\GameFinder.Common.csproj" />
+      <ProjectReference Include="..\..\src\GameCollector.Common\GameCollector.Common.csproj" />
     </ItemGroup>
 </Project>

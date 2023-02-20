@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding games installed with Blizzard Battle.net.</Description>
+        <PackageTags>battlenet battle-net blizzard games</PackageTags>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DocumentationFile>bin\Debug\GameCollector.StoreHandlers.BattleNet.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DocumentationFile>bin\Release\GameCollector.StoreHandlers.BattleNet.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameCollector.Common\GameCollector.Common.csproj" />
+        <ProjectReference Include="..\GameCollector.RegistryUtils\GameCollector.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.StoreHandlers.BattleNet.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="protobuf-net" Version="3.1.33" />
+      <PackageReference Include="System.IO.Abstractions" Version="19.1.5" />
+    </ItemGroup>
+</Project>

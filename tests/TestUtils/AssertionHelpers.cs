@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using GameFinder.Common;
+using GameCollector.Common;
 
 namespace TestUtils;
 

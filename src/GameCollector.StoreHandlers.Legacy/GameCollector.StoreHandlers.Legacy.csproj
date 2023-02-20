@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding games installed with the Legacy Games Launcher.</Description>
+        <PackageTags>legacy-games games</PackageTags>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DocumentationFile>bin\Debug\GameCollector.StoreHandlers.Legacy.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DocumentationFile>bin\Release\GameCollector.StoreHandlers.Legacy.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameCollector.Common\GameCollector.Common.csproj" />
+        <ProjectReference Include="..\GameCollector.RegistryUtils\GameCollector.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.StoreHandlers.Legacy.Tests" />
+    </ItemGroup>
+</Project>
