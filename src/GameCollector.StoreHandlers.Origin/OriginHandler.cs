@@ -115,7 +115,10 @@ public class OriginHandler : AHandler<Game, string>
                 return Result.FromError<Game>($"Manifest {fileInfo.FullName} does not have a value \"dipInstallPath\"");
             }
 
-            return Result.FromGame(new Game(Id: id, Name: fileSystem.Path.GetFileName(installPaths[0]), Path: installPaths[0]));
+            return Result.FromGame(new Game(
+                Id: id,
+                Name: fileSystem.Path.GetFileName(installPaths[0]),
+                Path: installPaths[0]));
         }
         catch (Exception e)
         {

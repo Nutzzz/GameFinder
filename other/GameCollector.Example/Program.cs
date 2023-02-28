@@ -7,8 +7,10 @@ using System.Runtime.InteropServices;
 using CommandLine;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
+using GameCollector.StoreHandlers;
 using GameCollector.StoreHandlers.Amazon;
 using GameCollector.StoreHandlers.Arc;
+using GameCollector.StoreHandlers.BattleNet;
 //using GameCollector.StoreHandlers.BethNet;
 using GameCollector.StoreHandlers.EADesktop;
 using GameCollector.StoreHandlers.EADesktop.Crypto;
@@ -17,9 +19,9 @@ using GameCollector.StoreHandlers.EGS;
 using GameCollector.StoreHandlers.GOG;
 using GameCollector.StoreHandlers.Origin;
 using GameCollector.StoreHandlers.Steam;
+using GameCollector.StoreHandlers.Ubisoft;
 //using GameCollector.StoreHandlers.Xbox;
 /*
-using GameCollector.StoreHandlers.BattleNet;
 using GameCollector.StoreHandlers.BigFish;
 using GameCollector.StoreHandlers.GameJolt;
 using GameCollector.StoreHandlers.Humble;
@@ -31,7 +33,6 @@ using GameCollector.StoreHandlers.Paradox;
 using GameCollector.StoreHandlers.Plarium;
 using GameCollector.StoreHandlers.Riot;
 using GameCollector.StoreHandlers.Rockstar;
-using GameCollector.StoreHandlers.Ubisoft;
 using GameCollector.StoreHandlers.WargamingNet;
 */
 using Microsoft.Extensions.Logging;
@@ -72,13 +73,15 @@ public static class Program
     {
         if (File.Exists("log.log")) File.Delete("log.log");
 
-        options.Amazon = true;
-        options.Arc = true;
-        //options.EADesktop = false;
-        //options.EGS = false;
-        //options.GOG = false;
+        options.Amazon = true;      // NEW
+        options.Arc = true;         // NEW
+        options.BattleNet = true;   // NEW
+        options.EADesktop = false;
+        options.EGS = false;
+        options.GOG = false;
         options.Origin = false;
-        //options.Steam = false;
+        options.Steam = false;
+        options.Ubisoft = true;     // NEW
 
         if (options.Amazon)
         {
@@ -110,6 +113,21 @@ public static class Program
             }
         }
 
+        if (options.BattleNet)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Blizzard Battle.net is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Blizzard Battle.net");
+                var handler = new BattleNetHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors("BattleNet", results, logger);
+            }
+        }
+
         if (options.EADesktop)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -123,7 +141,7 @@ public static class Program
                 var sDecryptionKey = Convert.ToHexString(decryptionKey).ToLower(CultureInfo.InvariantCulture);
                 logger.LogDebug("EA decryption key: {}", sDecryptionKey);
 
-                var handler = new EADesktopHandler();
+                var handler = new EADesktopHandler { SchemaPolicy = StoreHandlers.EADesktop.SchemaPolicy.Ignore, };
                 var results = handler.FindAllGames();
                 LogGamesAndErrors("EADesktop", results, logger);
             }
@@ -185,6 +203,21 @@ public static class Program
             LogGamesAndErrors("Steam", results, logger);
         }
 
+        if (options.Ubisoft)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Ubisoft Connect is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Ubisoft Connect");
+                var handler = new UbisoftHandler { SchemaPolicy = StoreHandlers.Ubisoft.SchemaPolicy.Ignore, };
+                var results = handler.FindAllGames();
+                LogGamesAndErrors("Ubisoft", results, logger);
+            }
+        }
+
         /*
         if (options.BethNet)
         {
@@ -218,21 +251,6 @@ public static class Program
         */
 
         /*
-        if (options.BattleNet)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                logger.LogError("* Blizzard Battle.net is only supported on Windows!");
-            }
-            else
-            {
-                logger.LogDebug("* Blizzard Battle.net");
-                var handler = new BattleNetHandler();
-                var results = handler.FindAllGamesEx();
-                LogGamesAndErrors("BattleNet", results, logger);
-            }
-        }
-
         if (options.BigFish)
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -243,7 +261,7 @@ public static class Program
             {
                 logger.LogDebug("* Big Fish Games");
                 var handler = new BigFishHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("BigFish", results, logger);
             }
         }
@@ -258,7 +276,7 @@ public static class Program
             {
                 logger.LogDebug("* Game Jolt Client");
                 var handler = new GameJoltHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("GameJolt", results, logger);
             }
         }
@@ -273,7 +291,7 @@ public static class Program
             {
                 logger.LogDebug("* Humble App");
                 var handler = new HumbleHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Humble", results, logger);
             }
         }
@@ -288,7 +306,7 @@ public static class Program
             {
                 logger.LogDebug("* Indiegala Client");
                 var handler = new IGClientHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("IGClient", results, logger);
             }
         }
@@ -303,7 +321,7 @@ public static class Program
             {
                 logger.LogDebug("* itch");
                 var handler = new ItchHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Itch", results, logger);
             }
         }
@@ -318,7 +336,7 @@ public static class Program
             {
                 logger.LogDebug("* Legacy Games");
                 var handler = new LegacyHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Legacy", results, logger);
             }
         }
@@ -333,7 +351,7 @@ public static class Program
             {
                 logger.LogDebug("* Oculus");
                 var handler = new OculusHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Oculus", results, logger);
             }
         }
@@ -348,7 +366,7 @@ public static class Program
             {
                 logger.LogDebug("* Paradox Launcher");
                 var handler = new ParadoxHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Paradox", results, logger);
             }
         }
@@ -363,7 +381,7 @@ public static class Program
             {
                 logger.LogDebug("* Plarium");
                 var handler = new PlariumHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Plarium", results, logger);
             }
         }
@@ -378,7 +396,7 @@ public static class Program
             {
                 logger.LogDebug("* Riot Client");
                 var handler = new RiotHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Riot", results, logger);
             }
         }
@@ -393,23 +411,8 @@ public static class Program
             {
                 logger.LogDebug("* Rockstar Games Launcher");
                 var handler = new RockstarHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("Rockstar", results, logger);
-            }
-        }
-
-        if (options.Ubisoft)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                logger.LogError("* Ubisoft Connect is only supported on Windows!");
-            }
-            else
-            {
-                logger.LogDebug("* Ubisoft Connect");
-                var handler = new UbisoftHandler();
-                var results = handler.FindAllGamesEx();
-                LogGamesAndErrors("Ubisoft", results, logger);
             }
         }
 
@@ -423,7 +426,7 @@ public static class Program
             {
                 logger.LogDebug("* Wargaming.net Game Center");
                 var handler = new WargamingNetHandler();
-                var results = handler.FindAllGamesEx();
+                var results = handler.FindAllGames();
                 LogGamesAndErrors("WargamingNet", results, logger);
             }
         }

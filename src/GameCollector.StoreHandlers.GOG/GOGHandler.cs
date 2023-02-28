@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Versioning;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
@@ -125,7 +126,14 @@ public class GOGHandler : AHandler<Game, string>
             subKey.TryGetString("uninstallCommand", out var uninst);
             uninst ??= "";
 
-            return Result.FromGame(new Game(sId, name, path, launch, icon, uninst));
+            return Result.FromGame(new Game(
+                Id: sId,
+                Name: name,
+                Path: path,
+                Launch: launch,
+                Icon: icon,
+                Uninstall: uninst,
+                Metadata: new(StringComparer.OrdinalIgnoreCase)));
         }
         catch (Exception e)
         {

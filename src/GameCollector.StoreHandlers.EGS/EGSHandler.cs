@@ -138,7 +138,13 @@ public class EGSHandler : AHandler<Game, string>
                 launch = _fileSystem.Path.Combine(game.InstallLocation, game.LaunchExecutable);
             }
 
-            return Result.FromGame(new Game(Id: game.CatalogItemId, Name: game.DisplayName, Path: game.InstallLocation, Launch: launch, Icon: launch));
+            return Result.FromGame(new Game(
+                Id: game.CatalogItemId,
+                Name: game.DisplayName,
+                Path: game.InstallLocation,
+                Launch: launch,
+                Icon: launch,
+                Metadata: new(StringComparer.OrdinalIgnoreCase)));
         }
         catch (Exception e)
         {

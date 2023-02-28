@@ -39,7 +39,7 @@ public class EADesktopHandler : AHandler<Game, string>
     /// The supported schema version of this handler. You can change the schema policy with
     /// <see cref="SchemaPolicy"/>.
     /// </summary>
-    public const int SupportedSchemaVersion = 21;
+    public const int SupportedSchemaVersion = 22;
 
     /// <summary>
     /// Policy to use when the schema version does not match <see cref="SupportedSchemaVersion"/>.
@@ -225,6 +225,7 @@ public class EADesktopHandler : AHandler<Game, string>
 
     internal static Result<Game> InstallInfoToGame(InstallInfo installInfo, int i, string installInfoFilePath, IRegistry registry, IFileSystem fileSystem, bool installedOnly = true)
     {
+        bool isInstalled = true;
         var num = i.ToString(CultureInfo.InvariantCulture);
 
         if (string.IsNullOrEmpty(installInfo.SoftwareID))
@@ -241,14 +242,18 @@ public class EADesktopHandler : AHandler<Game, string>
 
         var baseSlug = installInfo.BaseSlug;
 
-        if (string.IsNullOrEmpty(installInfo.BaseInstallPath) && installedOnly)
+        if (string.IsNullOrEmpty(installInfo.BaseInstallPath))
         {
-            return Result.FromError<Game>($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"baseInstallPath\"");
+            if (installedOnly)
+                return Result.FromError<Game>($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"baseInstallPath\"");
+            isInstalled = false;
         }
 
-        if (string.IsNullOrEmpty(installInfo.ExecutableCheck) && installedOnly)
+        if (string.IsNullOrEmpty(installInfo.ExecutableCheck))
         {
-            return Result.FromError<Game>($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"executableCheck\"");
+            if (installedOnly)
+                return Result.FromError<Game>($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"executableCheck\"");
+            isInstalled = false;
         }
 
         var baseInstallPath = installInfo.BaseInstallPath;
@@ -301,13 +306,14 @@ public class EADesktopHandler : AHandler<Game, string>
         if (string.IsNullOrEmpty(name))
             name = baseSlug;
         Game game = new(
-            softwareId,
-            name,
-            baseInstallPath,
-            executable,
-            executable,
-            uninstall,
-            new(StringComparer.Ordinal) { ["baseSlug"] = new() { baseSlug } });
+            Id: softwareId,
+            Name: name,
+            Path: baseInstallPath,
+            Launch: executable,
+            Icon: executable,
+            Uninstall: uninstall,
+            IsInstalled: isInstalled,
+            Metadata: new(StringComparer.OrdinalIgnoreCase) { ["baseSlug"] = new() { baseSlug } });
 
         return Result.FromGame(game);
     }

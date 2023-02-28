@@ -15,9 +15,15 @@
     <ItemGroup>
         <ProjectReference Include="..\GameCollector.Common\GameCollector.Common.csproj" />
         <ProjectReference Include="..\GameCollector.RegistryUtils\GameCollector.RegistryUtils.csproj" />
+		<ProjectReference Include="..\GameCollector.YamlUtils\GameCollector.YamlUtils.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.StoreHandlers.Ubisoft.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.IO.Abstractions" Version="19.1.18" />
+      <PackageReference Include="YamlDotNet" Version="13.0.1" />
     </ItemGroup>
 </Project>

@@ -8,13 +8,23 @@ The format is based on [Keep a Changelog][Keep a Changelog] and this project adh
 
 ## [3.0.0]
 
-First GameCollector release, expanding scope of upstream GameFinder:
+First GameCollector release, expanding scope of upstream GameFinder.  Note the API has changed quite a bit.
 
-- Added support for Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, Indiegala, itch, Legacy Games, Oculus, Paradox, Plarium, Riot, Rockstar, Ubisoft, and Wargaming.net
+in progress:
+- Now using a generic Game record rather than a different type for each StoreHandler, with additional fields (handler support varies):
+  - Launch, Icon, Uninstall, LastRunDate, IsInstalled, and miscellaneous Metadata
+- `FindAllGames` optionally returns owned but not-installed games (handler support varies)
+- Added support for additional StoreHandlers:
+  - Amazon Games
+  - Arc
+  - Blizzard Battle.net
+  - Ubisoft Connect
 - Re-added deprecated Bethesda.net and Xbox packages for posterity
-- Now using a generic Game record rather than a different type for each handler
-- Game records now include additional fields (for some handlers): Launch, Icon, Uninstall, and various Metadata
-- FindAllGames (for some handlers) can optionally return owned but not-installed games
+- several upgraded NuGet packages
+
+planned:
+- Adding support for Big Fish, Game Jolt, Humble, Indiegala, itch, Legacy Games, Oculus, Paradox, Plarium, Riot, Rockstar, and Wargaming.net
+- Changing GOG implementation to database method (more robust, may survive a Windows reinstall)
 
 ## [GameCollector releases]
 

@@ -14,6 +14,7 @@ namespace GameCollector.Common;
 /// <param name="Icon"></param>
 /// <param name="Uninstall"></param>
 /// <param name="LastRunDate"></param>
+/// <param name="IsInstalled"></param>
 /// <param name="Metadata"></param>
 [PublicAPI]
 public record Game(
@@ -24,4 +25,5 @@ public record Game(
     string Icon = "",
     string Uninstall = "",
     DateTime? LastRunDate = null,
+    bool IsInstalled = true,
     Dictionary<string, List<string>>? Metadata = null);

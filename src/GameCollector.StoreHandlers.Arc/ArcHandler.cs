@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -94,7 +93,7 @@ public class ArcHandler : AHandler<Game, string>
             var sId = subKeyName[..i];
             if (!long.TryParse(sId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id))
             {
-                return Result.FromError<Game>($"The value \"gameID\" of {subKey.GetName()} is not a number: \"{sId}\"");
+                return Result.FromError<Game>($"The subkey name of {subKey.GetName()} does not start with a number: \"{sId}\"");
             }
 
             if (!subKey.TryGetString("INSTALL_PATH", out var path))
@@ -119,7 +118,13 @@ public class ArcHandler : AHandler<Game, string>
             if (!subKey.TryGetString("LAUNCHER_PATH", out var launch)) launch = "";
             if (!subKey.TryGetString("CLIENT_PATH", out var icon)) icon = launch;
 
-            return Result.FromGame(new Game(sId, name, path, launch, icon, "", new(StringComparer.OrdinalIgnoreCase)));
+            return Result.FromGame(new Game(
+                Id: sId,
+                Name: name,
+                Path: path,
+                Launch: launch,
+                Icon: icon,
+                Metadata: new(StringComparer.OrdinalIgnoreCase)));
         }
         catch (Exception e)
         {

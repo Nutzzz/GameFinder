@@ -2,7 +2,7 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <PropertyGroup>
-        <Authors>erri120</Authors>
+        <Authors>Nutzzz, erri120</Authors>
 
         <PackageReadmeFile>docs\README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>

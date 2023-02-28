@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DocumentationFile>bin\Debug\GameCollector.YamlUtils.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DocumentationFile>bin\Release\GameCollector.YamlUtils.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="YamlDotNet" Version="13.0.1" />
+	</ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.YamlUtils.Tests" />
+    </ItemGroup>
+</Project>

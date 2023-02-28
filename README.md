@@ -7,14 +7,15 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 
 - Amazon Games
 - Arc
+- Blizzard Battle.net
 - [EA Desktop](#ea-desktop) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
 - [Epic Games Store](#epic-games-store) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
 - [GOG Galaxy](#gog-galaxy) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
 - [Steam](#steam) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
+- Ubisoft Connect
 
 The following launchers are not yet supported or support has been dropped:
 
-- Blizzard Battle.net (WIP)
 - [Bethesda.net Launcher](#bethesdanet-launcher) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet)
 - Big Fish Games (WIP)
 - Game Jolt Client (WIP)
@@ -28,11 +29,10 @@ The following launchers are not yet supported or support has been dropped:
 - Plarium Play (WIP)
 - Riot Client (WIP)
 - Rockstar Games Launcher (WIP)
-- Ubisoft Connect (WIP)
 - Wargaming.net Game Center (WIP)
 - [Xbox Game Pass](#xbox-game-pass) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) (UWP apps, see [Finding Xbox Games](#how-to-find-xbox-game-pass-uwp-games) for more information)
 
-If you are interested in understanding _how_ GameCollector finds some of these games, check [the upstream GameFinder wiki](https://github.com/erri120/GameFinder/wiki) for more information.
+If you are interested in understanding _how_ GameCollector finds some of these games, check the upstream [GameFinder wiki](https://github.com/erri120/GameFinder/wiki) for more information.
 
 ## Supported Launchers
 
@@ -190,7 +190,7 @@ Game? game = handler.FindOneGameById("Origin.OFR.50.0001456", out string[] error
 
 The GameFinder package [GameFinder.StoreHandlers.Xbox](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox/) has been deprecated and marked as _legacy_. @erri120 no longer maintains this package because it never got used. He initially made GameFinder for [Wabbajack](https://github.com/wabbajack-tools/wabbajack) and other modding tools however, you can't mod games installed with the Xbox App on Windows. These games are installed as UWP apps, which makes them protected and hard to modify. Another issue is the fact that you can't distinguish between normal UWP apps and Xbox games, meaning your calculator will show up as an Xbox game.
 
-The final issue is related to actual code: in order to find all UWP apps it used the Windows SDK, which was a pain to integrate. The CI had to be on Windows, the .NET target framework had to be a Windows specific version (`net6.0-windows-XXXXXXXXXX`), and it was overall not nice to use.
+The final issue is related to actual code: in order to find all UWP apps it used the Windows SDK, which was a pain to integrate. The CI had to be on Windows, the .NET target framework had to be a Windows specific version (`net7.0-windows-XXXXXXXXXX`), and it was overall not nice to use.
 
 The package is still available with [GameFinder NuGet](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox/) and should still work, but it's marked as deprecated and won't receive any updates.
 
@@ -217,14 +217,8 @@ Since the packages uses the Windows 10 SDK the project settings had to change to
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-     <TargetFrameworks>net5.0-windows10.0.18362.0;netstandard2.1</TargetFrameworks>
+     <TargetFrameworks>net6.0-windows10.0.20348.0;net7.0-windows10.0.20348.0</TargetFrameworks>
  </PropertyGroup>
- 
- <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-     <Reference Include="Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime">
-         <HintPath>C:\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.18362.0\Windows.winmd</HintPath>
-     </Reference>
- </ItemGroup>
 </Project>
 ```
 

@@ -342,7 +342,13 @@ public class SteamHandler : AHandler<Game, string>
                 icon ??= "";
             }
 
-            return Result.FromGame(new Game(id, name, gamePath, "steam://rungameid/" + id, icon, "steam://uninstall/" + id));
+            return Result.FromGame(new Game(
+                Id: id,
+                Name: name,
+                Path: gamePath,
+                Launch: "steam://rungameid/" + id,
+                Icon: icon,
+                Uninstall: "steam://uninstall/" + id));
         }
         catch (Exception e)
         {

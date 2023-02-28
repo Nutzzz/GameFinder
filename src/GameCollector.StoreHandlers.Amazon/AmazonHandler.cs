@@ -122,22 +122,22 @@ public class AmazonHandler : AHandler<Game, string>
             while (prodRdr.Read())
             {
                 string path = "";
-                string launch = "";
                 string icon = "";
                 string uninst = "";
+                bool isInstalled = true;
                 string id = prodRdr.GetString(2);
+                string launch = "amazon-games://play/" + id;
                 while (instRdr.Read())
                 {
                     if (instRdr.GetString(0).Equals(id, StringComparison.OrdinalIgnoreCase))
                     {
                         path = instRdr.GetString(1);
-                        if (installedOnly && string.IsNullOrEmpty(path))
+                        if (string.IsNullOrEmpty(path))
                         {
-                            games.Add(Result.FromError<Game>($"GameInstallInfo for {id} does not have the value \"InstallDirectory\""));
+                            isInstalled = false;
                             break;
                         }
-                        launch = "amazon-games://play/" + id;
-                        icon = ParseFuelFile(path);
+                        icon = ParseFuelFileForExe(path);
                         Result<Game> regGame = ParseRegistryForId(_registry, id);
                         if (regGame.Game is not null)
                         {
@@ -147,7 +147,17 @@ public class AmazonHandler : AHandler<Game, string>
                         }
                     }
                 }
-                
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    if (installedOnly)
+                    {
+                        games.Add(Result.FromError<Game>($"GameInstallInfo for {id} does not exist or have value \"InstallDirectory\" in file: {instDb}"));
+                        continue;
+                    }
+                    isInstalled = false;
+                }
+
                 Game game = new(
                     Id: id,
                     Name: prodRdr.GetString(4),
@@ -155,6 +165,7 @@ public class AmazonHandler : AHandler<Game, string>
                     Launch: launch,
                     Icon: icon,
                     Uninstall: uninst,
+                    IsInstalled: isInstalled,
                     Metadata: new(StringComparer.Ordinal)
                     {
                         ["Description"] = new() { prodRdr.GetString(0) },
@@ -251,7 +262,7 @@ public class AmazonHandler : AHandler<Game, string>
         return Result.FromError<Game>("ID not found");
     }
 
-    private string ParseFuelFile(string dir)
+    private string ParseFuelFileForExe(string dir)
     {
         try
         {
@@ -324,9 +335,15 @@ public class AmazonHandler : AHandler<Game, string>
             }
 
             if (!subKey.TryGetString("DisplayIcon", out var launch)) launch = "";
-            Dictionary<string, List<string>> meta = new(StringComparer.OrdinalIgnoreCase);
 
-            return Result.FromGame(new Game(gameId, name, path, launch, launch, uninst, meta));
+            return Result.FromGame(new Game(
+                Id: gameId,
+                Name: name,
+                Path: path,
+                Launch: launch,
+                Icon: launch,
+                Uninstall: uninst,
+                Metadata: new(StringComparer.OrdinalIgnoreCase)));
         }
         catch (Exception e)
         {
@@ -337,7 +354,7 @@ public class AmazonHandler : AHandler<Game, string>
     internal static string GetDatabasePath(IFileSystem fileSystem)
     {
         return fileSystem.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            GetFolderPath(SpecialFolder.LocalApplicationData),
             "Amazon Games",
             "Data",
             "Games",

@@ -115,6 +115,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils", "tests\TestUtil
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameCollector.Deprecated", "src\GameCollector.Deprecated\GameCollector.Deprecated.csproj", "{DCFBB3BA-36B3-41AD-8F8E-BD5CDCB68C56}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameCollector.YamlUtils", "src\GameCollector.YamlUtils\GameCollector.YamlUtils.csproj", "{268FBD6B-0162-426A-872C-8E3DC2B482A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -273,6 +275,10 @@ Global
 		{DCFBB3BA-36B3-41AD-8F8E-BD5CDCB68C56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCFBB3BA-36B3-41AD-8F8E-BD5CDCB68C56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCFBB3BA-36B3-41AD-8F8E-BD5CDCB68C56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{268FBD6B-0162-426A-872C-8E3DC2B482A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{268FBD6B-0162-426A-872C-8E3DC2B482A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{268FBD6B-0162-426A-872C-8E3DC2B482A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{268FBD6B-0162-426A-872C-8E3DC2B482A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -318,6 +324,7 @@ Global
 		{0A89AE18-0C30-4FD6-874A-7DC5DE6FB391} = {9C6671E1-A94D-4C76-9F61-78B491A62408}
 		{C26BCA96-CF68-41F5-AC55-B24EF0545E4A} = {9C6671E1-A94D-4C76-9F61-78B491A62408}
 		{DCFBB3BA-36B3-41AD-8F8E-BD5CDCB68C56} = {41011D08-70EF-410D-83E7-7BEAF795494E}
+		{268FBD6B-0162-426A-872C-8E3DC2B482A8} = {41011D08-70EF-410D-83E7-7BEAF795494E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A92C2A8D-5213-44BE-9BAF-221298E93BC2}

@@ -17,6 +17,7 @@ internal class InstallInfo
 {
     public string? BaseInstallPath { get; init; }
     public string? BaseSlug { get; init; }
+    [JsonPropertyName("dlcSubPath")]
     public string? DLCSubPath { get; init; }
     public string? InstallCheck { get; init; }
     [JsonPropertyName("softwareId")]
