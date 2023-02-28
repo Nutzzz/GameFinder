@@ -10,7 +10,7 @@ namespace GameCollector.Common;
 /// <typeparam name="TId"></typeparam>
 [PublicAPI]
 public abstract class AHandler<TGame, TId>
-    where TGame: class
+    where TGame : class
 {
     /// <summary>
     /// Finds all games installed with this store. The return type <see cref="Result{TGame}"/>

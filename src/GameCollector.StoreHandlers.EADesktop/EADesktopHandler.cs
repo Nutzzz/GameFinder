@@ -107,7 +107,7 @@ public class EADesktopHandler : AHandler<Game, string>
         var (games, allErrors) = FindAllGames().SplitResults();
         errors = allErrors;
 
-        return games.CustomToDictionary(game => game.Id, game => game,StringComparer.OrdinalIgnoreCase);
+        return games.CustomToDictionary(game => game.Id, game => game, StringComparer.OrdinalIgnoreCase);
     }
 
     internal static IDirectoryInfo GetDataFolder(IFileSystem fileSystem)

@@ -1,4 +1,4 @@
-﻿using System.IO.Abstractions.TestingHelpers;
+using System.IO.Abstractions.TestingHelpers;
 using System.Web;
 
 namespace GameCollector.StoreHandlers.Origin.Tests;
