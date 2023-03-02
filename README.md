@@ -8,16 +8,16 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 - Amazon Games
 - Arc
 - Blizzard Battle.net
-- [EA Desktop](#ea-desktop) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
-- [Epic Games Store](#epic-games-store) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
-- [GOG Galaxy](#gog-galaxy) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
+- [EA Desktop](#ea-desktop) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
+- [Epic Games Store](#epic-games-store) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
+- [GOG Galaxy](#gog-galaxy) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
 - Riot Client
-- [Steam](#steam) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
+- [Steam](#steam) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
 - Ubisoft Connect
 
 The following launchers are not yet supported or support has been dropped:
 
-- [Bethesda.net Launcher](#bethesdanet-launcher) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet)
+- [Bethesda.net Launcher](#bethesdanet-launcher) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet)
 - Big Fish Games (WIP)
 - Game Jolt Client (WIP)
 - Humble App (WIP)
@@ -25,12 +25,12 @@ The following launchers are not yet supported or support has been dropped:
 - itch (WIP)
 - Legacy Games Launcher (WIP)
 - Oculus (WIP)
-- [Origin](#origin) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)
+- [Origin](#origin) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)
 - Paradox Launcher (WIP)
 - Plarium Play (WIP)
 - Rockstar Games Launcher (WIP)
 - Wargaming.net Game Center (WIP)
-- [Xbox Game Pass](#xbox-game-pass) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) (UWP apps, see [Finding Xbox Games](#how-to-find-xbox-game-pass-uwp-games) for more information)
+- [Xbox Game Pass](#xbox-game-pass) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) (UWP apps, see [Finding Xbox Games](#how-to-find-xbox-game-pass-uwp-games) for more information)
 
 If you are interested in understanding _how_ GameCollector finds some of these games, check the upstream [GameFinder wiki](https://github.com/erri120/GameFinder/wiki) for more information.
 
@@ -129,7 +129,7 @@ Game? game = handler.FindOneGameById("3257e06c28764231acd93049f3774ed6", out str
 
 ### EA Desktop
 
-EA Desktop is the replacement for [Origin](#origin): See [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app). This is by far, the most complicated Store Handler. **You should read the [wiki entry](https://github.com/erri120/GameFinder/wiki/EA-Desktop).** @erri120's implementation decrypts the encrypted file, created by EA Desktop. You should be aware that the key used to encrypt the file is derived from hardware information. If the user changes their hardware, the decryption process might fail because their key has changed.
+EA Desktop is the replacement for [Origin](#origin): See [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app). This is by far, the most complicated Store Handler. **You should read the upstream [wiki entry](https://github.com/erri120/GameFinder/wiki/EA-Desktop).** @erri120's implementation decrypts the encrypted file, created by EA Desktop. You should be aware that the key used to encrypt the file is derived from hardware information. If the user changes their hardware, the decryption process might fail because their key has changed.
 
 **Usage:**
 
@@ -186,19 +186,17 @@ Game? game = handler.FindOneGameById("Origin.OFR.50.0001456", out string[] error
 ```
 
 
-### Xbox Game Pass (UWP)
+### Xbox Game Pass
 
-The GameFinder package [GameFinder.StoreHandlers.Xbox](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox/) has been deprecated and marked as _legacy_. @erri120 no longer maintains this package because it never got used. He initially made GameFinder for [Wabbajack](https://github.com/wabbajack-tools/wabbajack) and other modding tools however, you can't mod games installed with the Xbox App on Windows. These games are installed as UWP apps, which makes them protected and hard to modify. Another issue is the fact that you can't distinguish between normal UWP apps and Xbox games, meaning your calculator will show up as an Xbox game.
+The upstream GameFinder Nuget package [GameFinder.StoreHandlers.Xbox](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox/) has been deprecated and marked as _legacy_. I (@Nutzzz) made a few small updates to ensure it still compiles, but @erri120 no longer maintains this package because it apparently never got used. He initially made GameFinder for [Wabbajack](https://github.com/wabbajack-tools/wabbajack) and other modding tools however, you can't mod games installed with the Xbox App on Windows. These games are installed as UWP apps, which makes them protected and hard to modify. Another issue is the fact that you can't distinguish between normal UWP apps and Xbox games, meaning your calculator will show up as an Xbox game.
 
 The final issue is related to actual code: in order to find all UWP apps it used the Windows SDK, which was a pain to integrate. The CI had to be on Windows, the .NET target framework had to be a Windows specific version (`net7.0-windows-XXXXXXXXXX`), and it was overall not nice to use.
 
-The package is still available with [GameFinder NuGet](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox/) and should still work, but it's marked as deprecated and won't receive any updates.
-
 #### How to find Xbox Game Pass (UWP) Games
 
-Implementation can be found in `GameFinder.StoreHandlers.Xbox`: [XboxHandler](GameFinder.StoreHandlers.Xbox/XboxHandler.cs).
+Implementation can be found in `GameCollector.StoreHandlers.Xbox`: [XboxHandler](src/GameCollector.StoreHandlers.Xbox/XboxHandler.cs).
 
-These games are installed through the Xbox Game Pass app or the Windows Store. These games are UWP packages and in a UWP container. I had to use the Windows 10 SDK to get all packages:
+These games are installed through the Xbox Game Pass app or the Windows Store. These games are UWP packages and in a UWP container. The Windows 10 SDK is required to get all packages:
 
 ```c#
 internal static IEnumerable<Package> GetUWPPackages()
@@ -248,7 +246,7 @@ The access token is needed to authenticate at `https://user.auth.xboxlive.com/us
 }
 ```
 
-(DTO: [AuthenticationRequest](GameFinder.StoreHandlers.Xbox/DTO/AuthenticationRequest.cs))
+(DTO: [AuthenticationRequest](src/GameCollector.StoreHandlers.Xbox/DTO/AuthenticationRequest.cs))
 
 The response is also JSON:
 
@@ -258,7 +256,7 @@ The response is also JSON:
 }
 ```
 
-(DTO: [AuthorizationData](GameFinder.StoreHandlers.Xbox/DTO/AuthorizationData.cs))
+(DTO: [AuthorizationData](src/GameCollector.StoreHandlers.Xbox/DTO/AuthorizationData.cs))
 
 Now you need to authorize and get the final token. This is another POST request with JSON data to `https://xsts.auth.xboxlive.com/xsts/authorize`:
 
@@ -273,7 +271,7 @@ Now you need to authorize and get the final token. This is another POST request 
 }
 ```
 
-(DTO: [AuthorizationRequest](GameFinder.StoreHandlers.Xbox/DTO/AuthorizationRequest.cs))
+(DTO: [AuthorizationRequest](src/GameCollector.StoreHandlers.Xbox/DTO/AuthorizationRequest.cs))
 
 The response is of course also in JSON:
 
@@ -294,9 +292,27 @@ The response is of course also in JSON:
 }
 ```
 
-(DTO: [AuthorizationData](GameFinder.StoreHandlers.Xbox/DTO/AuthorizationData.cs))
+(DTO: [AuthorizationData](src/GameCollector.StoreHandlers.Xbox/DTO/AuthorizationData.cs))
 
 After all this requesting you finally have the xuid you can use in the constructor.
+
+### Bethesda.net Launcher
+
+[As of May 11, 2022, the Bethesda.net launcher is no longer in use](https://bethesda.net/en/article/2RXxG1y000NWupPalzLblG/sunsetting-the-bethesda-net-launcher-and-migrating-to-steam). The package [GameFinder.StoreHandlers.BethNet](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet/) has been deprecated and marked as _legacy_.
+
+#### How to find Bethesda.net Launcher Games
+
+Implementation can be found in `GameFinder.StoreHandlers.BethNet`: [BethNetHandler](src/GameCollector.StoreHandlers.BethNet/BethNetHandler.cs).
+
+Finding games installed with the Bethesda.net Launcher was very rather tricky because there are no config files you can parse or simple registry keys you can open. @erri120 ended up using a similar method to the GOG Galaxy Bethesda.net plugin by TouwaStar: [GitHub](https://github.com/TouwaStar/Galaxy_Plugin_Bethesda). The interesting part is the `_scan_games_registry_keys` function in [`betty/local.py`](https://github.com/TouwaStar/Galaxy_Plugin_Bethesda/blob/master/betty/local.py#L154):
+
+1) open the uninstaller registry key at `HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall`
+2) iterate over every sub-key:
+   - find the sub-keys that open the Bethesda Launcher with `bethesdanet://uninstall/` as an argument
+
+![Bethesda.net Launcher Games Uninstaller in Registry](assets/docs/readme-bethnet-1.png)
+
+With this you can find all games installed via Bethesda.net. The important fields are `DisplayName`, `ProductID` (64bit value) and `Path`.
 
 ## Contributing
 
