@@ -1,18 +1,17 @@
-using YamlDotNet.RepresentationModel;
-using JetBrains.Annotations;
 using System.ComponentModel;
 using System.Collections.Generic;
 using YamlDotNet.Serialization;
+using JetBrains.Annotations;
 
 namespace GameCollector.StoreHandlers.Ubisoft;
 
 [UsedImplicitly]
 internal class ConfigFile
 {
-    [DefaultValue(2.0)]
-    public string? Version { get; init; }
+    [DefaultValue("2.0")]
+    public string? Version { get; init; } = "2.0";
     public ConfigRoot? Root { get; init; }
-    public ConfigLocal? Localizations { get; init; }
+    public ConfigLocalize? Localizations { get; init; }
 }
 
 [UsedImplicitly]
@@ -27,9 +26,12 @@ internal class ConfigRoot
     public ConfigInstall? Installer { get; init; }
     public ConfigThirdParty? ThirdPartyPlatform { get; init; }
     public string? AppId { get; init; }
-    public string? IsDlc { get; init; }
-    public string? IsUlc { get; init; }
-    public string? OptionalAddonEnabledByDefault { get; init; }
+    [DefaultValue("false")]
+    public string? IsDlc { get; init; } = "false";
+    [DefaultValue("false")]
+    public string? IsUlc { get; init; } = "false";
+    [DefaultValue("false")]
+    public string? OptionalAddonEnabledByDefault { get; init; } = "false";
 }
 
 [UsedImplicitly]
@@ -93,22 +95,33 @@ internal class ConfigThirdParty
 }
 
 [UsedImplicitly]
-internal class ConfigLocal
+internal class ConfigLocalize
 {
-    public ConfigLocalLang? Default { get; init; }
+    [YamlMember(Alias = "default")]
+    public ConfigLocalizeLang? Default { get; init; }
 }
 
 [UsedImplicitly]
-internal class ConfigLocalLang
+internal class ConfigLocalizeLang
 {
-    public string? NAME { get; init; }
-    public string? GAMENAME { get; init; }
-    public string? THUMBIMAGE { get; init; }
-    public string? ICONIMAGE { get; init; }
-    public string? DESCRIPTION { get; init; }
-    public string? l1 { get; init; }
-    public string? l2 { get; init; }
-    public string? l3 { get; init; }
-    public string? l4 { get; init; }
-    public string? l5 { get; init; }
+    [YamlMember(Alias = "NAME")]
+    public string? Name { get; init; }
+    [YamlMember(Alias = "GAMENAME")]
+    public string? Gamename { get; init; }
+    [YamlMember(Alias = "THUMBIMAGE")]
+    public string? Thumbimage { get; init; }
+    [YamlMember(Alias = "ICONIMAGE")]
+    public string? Iconimage { get; init; }
+    [YamlMember(Alias = "DESCRIPTION")]
+    public string? Description { get; init; }
+    [YamlMember(Alias = "l1")]
+    public string? Localize1 { get; init; }
+    [YamlMember(Alias = "l2")]
+    public string? Localize2 { get; init; }
+    [YamlMember(Alias = "l3")]
+    public string? Localize3 { get; init; }
+    [YamlMember(Alias = "l4")]
+    public string? Localize4 { get; init; }
+    [YamlMember(Alias = "l5")]
+    public string? Localize5 { get; init; }
 }

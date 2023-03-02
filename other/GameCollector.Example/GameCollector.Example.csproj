@@ -7,6 +7,7 @@
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.EGS\GameCollector.StoreHandlers.EGS.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.GOG\GameCollector.StoreHandlers.GOG.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Origin\GameCollector.StoreHandlers.Origin.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Riot\GameCollector.StoreHandlers.Riot.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Steam\GameCollector.StoreHandlers.Steam.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Ubisoft\GameCollector.StoreHandlers.Ubisoft.csproj" />
 		<!--
@@ -23,7 +24,6 @@
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Oculus\GameCollector.StoreHandlers.Oculus.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Paradox\GameCollector.StoreHandlers.Paradox.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Plarium\GameCollector.StoreHandlers.Plarium.csproj" />
-        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Riot\GameCollector.StoreHandlers.Riot.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Rockstar\GameCollector.StoreHandlers.Rockstar.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.WargamingNet\GameCollector.StoreHandlers.WargamingNet.csproj" />
         -->

@@ -21,4 +21,8 @@
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.StoreHandlers.Riot.Tests" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.IO.Abstractions" Version="19.1.18" />
+    </ItemGroup>
 </Project>

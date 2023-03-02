@@ -18,12 +18,13 @@ in progress:
   - Amazon Games
   - Arc
   - Blizzard Battle.net
+  - Riot Client
   - Ubisoft Connect
 - Re-added deprecated Bethesda.net and Xbox packages for posterity
 - several upgraded NuGet packages
 
 planned:
-- Adding support for Big Fish, Game Jolt, Humble, Indiegala, itch, Legacy Games, Oculus, Paradox, Plarium, Riot, Rockstar, and Wargaming.net
+- Adding support for Big Fish, Game Jolt, Humble, Indiegala, itch, Legacy Games, Oculus, Paradox, Plarium, Rockstar, and Wargaming.net
 - Changing GOG implementation to database method (more robust, may survive a Windows reinstall)
 
 ## [GameCollector releases]

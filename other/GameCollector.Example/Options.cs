@@ -55,8 +55,8 @@ namespace GameCollector.Example
         [Option("plarium", HelpText = "Search for Plarium Play games [in progress]")]
         public bool Plarium { get; set; } = false;
 
-        [Option("riot", HelpText = "Search for Riot games [in progress]")]
-        public bool Riot { get; set; } = false;
+        [Option("riot", HelpText = "Search for Riot games")]
+        public bool Riot { get; set; } = true;
 
         [Option("rockstar", HelpText = "Search for Rockstar games [in progress]")]
         public bool Rockstar { get; set; } = false;

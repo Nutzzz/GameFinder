@@ -1,15 +1,13 @@
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.Json;
-using GameCollector.Common;
-using GameCollector.RegistryUtils;
 using JetBrains.Annotations;
-using ProtoBuf;
+using GameCollector.Common;
 using static System.Environment;
 
 namespace GameCollector.StoreHandlers.BattleNet;
@@ -20,9 +18,6 @@ namespace GameCollector.StoreHandlers.BattleNet;
 [PublicAPI]
 public class BattleNetHandler : AHandler<Game, string>
 {
-    internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
-
-    private readonly IRegistry _registry;
     private readonly IFileSystem _fileSystem;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions =
@@ -32,28 +27,17 @@ public class BattleNetHandler : AHandler<Game, string>
         };
 
     /// <summary>
-    /// Default constructor. This uses the <see cref="WindowsRegistry"/> implementation of
-    /// <see cref="IRegistry"/> and the real file system with <see cref="FileSystem"/>.
+    /// Default constructor that uses the real filesystem <see cref="FileSystem"/>.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public BattleNetHandler() : this(new WindowsRegistry(), new FileSystem()) { }
+    public BattleNetHandler() : this(new FileSystem()) { }
 
     /// <summary>
-    /// Constructor for specifying the implementation of <see cref="IRegistry"/>. This uses
-    /// the real file system with <see cref="FileSystem"/>.
+    /// Constructor for specifying the <see cref="IFileSystem"/> implementation to use.
     /// </summary>
-    /// <param name="registry"></param>
-    public BattleNetHandler(IRegistry registry) : this(registry, new FileSystem()) { }
-
-    /// <summary>
-    /// Constructor for specifying the implementation of <see cref="IRegistry"/> and
-    /// <see cref="IFileSystem"/> when doing tests.
-    /// </summary>
-    /// <param name="registry"></param>
     /// <param name="fileSystem"></param>
-    public BattleNetHandler(IRegistry registry, IFileSystem fileSystem)
+    public BattleNetHandler(IFileSystem fileSystem)
     {
-        _registry = registry;
         _fileSystem = fileSystem;
     }
 
@@ -194,7 +178,7 @@ public class BattleNetHandler : AHandler<Game, string>
                 testId.Equals("bna", StringComparison.OrdinalIgnoreCase) ||
                 testId.Equals("bts", StringComparison.OrdinalIgnoreCase))
             {
-                return $"Product {testId} is not a game!";
+                return $"Product {testId} is not a game in file {dataFile.FullName}";
             }
             if (allConfig.Form is not null &&
                 ((JsonElement)allConfig.Form).TryGetProperty("game_dir", out var jAllGameDir) &&
@@ -246,9 +230,9 @@ public class BattleNetHandler : AHandler<Game, string>
                 return $"Data file {dataFile.FullName} does not have a value for \"relative_path\"";
             }
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return $"Exception deserialize data file {dataFile.FullName}";
+            return $"Unable to deserialize file {dataFile.FullName}\n" + e.Message + "\n" + e.InnerException;
         }
 
         return null;
@@ -308,125 +292,6 @@ public class BattleNetHandler : AHandler<Game, string>
             return null;
         }
         return null;
-    }
-
-    private IEnumerable<Result<Game>> ParseRegistry(IRegistry registry)
-    {
-        try
-        {
-            var currentUser = registry.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
-
-            using var unKey = currentUser.OpenSubKey(UninstallRegKey);
-            if (unKey is null)
-            {
-                return new[]
-                {
-                    Result.FromError<Game>($"Unable to open HKEY_CURRENT_USER\\{UninstallRegKey}"),
-                };
-            }
-
-            var subKeyNames = unKey.GetSubKeyNames().Where(
-                keyName => keyName[(keyName.LastIndexOf('\\') + 1)..].StartsWith("AmazonGames/", StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (subKeyNames.Length == 0)
-            {
-                return new[]
-                {
-                    Result.FromError<Game>($"Registry key {unKey.GetName()} has no sub-keys beginning with \"AmazonGames/\""),
-                };
-            }
-
-            return subKeyNames
-                .Select(subKeyName => ParseSubKey(unKey, subKeyName))
-                .ToArray();
-        }
-        catch (Exception e)
-        {
-            return new[] { Result.FromException<Game>("Exception looking for Amazon games in registry", e) };
-        }
-    }
-
-    private static Result<Game> ParseRegistryForId(IRegistry registry, string id)
-    {
-        try
-        {
-            var currentUser = registry.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
-            
-            using var unKey = currentUser.OpenSubKey(UninstallRegKey);
-            if (unKey is null)
-            {
-                Result.FromError<Game>($"Unable to open HKEY_CURRENT_USER\\{UninstallRegKey}");
-            }
-            else
-            {
-                var subKeyNames = unKey.GetSubKeyNames().Where(
-                    keyName => keyName[(keyName.LastIndexOf('\\') + 1)..].StartsWith("AmazonGames/", StringComparison.OrdinalIgnoreCase)).ToArray();
-                if (subKeyNames.Length == 0)
-                {
-                    Result.FromError<Game>($"Registry key {unKey.GetName()} has no sub-keys beginning with \"AmazonGames/\"");
-                }
-
-                foreach (var subKeyName in subKeyNames)
-                {
-                    var game = ParseSubKey(unKey, subKeyName, id);
-                    if (game.Game is not null)
-                    {
-                        return game;
-                    }
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Result.FromException<Game>("Exception looking for Amazon games in registry", e);
-        }
-        return Result.FromError<Game>("ID not found");
-    }
-
-    private static Result<Game> ParseSubKey(IRegistryKey unKey, string subKeyName, string id = "")
-    {
-        try
-        {
-            using var subKey = unKey.OpenSubKey(subKeyName);
-            if (subKey is null)
-            {
-                return Result.FromError<Game>($"Unable to open {unKey}\\{subKeyName}");
-            }
-
-            if (!subKey.TryGetString("UninstallString", out var uninst))
-            {
-                return Result.FromError<Game>($"{subKey.GetName()} doesn't have a string value \"UninstallString\"");
-            }
-            var gameId = uninst[uninst.LastIndexOf("Game -p " + 8, StringComparison.OrdinalIgnoreCase)..];
-            if (!string.IsNullOrEmpty(id) && !id.Equals(gameId, StringComparison.OrdinalIgnoreCase))
-            {
-                return Result.FromError<Game>("ID does not match.");
-            }
-
-            if (!subKey.TryGetString("DisplayName", out var name))
-            {
-                return Result.FromError<Game>($"{subKey.GetName()} doesn't have a string value \"DisplayName\"");
-            }
-
-            if (!subKey.TryGetString("InstallLocation", out var path))
-            {
-                return Result.FromError<Game>($"{subKey.GetName()} doesn't have a string value \"InstallLocation\"");
-            }
-
-            if (!subKey.TryGetString("DisplayIcon", out var launch)) launch = "";
-
-            return Result.FromGame(new Game(
-                Id: gameId,
-                Name: name,
-                Path: path,
-                Launch: launch,
-                Icon: launch,
-                Uninstall: uninst,
-                Metadata: new(StringComparer.OrdinalIgnoreCase)));
-        }
-        catch (Exception e)
-        {
-            return Result.FromException<Game>($"Exception while parsing registry key {unKey}\\{subKeyName}", e);
-        }
     }
 
     internal static string GetBattleNetPath(IFileSystem fileSystem)

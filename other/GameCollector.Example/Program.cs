@@ -18,6 +18,7 @@ using GameCollector.StoreHandlers.EADesktop.Crypto.Windows;
 using GameCollector.StoreHandlers.EGS;
 using GameCollector.StoreHandlers.GOG;
 using GameCollector.StoreHandlers.Origin;
+using GameCollector.StoreHandlers.Riot;
 using GameCollector.StoreHandlers.Steam;
 using GameCollector.StoreHandlers.Ubisoft;
 //using GameCollector.StoreHandlers.Xbox;
@@ -31,7 +32,6 @@ using GameCollector.StoreHandlers.Legacy;
 using GameCollector.StoreHandlers.Oculus;
 using GameCollector.StoreHandlers.Paradox;
 using GameCollector.StoreHandlers.Plarium;
-using GameCollector.StoreHandlers.Riot;
 using GameCollector.StoreHandlers.Rockstar;
 using GameCollector.StoreHandlers.WargamingNet;
 */
@@ -80,6 +80,7 @@ public static class Program
         options.EGS = false;
         options.GOG = false;
         options.Origin = false;
+        options.Riot = true;        // NEW
         options.Steam = false;
         options.Ubisoft = true;     // NEW
 
@@ -189,6 +190,21 @@ public static class Program
                 var handler = new OriginHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors("Origin", results, logger);
+            }
+        }
+
+        if (options.Riot)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Riot Client is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Riot Client");
+                var handler = new RiotHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors("Riot", results, logger);
             }
         }
 
@@ -383,21 +399,6 @@ public static class Program
                 var handler = new PlariumHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors("Plarium", results, logger);
-            }
-        }
-
-        if (options.Riot)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                logger.LogError("* Riot Client is only supported on Windows!");
-            }
-            else
-            {
-                logger.LogDebug("* Riot Client");
-                var handler = new RiotHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors("Riot", results, logger);
             }
         }
 

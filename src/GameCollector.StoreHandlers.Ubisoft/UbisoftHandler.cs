@@ -6,16 +6,12 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
-using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using JetBrains.Annotations;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
 using GameCollector.YamlUtils;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
-using YamlDotNet.Core.Tokens;
 
 namespace GameCollector.StoreHandlers.Ubisoft;
 
@@ -206,13 +202,13 @@ public class UbisoftHandler : AHandler<Game, string>
             var config = deserializer.Deserialize<ConfigFile>(input);
 
             if (config is null || config.Root is null)
-                return Result.FromError<Game>("configurations file has no root property!");
+                return Result.FromError<Game>("No \"root\" property in configurations file entry");
 
             /*
             if (!config.Version.HasValue)
             {
                 //return null;
-                return Result.FromError<Game>("configurations file does not have a schema version!");
+                return Result.FromError<Game>("No schema \"version\" property in configurations file entry");
             }
             */
 
@@ -222,16 +218,7 @@ public class UbisoftHandler : AHandler<Game, string>
                 name = config.Root.Name ?? "";
             }
             if (string.IsNullOrEmpty(name))
-                return Result.FromError<Game>($"configurations file has no \"root\">\"name\" property!");
-
-            if (config.Root.StartGame is null ||
-                (config.Root.IsDlc is not null && ToBool(config.Root.IsDlc)) ||
-                (config.Root.IsUlc is not null && ToBool(config.Root.IsUlc)) ||
-                (config.Root.OptionalAddonEnabledByDefault is not null &&
-                ToBool(config.Root.OptionalAddonEnabledByDefault)))
-            {
-                return Result.FromError<Game>($"{name} is not a base game!");
-            }
+                return Result.FromError<Game>($"No \"root>name\" property in configurations file entry");
 
             // fallback ID (if available, we'll get the icon filename instead)
             if (config.Root.Uplay is not null)
@@ -242,11 +229,6 @@ public class UbisoftHandler : AHandler<Game, string>
                     id = config.Root.Uplay.AchievementsSyncId;
             }
 
-            /*
-            if (config.Root.ThirdPartyPlatform is not null)
-                return Result.FromError<Game>($"{name} [{id}] is a third-party platform game!"); // e.g., a Steam game
-            */
-
             iconFile = config.Root.IconImage ?? "";
             if (string.IsNullOrEmpty(iconFile))
                 iconFile = config.Root.ThumbImage ?? "";
@@ -255,7 +237,7 @@ public class UbisoftHandler : AHandler<Game, string>
             {
                 /*
                 if (config.Localizations.Default is null)
-                    return Result.FromError<Game>($"No \"localizations\">\"default\" found for {name} [{id}].");
+                    return Result.FromError<Game>($"No \"localizations>default\" property found for {name} [{id}]");
                 */
                 name = Localize(name, config.Localizations.Default);
                 iconFile = Localize(iconFile, config.Localizations.Default);
@@ -267,6 +249,20 @@ public class UbisoftHandler : AHandler<Game, string>
             {
                 name = config.Root.Installer.GameIdentifier;
             }
+
+            if (config.Root.StartGame is null ||
+                (config.Root.IsDlc is not null && ToBool(config.Root.IsDlc)) ||
+                (config.Root.IsUlc is not null && ToBool(config.Root.IsUlc)) ||
+                (config.Root.OptionalAddonEnabledByDefault is not null &&
+                ToBool(config.Root.OptionalAddonEnabledByDefault)))
+            {
+                return Result.FromError<Game>($"{name} is not a base game!");
+            }
+
+            /*
+            if (config.Root.ThirdPartyPlatform is not null)
+                return Result.FromError<Game>($"{name} [{id}] is a third-party platform game!"); // e.g., a Steam game
+            */
 
             if (iconFile.EndsWith(".ico", StringComparison.OrdinalIgnoreCase) ||
                 iconFile.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
@@ -337,7 +333,7 @@ public class UbisoftHandler : AHandler<Game, string>
         }
 		catch (Exception e)
 		{
-            return Result.FromException<Game>($"Exception while parsing configurations file\n{e.InnerException}", e);
+            return Result.FromException<Game>($"Exception while parsing configurations file entry\n{e.InnerException}", e);
 		}
     }
 
@@ -365,32 +361,32 @@ public class UbisoftHandler : AHandler<Game, string>
         };
     }
 
-    private static string Localize(string key, ConfigLocalLang? lang)
+    private static string Localize(string key, ConfigLocalizeLang? lang)
     {
         if (lang is not null)
         {
             switch (key)
             {
                 case "NAME":
-                    return lang.NAME ?? "";
+                    return lang.Name ?? "";
                 case "GAMENAME":
-                    return lang.GAMENAME ?? "";
+                    return lang.Gamename ?? "";
                 case "ICONIMAGE":
-                    return lang.ICONIMAGE ?? "";
+                    return lang.Iconimage ?? "";
                 case "THUMBIMAGE":
-                    return lang.THUMBIMAGE ?? "";
+                    return lang.Thumbimage ?? "";
                 case "DESCRIPTION":
-                    return lang.DESCRIPTION ?? "";
+                    return lang.Description ?? "";
                 case "l1":
-                    return lang.l1 ?? "";
+                    return lang.Localize1 ?? "";
                 case "l2":
-                    return lang.l2 ?? "";
+                    return lang.Localize2 ?? "";
                 case "l3":
-                    return lang.l3 ?? "";
+                    return lang.Localize3 ?? "";
                 case "l4":
-                    return lang.l4 ?? "";
+                    return lang.Localize4 ?? "";
                 case "l5":
-                    return lang.l5 ?? "";
+                    return lang.Localize5 ?? "";
                 default:
                     break;
             }

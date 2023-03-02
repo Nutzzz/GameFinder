@@ -11,6 +11,7 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 - [EA Desktop](#ea-desktop) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
 - [Epic Games Store](#epic-games-store) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
 - [GOG Galaxy](#gog-galaxy) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
+- Riot Client
 - [Steam](#steam) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
 - Ubisoft Connect
 
@@ -27,7 +28,6 @@ The following launchers are not yet supported or support has been dropped:
 - [Origin](#origin) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)
 - Paradox Launcher (WIP)
 - Plarium Play (WIP)
-- Riot Client (WIP)
 - Rockstar Games Launcher (WIP)
 - Wargaming.net Game Center (WIP)
 - [Xbox Game Pass](#xbox-game-pass) [![GameFinder Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) (UWP apps, see [Finding Xbox Games](#how-to-find-xbox-game-pass-uwp-games) for more information)
