@@ -30,7 +30,7 @@ The following launchers are not yet supported or support has been dropped:
 - Plarium Play (WIP)
 - Rockstar Games Launcher (WIP)
 - Wargaming.net Game Center (WIP)
-- [Xbox Game Pass](#xbox-game-pass) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) (UWP apps, see [Finding Xbox Games](#how-to-find-xbox-game-pass-uwp-games) for more information)
+- [Xbox Game Pass](#xbox-game-pass) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox)
 
 If you are interested in understanding _how_ GameCollector finds some of these games, check the upstream [GameFinder wiki](https://github.com/erri120/GameFinder/wiki) for more information.
 
@@ -188,7 +188,7 @@ Game? game = handler.FindOneGameById("Origin.OFR.50.0001456", out string[] error
 
 ### Xbox Game Pass
 
-The upstream GameFinder Nuget package [GameFinder.StoreHandlers.Xbox](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox/) has been deprecated and marked as _legacy_. I (@Nutzzz) made a few small updates to ensure it still compiles, but @erri120 no longer maintains this package because it apparently never got used. He initially made GameFinder for [Wabbajack](https://github.com/wabbajack-tools/wabbajack) and other modding tools however, you can't mod games installed with the Xbox App on Windows. These games are installed as UWP apps, which makes them protected and hard to modify. Another issue is the fact that you can't distinguish between normal UWP apps and Xbox games, meaning your calculator will show up as an Xbox game.
+The upstream GameFinder Nuget package [GameFinder.StoreHandlers.Xbox](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox/) has been deprecated and marked as _legacy_. @Nutzzz made a few small updates to ensure it still compiles, but @erri120 no longer maintains this package because it apparently never got used. He initially made GameFinder for [Wabbajack](https://github.com/wabbajack-tools/wabbajack) and other modding tools however, you can't mod games installed with the Xbox App on Windows. These games are installed as UWP apps, which makes them protected and hard to modify. Another issue is the fact that you can't distinguish between normal UWP apps and Xbox games, meaning your calculator will show up as an Xbox game.
 
 The final issue is related to actual code: in order to find all UWP apps it used the Windows SDK, which was a pain to integrate. The CI had to be on Windows, the .NET target framework had to be a Windows specific version (`net7.0-windows-XXXXXXXXXX`), and it was overall not nice to use.
 
@@ -309,8 +309,6 @@ Finding games installed with the Bethesda.net Launcher was very rather tricky be
 1) open the uninstaller registry key at `HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall`
 2) iterate over every sub-key:
    - find the sub-keys that open the Bethesda Launcher with `bethesdanet://uninstall/` as an argument
-
-![Bethesda.net Launcher Games Uninstaller in Registry](assets/docs/readme-bethnet-1.png)
 
 With this you can find all games installed via Bethesda.net. The important fields are `DisplayName`, `ProductID` (64bit value) and `Path`.
 
