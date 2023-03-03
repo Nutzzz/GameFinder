@@ -1,6 +1,7 @@
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -41,12 +42,6 @@ public class BattleNetHandler : AHandler<Game, string>
         _fileSystem = fileSystem;
     }
 
-    private readonly JsonDocumentOptions _jsonDocumentOptions =
-        new()
-        {
-            AllowTrailingCommas = true,
-        };
-
     /// <inheritdoc/>
     public override IEnumerable<Result<Game>> FindAllGames(bool installedOnly = false)
     {
@@ -75,13 +70,13 @@ public class BattleNetHandler : AHandler<Game, string>
 
         if (dataFiles.Length == 0)
         {
-            yield return Result.FromError<Game>($"The data directory {dataPath.FullName} does not contain any cached files");
+            yield return Result.FromError<Game>($"The data directory {dataPath.FullName} does not contain any cached files!");
             yield break;
         }
 
         foreach (var dataFile in dataFiles)
         {
-            yield return DeserializeGame(dataFile, dbFile, cfgFile, uninstallExe, _fileSystem);
+            yield return DeserializeGame(dataFile, dbFile, cfgFile, uninstallExe);
         }
     }
 
@@ -94,43 +89,32 @@ public class BattleNetHandler : AHandler<Game, string>
         return games.CustomToDictionary(game => game.Id, game => game, StringComparer.OrdinalIgnoreCase);
     }
 
-    private Result<Game> DeserializeGame(IFileInfo dataFile, IFileInfo dbFile, IFileInfo cfgFile, IFileInfo uninstallExe, IFileSystem fileSystem)
+    private Result<Game> DeserializeGame(IFileInfo dataFile, IFileInfo dbFile, IFileInfo cfgFile, IFileInfo uninstallExe)
     {
         try
         {
-            string? error = ParseDataFile(dataFile, fileSystem, out string id, out string? path, out string? name, out string? exe);
+            var (error, id, name, path, exe, description) = ParseDataFile(dataFile);
             if (error is not null)
                 return Result.FromError<Game>(error);
-            if (string.IsNullOrEmpty(name))
-                name = id;
 
-            error = ParseDatabase(id, dbFile, cfgFile, fileSystem, out string installPath, out string lang, out DateTime? lastRunDate);
-            if (error is not null)
-                return Result.FromError<Game>(error);
+            var (dbError, installPath, lang) = ParseDatabase(id, dbFile);
+            if (dbError is not null)
+                return Result.FromError<Game>(dbError);
+
+            var lastRunDate = ParseConfigForLastRun(id, cfgFile);
 
             /*
-            Dictionary<string, List<string>> metadata = new();
-
-            using JsonDocument document = JsonDocument.Parse(stream, _jsonDocumentOptions);
-            document.RootElement.TryGetProperty(lang.ToLower(), out JsonElement jLanguage);
-            JsonElement jLangConfig;
-            if ((jLanguage.TryGetProperty("config", out jLangConfig) ||
-                cache.Language.TryGetProperty("config", out jLangConfig)) &&
-                jLangConfig.TryGetProperty("install", out JsonElement jLangInstall))
-            {
-                foreach (JsonElement install in jLangInstall.EnumerateArray())
-                {
-                    // name = jLangInstall[] > "add_remove_programs_key" > "display_name"
-                    // description = jLangInstall[] > "program_associations" > "application_description"
-                    metadata.Add("Description", new List<string>() { description });
-                }
-            }
+            var (trName, trDescription) = ReparseForTranslations(lang, dataFile);
+            if (!string.IsNullOrEmpty(trName))
+                name = trName;
+            if (!string.IsNullOrEmpty(trDescription))
+                description = trDescription;
             */
 
-            string uninstall = $"\"{uninstallExe}\" --lang={lang} --uid={id} --displayname=\"{name}\"";
+            var uninstall = $"\"{uninstallExe}\" --lang={lang} --uid={id} --displayname=\"{name}\"";
             if (!string.IsNullOrEmpty(path))
                 installPath = Path.Combine(installPath, path);
-            string launch = "";
+            var launch = "";
             if (!string.IsNullOrEmpty(exe))
                 launch = Path.Combine(installPath, exe);
 
@@ -142,7 +126,8 @@ public class BattleNetHandler : AHandler<Game, string>
                 Icon: launch,
                 Uninstall: uninstall,
                 LastRunDate: lastRunDate,
-                Metadata: new(StringComparer.OrdinalIgnoreCase)));
+                Metadata: new(StringComparer.OrdinalIgnoreCase) { ["Description"] = new() { description }, }
+            ));
         }
         catch (Exception e)
         {
@@ -150,148 +135,176 @@ public class BattleNetHandler : AHandler<Game, string>
         }
     }
 
-    private string? ParseDataFile(IFileInfo dataFile, IFileSystem fileSystem, out string id, out string? path, out string? name, out string? exe)
+    private (string? error, string id, string name, string path, string exe, string description)
+        ParseDataFile(IFileInfo dataFile)
     {
-        id = "";
-        path = "";
-        name = "";
-        exe = "";
-
+        var id = "";
+        var name = "";
+        var path = "";
+        var exe = "";
+        var description = "";
         try
         {
             using var stream = dataFile.OpenRead();
             var cache = JsonSerializer.Deserialize<CacheFile>(stream, _jsonSerializerOptions);
-            if (cache is null || !cache.All.TryGetProperty("config", out var jAllConfig))
+            if (cache is null ||
+                cache.All is null ||
+                cache.All.Config is null ||
+                cache.Platform is null ||
+                cache.Platform.Win is null ||
+                cache.Platform.Win.Config is null)
             {
-                return $"Unable to deserialize data file {dataFile.FullName}";
+                return ($"Unable to deserialize data file {dataFile.FullName}", "", "", "", "", "");
             }
 
-            var allConfig = JsonSerializer.Deserialize<AllConfig>(jAllConfig, _jsonSerializerOptions);
-            if (allConfig is null)
+            id = cache.All.Config.Product ?? "";
+            path = cache.All.Config.SharedContainerDefaultSubfolder ?? "";
+            if (string.IsNullOrEmpty(id) ||
+                id.Equals("agent", StringComparison.OrdinalIgnoreCase) ||
+                id.Equals("bna", StringComparison.OrdinalIgnoreCase) ||
+                id.Equals("bts", StringComparison.OrdinalIgnoreCase))
             {
-                return $"Unable to deserialize \"all\">\"config\" data in file {dataFile.FullName}";
+                return ($"Product \"{id}\" is not a game in file {dataFile.FullName}", "", "", "", "", "");
             }
 
-            string? testId = allConfig.Product;
-            if (string.IsNullOrEmpty(testId) ||
-                testId.Equals("agent", StringComparison.OrdinalIgnoreCase) ||
-                testId.Equals("bna", StringComparison.OrdinalIgnoreCase) ||
-                testId.Equals("bts", StringComparison.OrdinalIgnoreCase))
+            if (cache.All.Config.Form is not null &&
+                cache.All.Config.Form.GameDir is not null)
             {
-                return $"Product {testId} is not a game in file {dataFile.FullName}";
-            }
-            if (allConfig.Form is not null &&
-                ((JsonElement)allConfig.Form).TryGetProperty("game_dir", out var jAllGameDir) &&
-                jAllGameDir.TryGetProperty("dirname", out var jAllGameDirName))
-            {
-                name = jAllGameDirName.GetString();
-            }
-            id = testId;
-
-            path = allConfig.SharedContainerDefaultSubfolder;
-
-            if (!cache.Platform.TryGetProperty("win", out var jWinPlatform) || !jWinPlatform.TryGetProperty("config", out var jWinConfig))
-            {
-                return $"Data file {dataFile.FullName} does not have values for \"platform\">\"win\">\"config\"";
-            }
-
-            var winConfig = JsonSerializer.Deserialize<WinConfig>(jWinConfig, _jsonSerializerOptions);
-            if (winConfig is null)
-            {
-                return $"Unable to deserialize \"platform\">\"win\">\"config\" data in file {dataFile.FullName}";
-            }
-
-            if (!winConfig.Binaries.TryGetProperty("game", out var jWinGame))
-            {
-                return $"Unable to deserialize \"platform\">\"win\">\"config\">\"binaries\" data in file {dataFile.FullName}";
+                name = cache.All.Config.Form.GameDir.Dirname ?? "";
             }
             if (string.IsNullOrEmpty(name) &&
-                winConfig.Form is not null &&
-                ((JsonElement)winConfig.Form).TryGetProperty("game_dir", out var jWinGameDir) &&
-                jWinGameDir.TryGetProperty("dirname", out var jWinGameDirName))
+                cache.Platform.Win.Config.Form is not null)
             {
-                name = jWinGameDirName.GetString();
+                var form = cache.Platform.Win.Config.Form;
+                if (form.GameDir is not null)
+                    name = form.GameDir.Dirname ?? "";
             }
-
             if (string.IsNullOrEmpty(name))
+                name = id;
+
+            if (cache.Platform.Win.Config.Binaries is not null)
             {
-                return $"Data file {dataFile.FullName} does not have a value for \"dirname\"";
+                var bins = cache.Platform.Win.Config.Binaries;
+                if (bins.Game is not null)
+                {
+                    exe = bins.Game.RelativePath64 ?? "";
+                    if (string.IsNullOrEmpty(exe))
+                        exe = bins.Game.RelativePath ?? "";
+                }
             }
 
-            if (jWinGame.TryGetProperty("relative_path_64", out var jRelPath64))
-                exe = jRelPath64.GetString();
             if (string.IsNullOrEmpty(exe))
             {
-                if (jWinGame.TryGetProperty("relative_path", out var jRelPath32))
-                    exe = jRelPath32.GetString();
+                return ($"Data file {dataFile.FullName} does not have a value for \"relative_path\"", "", "", "", "", "");
             }
-            if (string.IsNullOrEmpty(exe))
+
+            if (cache.DefaultLanguage is not null &&
+                cache.DefaultLanguage.Config is not null &&
+                cache.DefaultLanguage.Config.Install is not null)
             {
-                return $"Data file {dataFile.FullName} does not have a value for \"relative_path\"";
+                var installs = cache.DefaultLanguage.Config.Install;
+                if (installs.Count > 0 &&
+                    installs[0] is not null)
+                {
+                    var install = installs[0];
+                    if (install.ProgramAssociations is not null)
+                    {
+                        description = install.ProgramAssociations.ApplicationDescription ?? "";
+                    }
+                }
             }
         }
         catch (Exception e)
         {
-            return $"Unable to deserialize file {dataFile.FullName}\n" + e.Message + "\n" + e.InnerException;
+            return ($"Unable to deserialize file {dataFile.FullName}\n" + e.Message + "\n" + e.InnerException, "", "", "", "", "");
         }
 
-        return null;
+        return (null, id, name, path, exe, description);
     }
 
-    private string? ParseDatabase(string id, IFileInfo dbFile, IFileInfo cfgFile, IFileSystem fileSystem, out string installPath, out string lang, out DateTime? lastRunDate)
+    private static (string? error, string installPath, string lang)
+        ParseDatabase(string id, IFileInfo dbFile)
     {
-        installPath = "";
-        lang = "";
-        lastRunDate = null;
         try
         {
-            using var stream = File.OpenRead(dbFile.FullName);
-            BnetDatabase db = Serializer.Deserialize<BnetDatabase>(stream);
+            using var stream = dbFile.OpenRead();
+            var db = Serializer.Deserialize<BnetDatabase>(stream);
 
-            foreach (BnetProductInstall pi in db.productInstalls)
+            foreach (var pi in db.productInstalls)
             {
                 if (pi.productCode.Equals(id, StringComparison.OrdinalIgnoreCase) &&
                     pi.Settings is not null)
                 {
-                    installPath = pi.Settings.installPath;
-                    lang = pi.Settings.selectedTextLanguage;
+                    var installPath = pi.Settings.installPath ?? "";
+                    var lang = pi.Settings.selectedTextLanguage;
                     if (string.IsNullOrEmpty(lang))
                         lang = "enUS"; // default
 
-                    lastRunDate = ParseConfigForLastRun(id, cfgFile, fileSystem);
-                    return null;
+                    return (null, installPath, lang);
                 }
             }
         }
         catch (Exception)
         {
-            return $"Unable to deserialize database file: {dbFile.FullName}";
+            return ($"Unable to deserialize database file: {dbFile.FullName}", "", "");
         }
-        return $"Unable to find productCode \"{id}\" in database file: {dbFile.FullName}";
+        return ($"Unable to find productCode \"{id}\" in database file: {dbFile.FullName}", "", "");
     }
 
-    private DateTime? ParseConfigForLastRun(string code, IFileInfo cfgFile, IFileSystem fileSystem)
+    private DateTime ParseConfigForLastRun(string code, IFileInfo cfgFile)
     {
         try
         {
-            string strConfigData = fileSystem.File.ReadAllText(cfgFile.FullName);
-            if (!string.IsNullOrEmpty(strConfigData))
+            using var stream = cfgFile.OpenRead();
+            var config = JsonSerializer.Deserialize<ConfigFile>(stream, _jsonSerializerOptions);
+            if (config is not null &&
+                config.Games.TryGetProperty(code, out var cfgGame))
             {
-                using JsonDocument document = JsonDocument.Parse(@strConfigData, _jsonDocumentOptions);
-                if (document.RootElement.TryGetProperty("Games", out JsonElement games) &&
-                    games.TryGetProperty(code, out JsonElement cfgGame))
+                var game = JsonSerializer.Deserialize<ConfigGame>(cfgGame, _jsonSerializerOptions);
+                if (game is not null &&
+                    game.LastPlayed is not null &&
+                    long.TryParse(game.LastPlayed, out long lLastRun))
                 {
-                    cfgGame.TryGetProperty("LastPlayed", out JsonElement jLastPlayed);
-                    if (long.TryParse(jLastPlayed.GetString(), out long lLastRun))
-                        return DateTimeOffset.FromUnixTimeSeconds(lLastRun).UtcDateTime;
+                    return DateTimeOffset.FromUnixTimeSeconds(lLastRun).UtcDateTime;
                 }
             }
         }
         catch (Exception)
         {
-            return null;
+            return DateTime.MinValue;
         }
-        return null;
+        return DateTime.MinValue;
+    }
+
+    private (string name, string description) ReparseForTranslations(string lang, IFileInfo dataFile)
+    {
+        try
+        {
+            using var stream = dataFile.OpenRead();
+            var root = JsonSerializer.Deserialize<JsonElement>(stream);
+            root.TryGetProperty(lang.ToLower(CultureInfo.InvariantCulture), out var jLanguage);
+            var cache = JsonSerializer.Deserialize<CacheFileConfig>(jLanguage);
+
+            if (cache is not null &&
+                cache.Config is not null &&
+                cache.Config.Install is not null &&
+                cache.Config.Install.Count > 0)
+            {
+                var install = cache.Config.Install[0];
+                var name = "";
+                var description = "";
+                if (install.AddRemoveProgramsKey is not null)
+                    name = install.AddRemoveProgramsKey.DisplayName ?? "";
+                if (install.ProgramAssociations is not null)
+                    description = install.ProgramAssociations.ApplicationDescription ?? "";
+                return (name, description);
+            }
+        }
+        catch (Exception)
+        {
+            return ("", "");
+        }
+        return ("", "");
     }
 
     internal static string GetBattleNetPath(IFileSystem fileSystem)
