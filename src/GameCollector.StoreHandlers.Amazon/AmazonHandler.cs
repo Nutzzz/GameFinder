@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using JetBrains.Annotations;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
-using JetBrains.Annotations;
+using GameCollector.SQLiteUtils;
 using static System.Environment;
 
 namespace GameCollector.StoreHandlers.Amazon;
@@ -90,103 +93,84 @@ public class AmazonHandler : AHandler<Game, string>
     private IEnumerable<Result<Game>> ParseDatabase(string prodDb, string instDb, bool installedOnly = false)
     {
         List<Result<Game>> games = new();
-        try
+        var products = SQLiteHelpers.GetDataTable(prodDb, "SELECT * FROM DbSet;").ToList<ProductInfo>();
+        var installs = SQLiteHelpers.GetDataTable(instDb, "SELECT * FROM DbSet;").ToList<InstallInfo>();
+        if (products is null)
         {
-            using SQLiteConnection prodCon = new($"Data source={prodDb}");
-            using SQLiteConnection instCon = new($"Data source={instDb}");
-            prodCon.Open();
-            instCon.Open();
-            using SQLiteCommand prodCmd = new("SELECT " +
-                "ProductDescription, " +    // (0)
-                "ProductIconUrl, " +        // (1)
-                "ProductIdStr, " +          // (2)
-                "ProductPublisher, " +      // (3)
-                "ProductTitle, " +          // (4)
-                "DevelopersJson, " +        // (5)
-                "EsrbRating, " +            // (6)
-                "GameModesJson, " +         // (7)
-                "GenresJson, " +            // (8)
-                //"PegiRating, " +
-                "ProductLogoUrl, " +        // (9)
-                "ReleaseDate " +            // (10)
-                //"UskRating " +
-                "FROM DbSet;", prodCon);
-            using SQLiteCommand instCmd = new("SELECT " +
-                "Id, " +                    // (0)
-                "InstallDirectory, " +      // (1)
-                "ProductTitle " +           // (2)
-                "FROM DbSet;", instCon);
-            using SQLiteDataReader prodRdr = prodCmd.ExecuteReader();
-            using SQLiteDataReader instRdr = instCmd.ExecuteReader();
-            
-            while (prodRdr.Read())
-            {
-                string path = "";
-                string icon = "";
-                string uninst = "";
-                bool isInstalled = true;
-                string id = prodRdr.GetString(2);
-                string launch = "amazon-games://play/" + id;
-                while (instRdr.Read())
-                {
-                    if (instRdr.GetString(0).Equals(id, StringComparison.OrdinalIgnoreCase))
-                    {
-                        path = instRdr.GetString(1);
-                        if (string.IsNullOrEmpty(path))
-                        {
-                            isInstalled = false;
-                            break;
-                        }
-                        icon = ParseFuelFileForExe(path);
-                        Result<Game> regGame = ParseRegistryForId(_registry, id);
-                        if (regGame.Game is not null)
-                        {
-                            if (string.IsNullOrEmpty(icon))
-                                icon = regGame.Game.Icon;
-                            uninst = regGame.Game.Uninstall;
-                        }
-                    }
-                }
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    if (installedOnly)
-                    {
-                        games.Add(Result.FromError<Game>($"GameInstallInfo for {id} does not exist or have value \"InstallDirectory\" in file: {instDb}"));
-                        continue;
-                    }
-                    isInstalled = false;
-                }
-
-                Game game = new(
-                    Id: id,
-                    Name: prodRdr.GetString(4),
-                    Path: path,
-                    Launch: launch,
-                    Icon: icon,
-                    Uninstall: uninst,
-                    IsInstalled: isInstalled,
-                    Metadata: new(StringComparer.Ordinal)
-                    {
-                        ["Description"] = new() { prodRdr.GetString(0) },
-                        ["IconUrl"] = new() { prodRdr.GetString(1) },
-                        ["Publisher"] = new() { prodRdr.GetString(3) },
-                        // should massage the AgeRating to get a consistent format?
-                        ["AgeRating"] = new() { prodRdr.GetString(6) },
-                        ["Developers"] = GetJsonArray(@prodRdr.GetString(5)),
-                        ["Players"] = GetJsonArray(@prodRdr.GetString(7)),
-                        ["Genres"] = GetJsonArray(@prodRdr.GetString(8)),
-                        ["ReleaseDate"] = new() { prodRdr.GetString(10) },
-                        // should massage the ReleaseDate format (e.g., "2020-04-03T24:00:00Z") to get a valid DateTime.ToString?
-                        //["ReleaseDate"] = new() { prodRdr.GetDateTime(10).ToString(CultureInfo.InvariantCulture) },
-                    });
-                games.Add(Result.FromGame(game));
-            }
-            return games;
+            yield return Result.FromError<Game>($"Could not deserialize file {prodDb}");
+            yield break;
         }
-        catch (Exception e)
+        foreach (var product in products)
         {
-            return new[] { Result.FromException<Game>("Exception looking for Amazon games in database", e) };
+            var path = "";
+            var icon = "";
+            var uninstall = "";
+            var isInstalled = false;
+
+            var id = product.ProductIdStr;
+            if (id is null)
+            {
+                yield return Result.FromError<Game>($"Value for \"ProductIdStr\" does not exist in file {prodDb}");
+                continue;
+            }
+            var launch = "amazon-games://play/" + id;
+            if (installs is not null)
+            {
+                foreach (var install in installs)
+                {
+                    if (id.Equals(install.Id, StringComparison.Ordinal))
+                        path = install.InstallDirectory;
+                }
+            }
+            if (string.IsNullOrEmpty(path))
+            {
+                if (installedOnly)
+                {
+                    yield return Result.FromError<Game>($"Value for \"InstallDirectory\" does not exist in file {instDb}");
+                    continue;
+                }
+            }
+            else
+            {
+                isInstalled = true;
+                icon = ParseFuelFileForExe(path);
+                var regGame = ParseRegistryForId(_registry, id);
+                if (regGame.Game is not null)
+                {
+                    if (string.IsNullOrEmpty(icon))
+                        icon = regGame.Game.Icon;
+                    uninstall = regGame.Game.Uninstall;
+                }
+            }
+
+            var developers = product.DevelopersJson ?? "";
+            var players = product.GameModesJson ?? "";
+            var genres = product.GenresJson ?? "";
+            var releaseDate = product.ReleaseDate ?? "";
+            if (string.IsNullOrEmpty(releaseDate))
+                releaseDate = DateTime.MinValue.ToString(CultureInfo.InvariantCulture);
+
+            yield return Result.FromGame<Game>(new(
+                Id: id,
+                Name: product.ProductTitle ?? "",
+                Path: path,
+                Launch: launch,
+                Icon: icon,
+                Uninstall: uninstall,
+                IsInstalled: isInstalled,
+                Metadata: new(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Description"] = new() { product.ProductDescription ?? "" },
+                    ["IconUrl"] = new() { product.ProductIconUrl ?? "" },
+                    ["Publisher"] = new() { product.ProductPublisher ?? "" },
+                    // should massage the AgeRating to get a consistent format?
+                    ["AgeRating"] = new() { product.EsrbRating ?? "" },
+                    ["Developers"] = GetJsonArray(@developers),
+                    ["Players"] = GetJsonArray(@players),
+                    ["Genres"] = GetJsonArray(@genres),
+                    // should massage the ReleaseDate format (e.g., "2020-04-03T24:00:00Z") to get a valid DateTime.ToString?
+                    ["ReleaseDate"] = new() { releaseDate },
+                }));
         }
     }
 
@@ -266,19 +250,19 @@ public class AmazonHandler : AHandler<Game, string>
     {
         try
         {
-            string file = Path.Combine(dir, "fuel.json");
+            var file = Path.Combine(dir, "fuel.json");
             if (File.Exists(file))
             {
-                string strDocumentData = File.ReadAllText(file);
+                var strDocumentData = File.ReadAllText(file);
 
                 if (!string.IsNullOrEmpty(strDocumentData))
                 {
-                    using (JsonDocument document = JsonDocument.Parse(@strDocumentData, _jsonDocumentOptions))
+                    using (var document = JsonDocument.Parse(@strDocumentData, _jsonDocumentOptions))
                     {
-                        JsonElement root = document.RootElement;
-                        if (root.TryGetProperty("Main", out JsonElement main) && main.TryGetProperty("Command", out JsonElement command))
+                        var root = document.RootElement;
+                        if (root.TryGetProperty("Main", out var main) && main.TryGetProperty("Command", out var command))
                         {
-                            string? exe = command.GetString();
+                            var exe = command.GetString();
                             if (!string.IsNullOrEmpty(exe))
                                 return Path.Combine(dir, exe);
                         }
@@ -293,9 +277,9 @@ public class AmazonHandler : AHandler<Game, string>
     private List<string> GetJsonArray(string json)
     {
         List<string> list = new();
-        using (JsonDocument doc = JsonDocument.Parse(json, _jsonDocumentOptions))
+        using (var doc = JsonDocument.Parse(json, _jsonDocumentOptions))
         {
-            foreach (JsonElement element in doc.RootElement.EnumerateArray())
+            foreach (var element in doc.RootElement.EnumerateArray())
             {
                 list.Add(element.GetString() ?? "");
             }

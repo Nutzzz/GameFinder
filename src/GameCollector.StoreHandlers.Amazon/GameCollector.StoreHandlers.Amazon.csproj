@@ -15,6 +15,7 @@
     <ItemGroup>
         <ProjectReference Include="..\GameCollector.Common\GameCollector.Common.csproj" />
         <ProjectReference Include="..\GameCollector.RegistryUtils\GameCollector.RegistryUtils.csproj" />
+        <ProjectReference Include="..\GameCollector.SQLiteUtils\GameCollector.SQLiteUtils.csproj" />
     </ItemGroup>
 
     <ItemGroup>
