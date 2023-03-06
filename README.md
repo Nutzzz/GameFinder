@@ -34,6 +34,10 @@ The following launchers are not yet supported or support has been dropped:
 
 If you are interested in understanding _how_ GameCollector finds some of these games, check the upstream [GameFinder wiki](https://github.com/erri120/GameFinder/wiki) for more information.
 
+Additionally, the following Linux tools are supported:
+
+- [Wine](#wine) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Wine)](https://www.nuget.org/packages/GameFinder.Wine)
+
 ## Supported Launchers
 
 ### Steam
@@ -311,6 +315,29 @@ Finding games installed with the Bethesda.net Launcher was very rather tricky be
    - find the sub-keys that open the Bethesda Launcher with `bethesdanet://uninstall/` as an argument
 
 With this you can find all games installed via Bethesda.net. The important fields are `DisplayName`, `ProductID` (64bit value) and `Path`.
+
+## Linux tools
+
+### Wine
+
+`GameFinder.Wine` implements a `IWinePrefixManager` for finding [Wineprefixes](https://wiki.winehq.org/FAQ#Wineprefixes).
+
+**Usage**:
+
+```csharp
+var prefixManager = new DefaultWinePrefixManager(new FileSystem());
+
+foreach (var result in prefixManager.FindPrefixes())
+{
+    result.Switch(prefix =>
+    {
+        logger.LogInformation($"Found wine prefix at {prefix.ConfigurationDirectory}");
+    }, error =>
+    {
+        logger.LogError(error.Value);
+    });
+}
+```
 
 ## Contributing
 

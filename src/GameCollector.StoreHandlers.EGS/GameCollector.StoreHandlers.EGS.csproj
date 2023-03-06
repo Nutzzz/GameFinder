@@ -12,16 +12,7 @@
         <DocumentationFile>bin\Release\GameCollector.StoreHandlers.EGS.xml</DocumentationFile>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="System.IO.Abstractions" Version="19.1.18" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Roslyn.System.IO.Abstractions.Analyzers" Version="12.2.19">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('System.IO.Abstractions.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <ProjectReference Include="..\GameCollector.Common\GameCollector.Common.csproj" />

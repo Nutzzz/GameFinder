@@ -32,6 +32,15 @@ planned:
 None
 
 ## [GameFinder releases]
+## 2.6.0
+
+- removed support for `net6.0`
+- Steam: added new default installation directories:
+  - `~/.steam/debian-installation` (apparently used on Debian/Ubuntu systems)
+  - `~/.var/app/com.valvesoftware.Steam/data/Steam` (used by the flatpak installation)
+  - `~/.steam/steam` (legacy installation, links to another installation)
+
+## [Released]
 
 ## [2.5.0] - 2023-01-17
 
