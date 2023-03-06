@@ -24,6 +24,7 @@
     <ItemGroup>
       <PackageReference Include="protobuf-net" Version="3.2.0" />
       <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
-      <PackageReference Include="System.IO.Abstractions" Version="19.1.18" />
     </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('System.IO.Abstractions.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

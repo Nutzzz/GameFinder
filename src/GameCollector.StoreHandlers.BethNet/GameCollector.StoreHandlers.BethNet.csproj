@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Title>GameCollector.StoreHandlers.BethNet</Title>
-        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+        <TargetFrameworks>net7.0</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 

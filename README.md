@@ -11,6 +11,8 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 - [EA Desktop](#ea-desktop) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
 - [Epic Games Store](#epic-games-store) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
 - [GOG Galaxy](#gog-galaxy) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
+- Indiegala IGClient
+- itch
 - Riot Client
 - [Steam](#steam) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
 - Ubisoft Connect
@@ -21,8 +23,6 @@ The following launchers are not yet supported or support has been dropped:
 - Big Fish Games (WIP)
 - Game Jolt Client (WIP)
 - Humble App (WIP)
-- Indiegala IGClient (WIP)
-- itch (WIP)
 - Legacy Games Launcher (WIP)
 - Oculus (WIP)
 - [Origin](#origin) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)
@@ -36,7 +36,7 @@ If you are interested in understanding _how_ GameCollector finds some of these g
 
 Additionally, the following Linux tools are supported:
 
-- [Wine](#wine) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Wine)](https://www.nuget.org/packages/GameFinder.Wine)
+- [Wine](#wine) [![nuget](https://img.shields.io/nuget/v/GameFinder.Wine?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.Wine)
 
 ## Supported Launchers
 
@@ -219,7 +219,7 @@ Since the packages uses the Windows 10 SDK the project settings had to change to
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-     <TargetFrameworks>net6.0-windows10.0.20348.0;net7.0-windows10.0.20348.0</TargetFrameworks>
+     <TargetFrameworks>net7.0-windows10.0.20348.0</TargetFrameworks>
  </PropertyGroup>
 </Project>
 ```
@@ -320,7 +320,7 @@ With this you can find all games installed via Bethesda.net. The important field
 
 ### Wine
 
-`GameFinder.Wine` implements a `IWinePrefixManager` for finding [Wineprefixes](https://wiki.winehq.org/FAQ#Wineprefixes).
+`GameCollector.Wine` implements a `IWinePrefixManager` for finding [Wineprefixes](https://wiki.winehq.org/FAQ#Wineprefixes).
 
 **Usage**:
 

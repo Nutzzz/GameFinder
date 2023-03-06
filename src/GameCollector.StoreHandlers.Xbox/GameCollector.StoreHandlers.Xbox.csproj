@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0-windows10.0.20348.0;net7.0-windows10.0.20348.0</TargetFrameworks>
+        <TargetFrameworks>net7.0-windows10.0.20348.0</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Nutzzz, erri120</Authors>
     </PropertyGroup>
