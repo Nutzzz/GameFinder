@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace GameFinder.Wine;
+namespace GameCollector.Wine;
 
 /// <summary>
 /// Represents a wine prefix.

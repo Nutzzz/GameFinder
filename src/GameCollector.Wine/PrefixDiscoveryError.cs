@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 using Vogen;
 
-namespace GameFinder.Wine;
+namespace GameCollector.Wine;
 
 /// <summary>
 /// Represents an error encountered during prefix discovery.

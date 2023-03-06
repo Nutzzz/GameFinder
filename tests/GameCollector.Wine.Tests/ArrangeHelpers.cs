@@ -1,7 +1,7 @@
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 
-namespace GameFinder.Wine.Tests;
+namespace GameCollector.Wine.Tests;
 
 public partial class WineTests
 {

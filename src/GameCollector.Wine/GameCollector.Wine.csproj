@@ -5,11 +5,11 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <DocumentationFile>bin\Debug\GameFinder.Wine.xml</DocumentationFile>
+        <DocumentationFile>bin\Debug\GameCollector.Wine.xml</DocumentationFile>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DocumentationFile>bin\Release\GameFinder.Wine.xml</DocumentationFile>
+        <DocumentationFile>bin\Release\GameCollector.Wine.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +20,6 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove('System.IO.Abstractions.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
-        <InternalsVisibleTo Include="GameFinder.Wine.Tests" />
+        <InternalsVisibleTo Include="GameCollector.Wine.Tests" />
     </ItemGroup>
 </Project>
