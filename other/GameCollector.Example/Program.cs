@@ -22,6 +22,7 @@ using GameCollector.StoreHandlers.Riot;
 using GameCollector.StoreHandlers.Steam;
 using GameCollector.StoreHandlers.Ubisoft;
 //using GameCollector.StoreHandlers.Xbox;
+using GameCollector.Wine;
 /*
 using GameCollector.StoreHandlers.BigFish;
 using GameCollector.StoreHandlers.GameJolt;
@@ -234,6 +235,28 @@ public static class Program
             }
         }
 
+        if (options.Wine)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                logger.LogError("Wine is only supported on Linux!");
+            }
+            else
+            {
+                var prefixManager = new DefaultWinePrefixManager(new FileSystem());
+                foreach (var result in prefixManager.FindPrefixes())
+                {
+                    result.Switch(prefix =>
+                    {
+                        logger.LogInformation($"Found wine prefix at {prefix.ConfigurationDirectory}");
+                    }, error =>
+                    {
+                        logger.LogError(error.Value);
+                    });
+                }
+            }
+        }
+        
         /*
         if (options.BethNet)
         {

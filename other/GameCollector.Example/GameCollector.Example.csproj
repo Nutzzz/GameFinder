@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Amazon\GameCollector.StoreHandlers.Amazon.csproj" />
-        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Arc\GameCollector.StoreHandlers.Arc.csproj" />
-        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.BattleNet\GameCollector.StoreHandlers.BattleNet.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.EADesktop\GameCollector.StoreHandlers.EADesktop.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.EGS\GameCollector.StoreHandlers.EGS.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.GOG\GameCollector.StoreHandlers.GOG.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Origin\GameCollector.StoreHandlers.Origin.csproj" />
-        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Riot\GameCollector.StoreHandlers.Riot.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Steam\GameCollector.StoreHandlers.Steam.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Amazon\GameCollector.StoreHandlers.Amazon.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Arc\GameCollector.StoreHandlers.Arc.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.BattleNet\GameCollector.StoreHandlers.BattleNet.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Riot\GameCollector.StoreHandlers.Riot.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Ubisoft\GameCollector.StoreHandlers.Ubisoft.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.Wine\GameCollector.Wine.csproj" />
 		<!--
 		<ProjectReference Include="..\..\src\GameCollector.StoreHandlers.BethNet\GameCollector.StoreHandlers.BethNet.csproj" />
 		<ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Xbox\GameCollector.StoreHandlers.Xbox.csproj" />

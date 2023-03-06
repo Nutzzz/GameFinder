@@ -70,6 +70,9 @@ namespace GameCollector.Example
         [Option("wargaming", HelpText = "Search for Wargaming.net games [in progress]")]
         public bool WargamingNet { get; set; } = false;
 
+        [Option("wine", HelpText = "Search for wine prefixes")]
+        public bool Wine { get; set; } = true;
+
         [Option("xbox", HelpText = "Search for Xbox/Microsoft Store UWP apps/games [deprecated]")]
         public bool Xbox { get; set; } = false;
     }
