@@ -350,8 +350,7 @@ public class SteamHandler : AHandler<Game, string>
             );
 
             var id = appId.ToString(CultureInfo.InvariantCulture);
-            string? icon = "";
-            string? uninst = "";
+            var icon = "";
             if (registry is not null)
             {
                 var localMachine64 = registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
@@ -360,13 +359,12 @@ public class SteamHandler : AHandler<Game, string>
                 using var subKey32 = localMachine32.OpenSubKey(fileSystem.Path.Combine(UninstallRegKey, "Steam App " + id));
                 if (subKey64 is not null)
                 {
-                    icon = subKey64.GetString("DisplayIcon");
+                    icon = subKey64.GetString("DisplayIcon") ?? "";
                 }
                 if (string.IsNullOrEmpty(icon) && subKey32 is not null)
                 {
-                    icon = subKey32.GetString("DisplayIcon");
+                    icon = subKey32.GetString("DisplayIcon") ?? "";
                 }
-                icon ??= "";
             }
 
             return Result.FromGame(new Game(

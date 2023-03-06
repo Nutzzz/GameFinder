@@ -273,16 +273,15 @@ public class EADesktopHandler : AHandler<Game, string>
                 sRegKey = executableCheck.Substring(1, j - 1);
             executable = fileSystem.Path.Combine(baseInstallPath, executableCheck[(j + 1)..]);
         }
-        string? uninstall = "";
+        var uninstall = "";
+        var uninstallArgs = "";
         var localUninstallProperties = installInfo.LocalUninstallProperties;
         if (localUninstallProperties.TryGetProperty("uninstallCommand", out JsonElement jUninstall))
         {
-            uninstall = "\"" + jUninstall.GetString() + "\"";
+            uninstall = jUninstall.GetString() ?? "";
             if (localUninstallProperties.TryGetProperty("uninstallParameters", out JsonElement jUninstParam))
             {
-                string? uninstParam = jUninstParam.GetString();
-                if (!string.IsNullOrEmpty(uninstParam))
-                    uninstall += " " + uninstParam;
+                uninstallArgs = jUninstParam.GetString() ?? "";
             }
         }
         string? name = "";
@@ -312,6 +311,7 @@ public class EADesktopHandler : AHandler<Game, string>
             Launch: executable,
             Icon: executable,
             Uninstall: uninstall,
+            UninstallArgs: uninstallArgs,
             IsInstalled: isInstalled,
             Metadata: new(StringComparer.OrdinalIgnoreCase) { ["baseSlug"] = new() { baseSlug } });
 

@@ -15,9 +15,16 @@
     <ItemGroup>
         <ProjectReference Include="..\GameCollector.Common\GameCollector.Common.csproj" />
         <ProjectReference Include="..\GameCollector.RegistryUtils\GameCollector.RegistryUtils.csproj" />
+        <ProjectReference Include="..\GameCollector.SQLiteUtils\GameCollector.SQLiteUtils.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.StoreHandlers.Itch.Tests" />
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('System.IO.Abstractions.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

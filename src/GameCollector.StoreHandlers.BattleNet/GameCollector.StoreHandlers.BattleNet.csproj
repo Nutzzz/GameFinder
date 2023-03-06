@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="protobuf-net" Version="3.2.0" />
+      <PackageReference Include="protobuf-net" Version="3.2.12" />
       <PackageReference Include="System.Data.SQLite.Core" Version="1.0.117" />
     </ItemGroup>
 

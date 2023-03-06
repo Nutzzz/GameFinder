@@ -34,11 +34,11 @@ namespace GameCollector.Example
         [Option("humble", HelpText = "Search for Humble games [in progress]")]
         public bool Humble { get; set; } = false;
 
-        [Option("indiegala", HelpText = "Search for Indiegala games [in progress]")]
-        public bool Indiegala { get; set; } = false;
+        [Option("igclient", HelpText = "Search for Indiegala IGClient games")]
+        public bool IGClient { get; set; } = true;
 
-        [Option("itch", HelpText = "Search for itch games [in progress]")]
-        public bool Itch { get; set; } = false;
+        [Option("itch", HelpText = "Search for itch games")]
+        public bool Itch { get; set; } = true;
 
         [Option("legacy", HelpText = "Search for Legacy games [in progress]")]
         public bool Legacy { get; set; } = false;

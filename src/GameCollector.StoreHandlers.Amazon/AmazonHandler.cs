@@ -92,7 +92,6 @@ public class AmazonHandler : AHandler<Game, string>
 
     private IEnumerable<Result<Game>> ParseDatabase(string prodDb, string instDb, bool installedOnly = false)
     {
-        List<Result<Game>> games = new();
         var products = SQLiteHelpers.GetDataTable(prodDb, "SELECT * FROM DbSet;").ToList<ProductInfo>();
         var installs = SQLiteHelpers.GetDataTable(instDb, "SELECT * FROM DbSet;").ToList<InstallInfo>();
         if (products is null)
@@ -143,6 +142,8 @@ public class AmazonHandler : AHandler<Game, string>
                 }
             }
 
+            var ageRating = 0;
+            var esrb = product.EsrbRating ?? "";
             var developers = product.DevelopersJson ?? "";
             var players = product.GameModesJson ?? "";
             var genres = product.GenresJson ?? "";
@@ -164,7 +165,7 @@ public class AmazonHandler : AHandler<Game, string>
                     ["IconUrl"] = new() { product.ProductIconUrl ?? "" },
                     ["Publisher"] = new() { product.ProductPublisher ?? "" },
                     // should massage the AgeRating to get a consistent format?
-                    ["AgeRating"] = new() { product.EsrbRating ?? "" },
+                    ["AgeRating"] = new() { ageRating.ToString() },
                     ["Developers"] = GetJsonArray(@developers),
                     ["Players"] = GetJsonArray(@players),
                     ["Genres"] = GetJsonArray(@genres),
@@ -286,7 +287,6 @@ public class AmazonHandler : AHandler<Game, string>
         }
         return list;
     }
-
 
     private static Result<Game> ParseSubKey(IRegistryKey unKey, string subKeyName, string id = "")
     {

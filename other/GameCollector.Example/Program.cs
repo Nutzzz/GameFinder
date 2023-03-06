@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using CommandLine;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
-using GameCollector.StoreHandlers;
 using GameCollector.StoreHandlers.Amazon;
 using GameCollector.StoreHandlers.Arc;
 using GameCollector.StoreHandlers.BattleNet;
@@ -17,6 +17,8 @@ using GameCollector.StoreHandlers.EADesktop.Crypto;
 using GameCollector.StoreHandlers.EADesktop.Crypto.Windows;
 using GameCollector.StoreHandlers.EGS;
 using GameCollector.StoreHandlers.GOG;
+using GameCollector.StoreHandlers.IGClient;
+using GameCollector.StoreHandlers.Itch;
 using GameCollector.StoreHandlers.Origin;
 using GameCollector.StoreHandlers.Riot;
 using GameCollector.StoreHandlers.Steam;
@@ -27,8 +29,6 @@ using GameCollector.Wine;
 using GameCollector.StoreHandlers.BigFish;
 using GameCollector.StoreHandlers.GameJolt;
 using GameCollector.StoreHandlers.Humble;
-using GameCollector.StoreHandlers.IGClient;
-using GameCollector.StoreHandlers.Itch;
 using GameCollector.StoreHandlers.Legacy;
 using GameCollector.StoreHandlers.Oculus;
 using GameCollector.StoreHandlers.Paradox;
@@ -74,16 +74,20 @@ public static class Program
     {
         if (File.Exists("log.log")) File.Delete("log.log");
 
-        options.Amazon = true;      // NEW
-        options.Arc = true;         // NEW
-        options.BattleNet = true;   // NEW
+        /*
+        options.Amazon = false;      // NEW
+        options.Arc = false;         // NEW
+        options.BattleNet = false;   // NEW
         options.EADesktop = false;
         options.EGS = false;
         options.GOG = false;
+        options.IGClient = true;     // NEWEST
+        options.Itch = true;         // NEWEST
         options.Origin = false;
-        options.Riot = true;        // NEW
+        options.Riot = false;        // NEW
         options.Steam = false;
-        options.Ubisoft = true;     // NEW
+        options.Ubisoft = false;     // NEW
+        */
 
         if (options.Amazon)
         {
@@ -176,6 +180,36 @@ public static class Program
                 var handler = new GOGHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors("GOG", results, logger);
+            }
+        }
+
+        if (options.IGClient)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Indiegala IGClient is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Indiegala IGClient");
+                var handler = new IGClientHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors("IGClient", results, logger);
+            }
+        }
+
+        if (options.Itch)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* itch is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* itch");
+                var handler = new ItchHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors("Itch", results, logger);
             }
         }
 
@@ -332,36 +366,6 @@ public static class Program
                 var handler = new HumbleHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors("Humble", results, logger);
-            }
-        }
-
-        if (options.IGClient)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                logger.LogError("* Indiegala Client is only supported on Windows!");
-            }
-            else
-            {
-                logger.LogDebug("* Indiegala Client");
-                var handler = new IGClientHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors("IGClient", results, logger);
-            }
-        }
-
-        if (options.Itch)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                logger.LogError("* itch is only supported on Windows!");
-            }
-            else
-            {
-                logger.LogDebug("* itch");
-                var handler = new ItchHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors("Itch", results, logger);
             }
         }
 

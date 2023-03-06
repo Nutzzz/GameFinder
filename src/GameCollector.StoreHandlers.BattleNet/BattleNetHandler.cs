@@ -216,7 +216,7 @@ public class BattleNetHandler : AHandler<Game, string>
         }
         catch (Exception e)
         {
-            return ($"Unable to deserialize file {dataFile.FullName}\n" + e.Message + "\n" + e.InnerException, "", "", "", "", "");
+            return ($"Exception while deserializing file {dataFile.FullName}\n{e.Message}\n{e.InnerException}", "", "", "", "", "");
         }
 
         return (null, id, name, path, exe, description);

@@ -140,12 +140,14 @@ public class RiotHandler : AHandler<Game, string>
             if (product.Contains('.', StringComparison.Ordinal))
                 product = product[..product.IndexOf('.', StringComparison.Ordinal)].ToLower(CultureInfo.InvariantCulture);
 
-            string launch = '\"' + clientPath + "\" --launch-product=" + product;
-            string uninstall = '\"' + clientPath + "\" --uninstall-product=" + product;
+            string launch = clientPath;
+            string launchArgs = "--launch-product=" + product;
+            string uninstall = clientPath;
+            string uninstallArgs = "--uninstall-product=" + product;
             if (settingsFile.Name.Contains(".live.", StringComparison.OrdinalIgnoreCase))
             {
-                launch += " --launch-patchline=live";
-                uninstall += " --uninstall-patchline=live";
+                launchArgs += " --launch-patchline=live";
+                uninstallArgs += " --uninstall-patchline=live";
             }
 
             string icon = "";
@@ -165,8 +167,10 @@ public class RiotHandler : AHandler<Game, string>
                 Name: Path.GetFileNameWithoutExtension(game.ShortcutName ?? ""),
                 Path: game.ProductInstallFullPath ?? "",
                 Launch: launch,
+                LaunchArgs: launchArgs,
                 Icon: icon,
                 Uninstall: uninstall,
+                UninstallArgs: uninstallArgs,
                 Metadata: new(StringComparer.OrdinalIgnoreCase)));
         }
         catch (Exception e)

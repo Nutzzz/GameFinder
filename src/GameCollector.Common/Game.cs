@@ -11,8 +11,10 @@ namespace GameCollector.Common;
 /// <param name="Name"></param>
 /// <param name="Path"></param>
 /// <param name="Launch"></param>
+/// <param name="LaunchArgs"></param>
 /// <param name="Icon"></param>
 /// <param name="Uninstall"></param>
+/// <param name="UninstallArgs"></param>
 /// <param name="LastRunDate"></param>
 /// <param name="IsInstalled"></param>
 /// <param name="Metadata"></param>
@@ -22,8 +24,10 @@ public record Game(
     string Name,
     string Path,
     string Launch = "",
+    string LaunchArgs = "",
     string Icon = "",
     string Uninstall = "",
+    string UninstallArgs = "",
     DateTime? LastRunDate = null,
     bool IsInstalled = true,
     Dictionary<string, List<string>>? Metadata = null);
