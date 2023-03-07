@@ -17,13 +17,14 @@ namespace GameCollector.StoreHandlers.Riot;
 
 /// <summary>
 /// Handler for finding games installed with Riot Client.
+/// Uses json file:
+///   %ProgramData%\Riot Games\RiotClientInstalls.json
+/// and yaml files:
+///   %ProgramData%\Riot Games\Metadata\*\*settings.yaml
 /// </summary>
 [PublicAPI]
 public class RiotHandler : AHandler<Game, string>
 {
-    internal const string RiotRegKey = @"Software\Perfect World Entertainment\Core";
-
-    private readonly IRegistry _registry;
     private readonly IFileSystem _fileSystem;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions =
@@ -33,28 +34,17 @@ public class RiotHandler : AHandler<Game, string>
         };
 
     /// <summary>
-    /// Default constructor. This uses the <see cref="WindowsRegistry"/> implementation of
-    /// <see cref="IRegistry"/> and the real file system with <see cref="FileSystem"/>.
+    /// Default constructor that uses the real filesystem <see cref="FileSystem"/>.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public RiotHandler() : this(new WindowsRegistry(), new FileSystem()) { }
+    public RiotHandler() : this(new FileSystem()) { }
 
     /// <summary>
-    /// Constructor for specifying the implementation of <see cref="IRegistry"/>. This uses
-    /// the real file system with <see cref="FileSystem"/>.
+    /// Constructor for specifying the <see cref="IFileSystem"/> implementation to use.
     /// </summary>
-    /// <param name="registry"></param>
-    public RiotHandler(IRegistry registry) : this(registry, new FileSystem()) { }
-
-    /// <summary>
-    /// Constructor for specifying the implementation of <see cref="IRegistry"/> and
-    /// <see cref="IFileSystem"/> when doing tests.
-    /// </summary>
-    /// <param name="registry"></param>
     /// <param name="fileSystem"></param>
-    public RiotHandler(IRegistry registry, IFileSystem fileSystem)
+    public RiotHandler(IFileSystem fileSystem)
     {
-        _registry = registry;
         _fileSystem = fileSystem;
     }
 
@@ -78,7 +68,7 @@ public class RiotHandler : AHandler<Game, string>
             clientPath = client.RcLive;
 
         var settingsFiles = metaDir
-            .EnumerateFiles("*.yaml", SearchOption.AllDirectories)
+            .EnumerateFiles("*settings.yaml", SearchOption.AllDirectories)
             .ToArray();
 
         if (settingsFiles.Length == 0)
