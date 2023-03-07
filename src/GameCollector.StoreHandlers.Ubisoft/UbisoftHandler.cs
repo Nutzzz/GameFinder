@@ -17,6 +17,10 @@ namespace GameCollector.StoreHandlers.Ubisoft;
 
 /// <summary>
 /// Handler for finding games installed with Ubisoft Connect.
+/// Uses registry:
+///   HKLM32\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+/// And yaml file:
+///   .\cache\configuration\configurations
 /// </summary>
 [PublicAPI]
 public class UbisoftHandler : AHandler<Game, string>

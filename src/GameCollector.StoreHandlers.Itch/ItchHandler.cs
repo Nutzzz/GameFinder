@@ -18,12 +18,12 @@ namespace GameCollector.StoreHandlers.Itch;
 
 /// <summary>
 /// Handler for finding games installed with itch.
+/// Uses SQLite database:
+///   %AppData%\itch\db\butler.db
 /// </summary>
 [PublicAPI]
 public class ItchHandler : AHandler<Game, string>
 {
-    internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
-
     private readonly IFileSystem _fileSystem;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions =

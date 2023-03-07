@@ -15,6 +15,11 @@ namespace GameCollector.StoreHandlers.BattleNet;
 
 /// <summary>
 /// Handler for finding games installed with Blizzard Battle.net.
+/// Uses Protobuf database:
+///   %ProgramData%\Battle.net\Agent\product.db
+/// and json files:
+///   %ProgramData%\Battle.net\Agent\data\cache\??\??\*.
+///   %AppData%\Battle.net\Battle.net.config
 /// </summary>
 [PublicAPI]
 public class BattleNetHandler : AHandler<Game, string>
@@ -60,7 +65,7 @@ public class BattleNetHandler : AHandler<Game, string>
             yield break;
         }
         var cfgFile = _fileSystem.FileInfo.New(
-            _fileSystem.Path.Combine(GetBattleNetPath(_fileSystem), "Battle.net.config"));
+            _fileSystem.Path.Combine(GetFolderPath(SpecialFolder.ApplicationData), "Battle.net", "Battle.net.config"));
         var uninstallExe = _fileSystem.FileInfo.New(
             _fileSystem.Path.Combine(GetBattleNetPath(_fileSystem), "Agent", "Blizzard Uninstaller.exe"));
 

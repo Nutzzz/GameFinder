@@ -12,6 +12,8 @@ namespace GameCollector.StoreHandlers.Arc;
 
 /// <summary>
 /// Handler for finding games installed with Arc.
+/// Uses Registry key:
+///   HKLM32\SOFTWARE\Perfect World Entertainment\Core
 /// </summary>
 [PublicAPI]
 public class ArcHandler : AHandler<Game, string>
