@@ -87,7 +87,7 @@ public class UbisoftHandler : AHandler<Game, string>
         List<string> ubiIds = new();
         foreach (var subKeyName in subKeyNames)
         {
-            yield return ParseSubKey(unKey, subKeyName, out string? iconId);
+            yield return ParseSubKey(unKey, subKeyName, _fileSystem, out var iconId);
             if (iconId is not null)
                 ubiIds.Add(iconId);
 
@@ -103,18 +103,18 @@ public class UbisoftHandler : AHandler<Game, string>
 
         // Get owned but not-installed games
 
-        var configFile = _fileSystem.FileInfo.New(Path.Combine(launcherPath, @"cache\configuration\configurations"));
+        var configFile = _fileSystem.FileInfo.New(_fileSystem.Path.Combine(launcherPath, @"cache\configuration\configurations"));
         if (configFile.Exists)
         {
             // This file is mostly yaml text, but there is binary before each entry that I attempt to strip out
             // Each entry is expected to start with "version:" (schema)
-            using var stream = new FileStream(configFile.FullName, FileMode.Open, FileAccess.Read);
+            using var stream = _fileSystem.FileStream.New(configFile.FullName, FileMode.Open, FileAccess.Read);
             using var reader = new StreamReader(stream, Encoding.UTF8);
             List<string> input = new();
             do
             {
-                bool parse = false;
-                string? line = reader.ReadLine();
+                var parse = false;
+                var line = reader.ReadLine();
 
                 while (!reader.EndOfStream)
                 {
@@ -129,7 +129,7 @@ public class UbisoftHandler : AHandler<Game, string>
                         line = line[line.IndexOf("version: ", StringComparison.Ordinal)..];
                         /*
                         var sVersion = line[(line.IndexOf("version: ", StringComparison.Ordinal) + 9)..];
-                        if (decimal.TryParse(sVersion, out var version) &&
+                        if (decimal.TryParse(sVersion, CultureInfo.InvariantCulture, out var version) &&
                             version < SupportedSchemaVersion)
                         {
                             var (schemaMessage, isSchemaError) = CreateSchemaVersionMessage(SchemaPolicy, version, configFile.FullName);
@@ -160,7 +160,7 @@ public class UbisoftHandler : AHandler<Game, string>
                 }
                 if (parse)
                 {
-                    yield return ParseConfigFile(string.Join('\n', input), launcherPath, _registry, ubiIds);
+                    yield return ParseConfigFile(string.Join('\n', input), launcherPath, _registry, _fileSystem, ubiIds);
                 }
                 input = new();
                 if (line is not null &&
@@ -183,15 +183,15 @@ public class UbisoftHandler : AHandler<Game, string>
         return games.CustomToDictionary(game => game.Id, game => game);
     }
 
-    private static Result<Game> ParseConfigFile(string input, string launcherPath, IRegistry registry, List<string> ubiIds)
+    private static Result<Game> ParseConfigFile(string input, string launcherPath, IRegistry registry, IFileSystem fileSystem, List<string> ubiIds)
     {
-        string id = "";
-        string name = "";
-        string path = "";
-        string launch = "";
-        string icon = "";
-        string iconFile = "";
-        bool isInstalled = false;
+        var id = "";
+        var name = "";
+        var path = "";
+        var launch = "";
+        var icon = "";
+        var iconFile = "";
+        var isInstalled = false;
 
         try
         {
@@ -270,7 +270,7 @@ public class UbisoftHandler : AHandler<Game, string>
             {
                 if (string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(id))
                     name = id;
-                id = Path.GetFileNameWithoutExtension(iconFile);
+                id = fileSystem.Path.GetFileNameWithoutExtension(iconFile);
                 if (ubiIds.Contains(id, StringComparer.OrdinalIgnoreCase))
                     return Result.FromError<Game>($"{name} was already found!");
             }
@@ -300,14 +300,14 @@ public class UbisoftHandler : AHandler<Game, string>
                             using var regKey = hive32.OpenSubKey(sRegKey);
                             if (regKey is not null)
                             {
-                                var value = regKey.GetValue(Path.GetFileName(sRegistry));
+                                var value = regKey.GetValue(fileSystem.Path.GetFileName(sRegistry));
                                 if (value is not null)
                                 {
                                     path = value.ToString() ?? "";
                                     var configExe = configGame.Executables[0].Path;
                                     if (configExe is not null && configExe.Relative is not null)
-                                        launch = Path.Combine(path, configExe.Relative);
-                                    if (File.Exists(launch))
+                                        launch = fileSystem.Path.Combine(path, configExe.Relative);
+                                    if (fileSystem.File.Exists(launch))
                                         isInstalled = true;
                                 }
 
@@ -404,7 +404,7 @@ public class UbisoftHandler : AHandler<Game, string>
         };
     }
 
-    private static Result<Game> ParseSubKey(IRegistryKey unKey, string subKeyName, out string? sId)
+    private static Result<Game> ParseSubKey(IRegistryKey unKey, string subKeyName, IFileSystem fileSystem, out string? sId)
     {
         sId = "";
         try
@@ -431,11 +431,13 @@ public class UbisoftHandler : AHandler<Game, string>
                 return Result.FromError<Game>($"{subKey.GetName()} doesn't have a string value \"DisplayName\"");
             }
 
-            string launch = "uplay://launch/" + id.ToString(CultureInfo.InvariantCulture);
-            if (!subKey.TryGetString("DisplayIcon", out var icon)) icon = "";
+            var launch = "uplay://launch/" + id.ToString(CultureInfo.InvariantCulture);
+            if (!subKey.TryGetString("DisplayIcon", out var icon))
+                icon = "";
             if (icon.EndsWith(".ico", StringComparison.OrdinalIgnoreCase))
-                sId = Path.GetFileNameWithoutExtension(icon);
-            if (!subKey.TryGetString("UninstallString", out var uninstall)) uninstall = "";
+                sId = fileSystem.Path.GetFileNameWithoutExtension(icon);
+            if (!subKey.TryGetString("UninstallString", out var uninstall))
+                uninstall = "";
 
             return Result.FromGame(new Game(
                 Id: sId,

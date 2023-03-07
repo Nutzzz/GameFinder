@@ -51,7 +51,7 @@ public class ItchHandler : AHandler<Game, string>
     public override IEnumerable<Result<Game>> FindAllGames(bool installedOnly = false)
     {
         var database = _fileSystem.Path.Combine(GetDatabaseFilePath(_fileSystem));
-        if (!File.Exists(database))
+        if (!_fileSystem.File.Exists(database))
         {
             yield return Result.FromError<Game>($"The database file {database} does not exist!");
             yield break;

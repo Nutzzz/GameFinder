@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Data;
+using System.Globalization;
 using JetBrains.Annotations;
 
 namespace GameCollector.SQLiteUtils;
@@ -41,7 +42,7 @@ public static class SQLiteHelpers
                         var ColumnName = prop.Name;
 
                         //Get a list of all of the attributes on the property
-                        var attrs = prop.GetCustomAttributes(true);
+                        var attrs = prop.GetCustomAttributes(inherit: true);
                         foreach (var attr in attrs)
                         {
                             //Check if there is a custom property name
@@ -56,7 +57,7 @@ public static class SQLiteHelpers
                         var propertyInfo = obj.GetType().GetProperty(prop.Name);
 
                         //GET THE COLUMN NAME OFF THE ATTRIBUTE OR THE NAME OF THE PROPERTY
-                        propertyInfo?.SetValue(obj, Convert.ChangeType(row[ColumnName], propertyInfo.PropertyType), index: null);
+                        propertyInfo?.SetValue(obj, Convert.ChangeType(row[ColumnName], propertyInfo.PropertyType, CultureInfo.InvariantCulture), index: null);
                     }
                     catch
                     {

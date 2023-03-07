@@ -59,17 +59,28 @@ public class AmazonHandler : AHandler<Game, string>
             AllowTrailingCommas = true,
         };
 
+    private enum AzEsrbRating
+    {
+        NO_RATING = -1,
+        everyone = 1,
+        everyone_10_plus,
+        teen,
+        mature,
+        adults_only,    // TODO: Confirm this; I don't own any Adults Only games from Amazon, so this name is a guess
+        rating_pending,
+    }
+
     /// <inheritdoc/>
     public override IEnumerable<Result<Game>> FindAllGames(bool installedOnly = false)
     {
         var prodDb = _fileSystem.Path.Combine(GetDatabasePath(_fileSystem), "GameProductInfo.sqlite");
         var instDb = _fileSystem.Path.Combine(GetDatabasePath(_fileSystem), "GameInstallInfo.sqlite");
-        if (!File.Exists(prodDb))
+        if (!_fileSystem.File.Exists(prodDb))
         {
             yield return Result.FromError<Game>($"The database file {prodDb} does not exist!");
             yield break;
         }
-        if (!File.Exists(instDb))
+        if (!_fileSystem.File.Exists(instDb))
         {
             yield return Result.FromError<Game>($"The database file {instDb} does not exist!");
             yield break;
@@ -112,7 +123,7 @@ public class AmazonHandler : AHandler<Game, string>
                 yield return Result.FromError<Game>($"Value for \"ProductIdStr\" does not exist in file {prodDb}");
                 continue;
             }
-            var launch = "amazon-games://play/" + id;
+            
             if (installs is not null)
             {
                 foreach (var install in installs)
@@ -121,6 +132,7 @@ public class AmazonHandler : AHandler<Game, string>
                         path = install.InstallDirectory;
                 }
             }
+
             if (string.IsNullOrEmpty(path))
             {
                 if (installedOnly)
@@ -142,14 +154,13 @@ public class AmazonHandler : AHandler<Game, string>
                 }
             }
 
-            var ageRating = 0;
-            var esrb = product.EsrbRating ?? "";
+            var launch = "amazon-games://play/" + id;
+            _ = Enum.TryParse(product.EsrbRating ?? "NO_RATING", out AzEsrbRating ageRating);
             var developers = product.DevelopersJson ?? "";
             var players = product.GameModesJson ?? "";
             var genres = product.GenresJson ?? "";
-            var releaseDate = product.ReleaseDate ?? "";
-            if (string.IsNullOrEmpty(releaseDate))
-                releaseDate = DateTime.MinValue.ToString(CultureInfo.InvariantCulture);
+            var releaseDate = product.ReleaseDate ?? DateTime.MinValue.ToString(CultureInfo.InvariantCulture);
+            _ = DateTime.TryParseExact(releaseDate, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dtReleaseDate);
 
             yield return Result.FromGame<Game>(new(
                 Id: id,
@@ -164,13 +175,12 @@ public class AmazonHandler : AHandler<Game, string>
                     ["Description"] = new() { product.ProductDescription ?? "" },
                     ["IconUrl"] = new() { product.ProductIconUrl ?? "" },
                     ["Publisher"] = new() { product.ProductPublisher ?? "" },
-                    // should massage the AgeRating to get a consistent format?
                     ["AgeRating"] = new() { ageRating.ToString() },
                     ["Developers"] = GetJsonArray(@developers),
                     ["Players"] = GetJsonArray(@players),
                     ["Genres"] = GetJsonArray(@genres),
                     // should massage the ReleaseDate format (e.g., "2020-04-03T24:00:00Z") to get a valid DateTime.ToString?
-                    ["ReleaseDate"] = new() { releaseDate },
+                    ["ReleaseDate"] = new() { dtReleaseDate.ToString(CultureInfo.InvariantCulture) ?? "" },
                 }));
         }
     }
@@ -251,10 +261,10 @@ public class AmazonHandler : AHandler<Game, string>
     {
         try
         {
-            var file = Path.Combine(dir, "fuel.json");
-            if (File.Exists(file))
+            var file = _fileSystem.Path.Combine(dir, "fuel.json");
+            if (_fileSystem.File.Exists(file))
             {
-                var strDocumentData = File.ReadAllText(file);
+                var strDocumentData = _fileSystem.File.ReadAllText(file);
 
                 if (!string.IsNullOrEmpty(strDocumentData))
                 {
@@ -265,7 +275,7 @@ public class AmazonHandler : AHandler<Game, string>
                         {
                             var exe = command.GetString();
                             if (!string.IsNullOrEmpty(exe))
-                                return Path.Combine(dir, exe);
+                                return _fileSystem.Path.Combine(dir, exe);
                         }
                     }
                 }

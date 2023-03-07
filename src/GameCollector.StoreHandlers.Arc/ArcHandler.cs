@@ -84,7 +84,7 @@ public class ArcHandler : AHandler<Game, string>
                 return Result.FromError<Game>($"Unable to open {arcKey}\\{subKeyName}");
             }
 
-            int i = subKeyName.IndexOf("en", StringComparison.OrdinalIgnoreCase);
+            var i = subKeyName.IndexOf("en", StringComparison.OrdinalIgnoreCase);
             if (i < 2)
             {
                 return Result.FromError<Game>($"The subkey name of {subKey.GetName()} does not end in \"en\"");
@@ -101,7 +101,7 @@ public class ArcHandler : AHandler<Game, string>
                 return Result.FromError<Game>($"{subKey.GetName()} doesn't have a string value \"INSTALL_PATH\"");
             }
 
-            string name = "";
+            var name = "";
             if (path.Contains("_en", StringComparison.OrdinalIgnoreCase))
             {
                 name = Path.GetFileName(path[..path.IndexOf("_en", StringComparison.OrdinalIgnoreCase)]);

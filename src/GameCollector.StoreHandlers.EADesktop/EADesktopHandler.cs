@@ -225,7 +225,7 @@ public class EADesktopHandler : AHandler<Game, string>
 
     internal static Result<Game> InstallInfoToGame(InstallInfo installInfo, int i, string installInfoFilePath, IRegistry registry, IFileSystem fileSystem, bool installedOnly = true)
     {
-        bool isInstalled = true;
+        var isInstalled = true;
         var num = i.ToString(CultureInfo.InvariantCulture);
 
         if (string.IsNullOrEmpty(installInfo.SoftwareID))
@@ -264,8 +264,8 @@ public class EADesktopHandler : AHandler<Game, string>
         var executableCheck = installInfo.ExecutableCheck;
         if (string.IsNullOrEmpty(executableCheck))
             executableCheck = "";
-        string executable = "";
-        string sRegKey = "";
+        var executable = "";
+        var sRegKey = "";
         if (executableCheck.StartsWith('['))
         {
             int j = executableCheck.IndexOf(']');

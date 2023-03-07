@@ -46,23 +46,23 @@ public class BattleNetHandler : AHandler<Game, string>
     public override IEnumerable<Result<Game>> FindAllGames(bool installedOnly = false)
     {
         var dataPath = _fileSystem.DirectoryInfo.New(
-            Path.Combine(GetBattleNetPath(_fileSystem), "Agent", "data", "cache"));
+            _fileSystem.Path.Combine(GetBattleNetPath(_fileSystem), "Agent", "data", "cache"));
         if (!dataPath.Exists)
         {
             yield return Result.FromError<Game>($"The data directory {dataPath.FullName} does not exist!");
             yield break;
         }
         var dbFile = _fileSystem.FileInfo.New(
-            Path.Combine(GetBattleNetPath(_fileSystem), "Agent", "product.db"));
+            _fileSystem.Path.Combine(GetBattleNetPath(_fileSystem), "Agent", "product.db"));
         if (!dbFile.Exists)
         {
             yield return Result.FromError<Game>($"The database file {dbFile.FullName} does not exist!");
             yield break;
         }
         var cfgFile = _fileSystem.FileInfo.New(
-            Path.Combine(GetBattleNetPath(_fileSystem), "Battle.net.config"));
+            _fileSystem.Path.Combine(GetBattleNetPath(_fileSystem), "Battle.net.config"));
         var uninstallExe = _fileSystem.FileInfo.New(
-            Path.Combine(GetBattleNetPath(_fileSystem), "Agent", "Blizzard Uninstaller.exe"));
+            _fileSystem.Path.Combine(GetBattleNetPath(_fileSystem), "Agent", "Blizzard Uninstaller.exe"));
 
         var dataFiles = dataPath
             .EnumerateFiles("*.", SearchOption.AllDirectories)
@@ -113,10 +113,10 @@ public class BattleNetHandler : AHandler<Game, string>
 
             var uninstall = $"\"{uninstallExe}\" --lang={lang} --uid={id} --displayname=\"{name}\"";
             if (!string.IsNullOrEmpty(path))
-                installPath = Path.Combine(installPath, path);
+                installPath = _fileSystem.Path.Combine(installPath, path);
             var launch = "";
             if (!string.IsNullOrEmpty(exe))
-                launch = Path.Combine(installPath, exe);
+                launch = _fileSystem.Path.Combine(installPath, exe);
 
             return Result.FromGame(new Game(
                 Id: id,
@@ -263,7 +263,7 @@ public class BattleNetHandler : AHandler<Game, string>
                 var game = JsonSerializer.Deserialize<ConfigGame>(cfgGame, _jsonSerializerOptions);
                 if (game is not null &&
                     game.LastPlayed is not null &&
-                    long.TryParse(game.LastPlayed, out long lLastRun))
+                    long.TryParse(game.LastPlayed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lLastRun))
                 {
                     return DateTimeOffset.FromUnixTimeSeconds(lLastRun).UtcDateTime;
                 }

@@ -61,8 +61,8 @@ public class RiotHandler : AHandler<Game, string>
     /// <inheritdoc/>
     public override IEnumerable<Result<Game>> FindAllGames(bool installedOnly = false)
     {
-        var clientFile = _fileSystem.FileInfo.New(Path.Combine(GetFolderPath(SpecialFolder.CommonApplicationData), "Riot Games", "RiotClientInstalls.json"));
-        var metaDir = _fileSystem.DirectoryInfo.New(Path.Combine(GetFolderPath(SpecialFolder.CommonApplicationData), "Riot Games", "Metadata"));
+        var clientFile = _fileSystem.FileInfo.New(_fileSystem.Path.Combine(GetFolderPath(SpecialFolder.CommonApplicationData), "Riot Games", "RiotClientInstalls.json"));
+        var metaDir = _fileSystem.DirectoryInfo.New(_fileSystem.Path.Combine(GetFolderPath(SpecialFolder.CommonApplicationData), "Riot Games", "Metadata"));
         if (!clientFile.Exists)
         {
             yield return Result.FromError<Game>($"The client install file {clientFile.FullName} does not exist!");
@@ -70,7 +70,8 @@ public class RiotHandler : AHandler<Game, string>
         }
 
         // could also get client path from HKEY_CLASSES_ROOT\riotclient\shell\open\command\(Default) though I'm not sure how to use "--app-command=" properly
-        string clientPath = "";
+        var clientPath = "";
+
         using var stream = clientFile.OpenRead();
         var client = JsonSerializer.Deserialize<ClientInstallFile>(stream, _jsonSerializerOptions);
         if (client is not null && client.RcLive is not null)
@@ -130,30 +131,30 @@ public class RiotHandler : AHandler<Game, string>
                 return Result.FromError<Game>($"No \"product_install_full_path\" property in file {settingsFile.FullName}");
             }
 
-            string name = game.ShortcutName ?? settingsFile.Name[..settingsFile.Name.IndexOf('.', StringComparison.Ordinal)];
+            var name = game.ShortcutName ?? settingsFile.Name[..settingsFile.Name.IndexOf('.', StringComparison.Ordinal)];
 
-            string id = game.ProductInstallFullPath[(game.ProductInstallRoot.Length + 1)..];
+            var id = game.ProductInstallFullPath[(game.ProductInstallRoot.Length + 1)..];
             if (id.Contains('/', StringComparison.Ordinal))
                 id = id[..id.IndexOf('/', StringComparison.Ordinal)];
 
-            string product = settingsFile.Name;
+            var product = settingsFile.Name;
             if (product.Contains('.', StringComparison.Ordinal))
                 product = product[..product.IndexOf('.', StringComparison.Ordinal)].ToLower(CultureInfo.InvariantCulture);
 
-            string launch = clientPath;
-            string launchArgs = "--launch-product=" + product;
-            string uninstall = clientPath;
-            string uninstallArgs = "--uninstall-product=" + product;
+            var launch = clientPath;
+            var launchArgs = "--launch-product=" + product;
+            var uninstall = clientPath;
+            var uninstallArgs = "--uninstall-product=" + product;
             if (settingsFile.Name.Contains(".live.", StringComparison.OrdinalIgnoreCase))
             {
                 launchArgs += " --launch-patchline=live";
                 uninstallArgs += " --uninstall-patchline=live";
             }
 
-            string icon = "";
+            var icon = "";
             if (settingsFile.DirectoryName is not null)
             {
-                foreach (var iconFile in Directory.EnumerateFiles(settingsFile.DirectoryName, "*.ico"))
+                foreach (var iconFile in _fileSystem.Directory.EnumerateFiles(settingsFile.DirectoryName, "*.ico"))
                 {
                     icon = iconFile;
                     break;
@@ -164,7 +165,7 @@ public class RiotHandler : AHandler<Game, string>
 
             return Result.FromGame(new Game(
                 Id: id,
-                Name: Path.GetFileNameWithoutExtension(game.ShortcutName ?? ""),
+                Name: _fileSystem.Path.GetFileNameWithoutExtension(game.ShortcutName ?? ""),
                 Path: game.ProductInstallFullPath ?? "",
                 Launch: launch,
                 LaunchArgs: launchArgs,

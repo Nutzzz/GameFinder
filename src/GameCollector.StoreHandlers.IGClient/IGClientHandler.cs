@@ -100,12 +100,12 @@ public class IGClientHandler : AHandler<Game, string>
                 id = target.ItemData.IdKeyName ?? "";
                 igIds.Add(id);
                 slugged = target.ItemData.SluggedName ?? "";
-                path = Path.Combine(path, slugged);
+                path = _fileSystem.Path.Combine(path, slugged);
                 name = target.ItemData.Name ?? "";
 
                 if (!string.IsNullOrEmpty(target.GameData.ExePath))
                 {
-                    launch = Path.Combine(path, target.GameData.ExePath);
+                    launch = _fileSystem.Path.Combine(path, target.GameData.ExePath);
                     if (!string.IsNullOrEmpty(target.GameData.Args))
                         launchArgs = target.GameData.Args;
                 }
@@ -134,7 +134,7 @@ public class IGClientHandler : AHandler<Game, string>
                         ["Description"] = new() { target.GameData.DescriptionShort ?? "" },
                         ["IconUrl"] = new() { $"https://www.indiegalacdn.com/imgs/devs/{target.ItemData.DevId}/products/{id}/prodmain/{target.ItemData.DevImage}" },
                         ["IconWideUrl"] = new() { $"https://www.indiegalacdn.com/imgs/devs/{target.ItemData.DevId}/products/{id}/prodcover/{target.ItemData.DevCover}" },
-                        ["Players"] = new() { players.ToString() },
+                        ["Players"] = new() { players.ToString(CultureInfo.InvariantCulture) },
                         ["Genres"] = target.GameData.Categories ?? new(),
                         ["Rating"] = new() { rating.ToString(CultureInfo.InvariantCulture) },
                     }
