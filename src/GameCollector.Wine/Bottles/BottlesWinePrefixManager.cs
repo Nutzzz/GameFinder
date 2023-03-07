@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using OneOf;
 
-namespace GameFinder.Wine.Bottles;
+namespace GameCollector.Wine.Bottles;
 
 /// <summary>
 /// Wineprefix manager for prefixes created and managed by Bottles.

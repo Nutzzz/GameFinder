@@ -73,6 +73,9 @@ namespace GameCollector.Example
         [Option("wine", HelpText = "Search for wine prefixes")]
         public bool Wine { get; set; } = true;
 
+        [Option("bottles", HelpText = "Search for wine prefixes managed with bottles")]
+        public bool Bottles { get; set; } = true;
+
         [Option("xbox", HelpText = "Search for Xbox/Microsoft Store UWP apps/games [deprecated]")]
         public bool Xbox { get; set; } = false;
     }

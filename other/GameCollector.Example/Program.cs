@@ -25,6 +25,7 @@ using GameCollector.StoreHandlers.Steam;
 using GameCollector.StoreHandlers.Ubisoft;
 //using GameCollector.StoreHandlers.Xbox;
 using GameCollector.Wine;
+using GameCollector.Wine.Bottles;
 /*
 using GameCollector.StoreHandlers.BigFish;
 using GameCollector.StoreHandlers.GameJolt;
@@ -51,13 +52,32 @@ public static class Program
     {
         var config = new LoggingConfiguration();
 
-        var consoleTarget = new ConsoleTarget("console");
+        var coloredConsoleTarget = new ColoredConsoleTarget("coloredConsole")
+        {
+            EnableAnsiOutput = true,
+            UseDefaultRowHighlightingRules = false,
+            WordHighlightingRules =
+            {
+                new ConsoleWordHighlightingRule
+                {
+                    Regex = @"\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d+",
+                    CompileRegex = true,
+                    ForegroundColor = ConsoleOutputColor.Gray,
+                },
+                new ConsoleWordHighlightingRule("DEBUG", ConsoleOutputColor.Gray, ConsoleOutputColor.NoChange),
+                new ConsoleWordHighlightingRule("INFO", ConsoleOutputColor.Cyan, ConsoleOutputColor.NoChange),
+                new ConsoleWordHighlightingRule("ERROR", ConsoleOutputColor.Red, ConsoleOutputColor.NoChange),
+                new ConsoleWordHighlightingRule("WARNING", ConsoleOutputColor.Yellow, ConsoleOutputColor.NoChange),
+            },
+            Layout = "${longdate}|${level:uppercase=true}|${message:withexception=true}"
+        };
+
         var fileTarget = new FileTarget("file")
         {
             FileName = "log.log",
         };
 
-        config.AddRuleForAllLevels(consoleTarget);
+        config.AddRuleForAllLevels(coloredConsoleTarget);
         config.AddRuleForAllLevels(fileTarget);
 
         LogManager.Configuration = config;
@@ -291,6 +311,19 @@ public static class Program
             }
         }
         
+        if (options.Bottles)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                logger.LogError("Bottles is only supported on Linux!");
+            }
+            else
+            {
+                var prefixManager = new BottlesWinePrefixManager(new FileSystem());
+                LogWinePrefixes(prefixManager, logger);
+            }
+        }
+        
         /*
         if (options.BethNet)
         {
@@ -459,6 +492,22 @@ public static class Program
             }
         }
         */
+    }
+    
+    private static void LogWinePrefixes<TWinePrefix>(
+        IWinePrefixManager<TWinePrefix> prefixManager, ILogger logger)
+    where TWinePrefix : AWinePrefix
+    {
+        foreach (var result in prefixManager.FindPrefixes())
+        {
+            result.Switch(prefix =>
+            {
+                logger.LogInformation($"Found wine prefix at {prefix.ConfigurationDirectory}");
+            }, error =>
+            {
+                logger.LogError(error.Value);
+            });
+        }
     }
 
     private static void LogGamesAndErrors<TGame>(string handler, IEnumerable<Result<TGame>> results, ILogger logger)

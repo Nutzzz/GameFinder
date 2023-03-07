@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
-using GameFinder.Wine;
+using GameCollector.Wine;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.Steam;
+namespace GameCollector.StoreHandlers.Steam;
 
 /// <summary>
 /// Represents a Wine prefix managed by Valve's Proton library.

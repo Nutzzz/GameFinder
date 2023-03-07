@@ -1,6 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
 
-namespace GameFinder.Wine.Tests.Bottles;
+namespace GameCollector.Wine.Tests.Bottles;
 
 public partial class BottlesTests
 {

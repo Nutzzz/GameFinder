@@ -1,7 +1,7 @@
 using System.IO.Abstractions;
 using JetBrains.Annotations;
 
-namespace GameFinder.Wine.Bottles;
+namespace GameCollector.Wine.Bottles;
 
 /// <summary>
 /// Represents a Wineprefix managed by Bottles.
