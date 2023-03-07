@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
@@ -197,6 +198,7 @@ public class SteamHandler : AHandler<Game, string>
         return directoryInfo;
     }
 
+    [SuppressMessage("", "MA0051", Justification = "Deal with it.")]
     internal static IEnumerable<IDirectoryInfo> GetDefaultSteamDirectories(IFileSystem fileSystem)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

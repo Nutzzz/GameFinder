@@ -331,11 +331,47 @@ foreach (var result in prefixManager.FindPrefixes())
 {
     result.Switch(prefix =>
     {
-        logger.LogInformation($"Found wine prefix at {prefix.ConfigurationDirectory}");
+        Console.WriteLine($"Found wine prefix at {prefix.ConfigurationDirectory}");
     }, error =>
     {
-        logger.LogError(error.Value);
+        Console.WriteLine(error.Value);
     });
+}
+```
+
+### Bottles
+
+`GameFinder.Wine` implements a `IWinePrefixManager` for finding Wine prefixes managed by [Bottles](https://usebottles.com/).
+
+**Usage**:
+
+```csharp
+var prefixManager = new BottlesWinePrefixManager(new FileSystem());
+
+foreach (var result in prefixManager.FindPrefixes())
+{
+    result.Switch(prefix =>
+    {
+        Console.WriteLine($"Found wine prefix at {prefix.ConfigurationDirectory}");
+    }, error =>
+    {
+        Console.WriteLine(error.Value);
+    });
+}
+```
+
+### Proton
+
+Valve's [Proton](https://github.com/ValveSoftware/Proton) is a compatibility tool for Steam and is mostly based on Wine. The Wine prefixes managed by Proton are in the `compatdata` directory of the steam library where the game itself is installed. Since the path is relative to the game itself and requires the app id, I've decided to put this functionality in `GameFinder.StoreHandlers.Steam`:
+
+```csharp
+SteamGame? steamGame = steamHandler.FindOneGameById(1237970, out var errors);
+ProtonWinePrefix? protonPrefix = steamGame?.GetProtonPrefix();
+var protonPrefixDirectory = protonPrefix?.ProtonDirectory;
+
+if (protonDirectory is not null && Directory.Exists(protonDirectory))
+{
+    Console.WriteLine($"Proton prefix is at {protonDirectory}");
 }
 ```
 
