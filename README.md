@@ -11,6 +11,7 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 - [EA Desktop](#ea-desktop) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
 - [Epic Games Store](#epic-games-store) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
 - [GOG Galaxy](#gog-galaxy) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
+- Humble App
 - Indiegala IGClient
 - itch
 - Riot Client
@@ -22,7 +23,6 @@ The following launchers are not yet supported or support has been dropped:
 - [Bethesda.net Launcher](#bethesdanet-launcher) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet)
 - Big Fish Games (WIP)
 - Game Jolt Client (WIP)
-- Humble App (WIP)
 - Legacy Games Launcher (WIP)
 - Oculus (WIP)
 - [Origin](#origin) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)

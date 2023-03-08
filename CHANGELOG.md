@@ -18,6 +18,7 @@ in progress:
   - Amazon Games
   - Arc
   - Blizzard Battle.net
+  - Humble App
   - Indiegala IGClient
   - itch
   - Riot Client
@@ -26,7 +27,7 @@ in progress:
 - several upgraded NuGet packages
 
 planned:
-- Adding support for Big Fish, Game Jolt, Humble, Legacy Games, Oculus, Paradox, Plarium, Rockstar, and Wargaming.net
+- Adding support for Big Fish, Game Jolt, Legacy Games, Oculus, Paradox, Plarium, Rockstar, and Wargaming.net
 - Changing GOG implementation to database method (more robust, may survive a Windows reinstall)
 
 ## [GameCollector releases]

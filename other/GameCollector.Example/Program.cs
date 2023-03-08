@@ -17,6 +17,7 @@ using GameCollector.StoreHandlers.EADesktop.Crypto;
 using GameCollector.StoreHandlers.EADesktop.Crypto.Windows;
 using GameCollector.StoreHandlers.EGS;
 using GameCollector.StoreHandlers.GOG;
+using GameCollector.StoreHandlers.Humble;
 using GameCollector.StoreHandlers.IGClient;
 using GameCollector.StoreHandlers.Itch;
 using GameCollector.StoreHandlers.Origin;
@@ -29,7 +30,6 @@ using GameCollector.Wine.Bottles;
 /*
 using GameCollector.StoreHandlers.BigFish;
 using GameCollector.StoreHandlers.GameJolt;
-using GameCollector.StoreHandlers.Humble;
 using GameCollector.StoreHandlers.Legacy;
 using GameCollector.StoreHandlers.Oculus;
 using GameCollector.StoreHandlers.Paradox;
@@ -102,12 +102,15 @@ public static class Program
         options.EADesktop = false;
         options.EGS = false;
         options.GOG = false;
-        options.IGClient = true;     // NEWEST
-        options.Itch = true;         // NEWEST
+        options.Humble = true;       // NEWEST
+        options.IGClient = false;    // NEWER
+        options.Itch = false;        // NEWER
         options.Origin = false;
         options.Riot = false;        // NEW
         options.Steam = false;
         options.Ubisoft = false;     // NEW
+        options.Wine = false;
+        options.Bottles = false;
         */
 
         if (options.Amazon)
@@ -201,6 +204,21 @@ public static class Program
                 var handler = new GOGHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors("GOG", results, logger);
+            }
+        }
+
+        if (options.Humble)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Humble App is only supported on Windows!");
+            }
+            else
+            {
+                logger.LogDebug("* Humble App");
+                var handler = new HumbleHandler();
+                var results = handler.FindAllGames();
+                LogGamesAndErrors("Humble", results, logger);
             }
         }
 
@@ -385,21 +403,6 @@ public static class Program
                 var handler = new GameJoltHandler();
                 var results = handler.FindAllGames();
                 LogGamesAndErrors("GameJolt", results, logger);
-            }
-        }
-
-        if (options.Humble)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                logger.LogError("* Humble App is only supported on Windows!");
-            }
-            else
-            {
-                logger.LogDebug("* Humble App");
-                var handler = new HumbleHandler();
-                var results = handler.FindAllGames();
-                LogGamesAndErrors("Humble", results, logger);
             }
         }
 

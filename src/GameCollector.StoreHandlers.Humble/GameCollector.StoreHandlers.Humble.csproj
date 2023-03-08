@@ -20,4 +20,6 @@
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.StoreHandlers.Humble.Tests" />
     </ItemGroup>
+
+	<Import Project="$([MSBuild]::GetPathOfFileAbove('System.IO.Abstractions.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

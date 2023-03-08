@@ -31,8 +31,8 @@ namespace GameCollector.Example
         [Option("gog", HelpText = "Search for GOG games")]
         public bool GOG { get; set; } = true;
 
-        [Option("humble", HelpText = "Search for Humble games [in progress]")]
-        public bool Humble { get; set; } = false;
+        [Option("humble", HelpText = "Search for Humble games")]
+        public bool Humble { get; set; } = true;
 
         [Option("igclient", HelpText = "Search for Indiegala IGClient games")]
         public bool IGClient { get; set; } = true;
