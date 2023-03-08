@@ -1,3 +1,9 @@
+using CommandLine;
+using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Config;
+using NLog.Extensions.Logging;
+using NLog.Targets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -5,7 +11,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
-using CommandLine;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
 using GameCollector.StoreHandlers.Amazon;
@@ -37,11 +42,6 @@ using GameCollector.StoreHandlers.Plarium;
 using GameCollector.StoreHandlers.Rockstar;
 using GameCollector.StoreHandlers.WargamingNet;
 */
-using Microsoft.Extensions.Logging;
-using NLog;
-using NLog.Config;
-using NLog.Extensions.Logging;
-using NLog.Targets;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace GameCollector.Example;
@@ -50,12 +50,12 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        WindowsConsole.EnableVirtualTerminal();
         var config = new LoggingConfiguration();
 
         var coloredConsoleTarget = new ColoredConsoleTarget("coloredConsole")
         {
-            EnableAnsiOutput = true,
+            DetectConsoleAvailable = true,
+            EnableAnsiOutput = false,
             UseDefaultRowHighlightingRules = false,
             WordHighlightingRules =
             {
@@ -70,7 +70,7 @@ public static class Program
                 new ConsoleWordHighlightingRule("ERROR", ConsoleOutputColor.Red, ConsoleOutputColor.NoChange),
                 new ConsoleWordHighlightingRule("WARNING", ConsoleOutputColor.Yellow, ConsoleOutputColor.NoChange),
             },
-            Layout = "${longdate}|${level:uppercase=true}|${message:withexception=true}"
+            Layout = "${longdate}|${level:uppercase=true}|${message:withexception=true}",
         };
 
         var fileTarget = new FileTarget("file")
@@ -528,34 +528,5 @@ public static class Program
                 logger.LogError("{}", error);
             }
         }
-    }
-
-    // based on https://github.com/NLog/NLog/issues/4480
-    private static class WindowsConsole
-    {
-        public static void EnableVirtualTerminal()
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return;
-
-            var stdout = GetStdHandle(StandardOutputHandleId);
-            if (stdout != (IntPtr)InvalidHandleValue && GetConsoleMode(stdout, out var mode))
-            {
-                SetConsoleMode(stdout, mode | EnableVirtualTerminalProcessingMode);
-            }
-        }
-
-        const int StandardOutputHandleId = -11;
-        const uint EnableVirtualTerminalProcessingMode = 4;
-        const long InvalidHandleValue = -1;
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern IntPtr GetStdHandle(int handleId);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool GetConsoleMode(IntPtr handle, out uint mode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool SetConsoleMode(IntPtr handle, uint mode);
     }
 }
