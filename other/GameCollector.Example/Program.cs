@@ -162,11 +162,11 @@ public static class Program
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                logger.LogError("* EA Desktop is only supported on Windows!");
+                logger.LogError("* EA app is only supported on Windows!");
             }
             else
             {
-                logger.LogDebug("* EA Desktop");
+                logger.LogDebug("* EA app");
                 var decryptionKey = Decryption.CreateDecryptionKey(new HardwareInfoProvider());
                 var sDecryptionKey = Convert.ToHexString(decryptionKey).ToLower(CultureInfo.InvariantCulture);
                 logger.LogDebug("EA decryption key: {}", sDecryptionKey);

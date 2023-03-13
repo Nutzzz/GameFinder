@@ -8,7 +8,7 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 - Amazon Games
 - Arc
 - Blizzard Battle.net
-- [EA Desktop](#ea-desktop) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
+- [EA app](#ea-app) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
 - [Epic Games Store](#epic-games-store) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
 - [GOG Galaxy](#gog-galaxy) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
 - Humble App
@@ -131,9 +131,9 @@ Dictionary<Game, string> games = handler.FindAllGamesById(out string[] errors);
 Game? game = handler.FindOneGameById("3257e06c28764231acd93049f3774ed6", out string[] errors);
 ```
 
-### EA Desktop
+### EA app
 
-EA Desktop is the replacement for [Origin](#origin): See [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app). This is by far, the most complicated Store Handler. **You should read the upstream [wiki entry](https://github.com/erri120/GameFinder/wiki/EA-Desktop).** @erri120's implementation decrypts the encrypted file, created by EA Desktop. You should be aware that the key used to encrypt the file is derived from hardware information. If the user changes their hardware, the decryption process might fail because their key has changed.
+EA app is the replacement for [Origin](#origin): See [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app). This is by far, the most complicated Store Handler. **You should read the upstream [wiki entry](https://github.com/erri120/GameFinder/wiki/EA-Desktop).** @erri120's implementation decrypts the encrypted file created by the EA app. You should be aware that the key used to encrypt the file is derived from hardware information. If the user changes their hardware, the decryption process might fail because their key has changed.
 
 **Usage:**
 
@@ -162,7 +162,7 @@ Game? game = handler.FindOneGameById("Origin.SFT.50.0000532", out string[] error
 
 ### Origin
 
-Origin is only supported on Windows. **Note:** [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app) and will replace it with [EA Desktop](#ea-desktop).
+Origin is only supported on Windows. **Note:** [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app) and will replace it with [EA app](#ea-app).
 
 **Usage:**
 

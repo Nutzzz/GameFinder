@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with EA Desktop.</Description>
+        <Description>Library for finding games installed with the EA app.</Description>
         <PackageTags>ea ea-desktop ea-app games</PackageTags>
     </PropertyGroup>
 

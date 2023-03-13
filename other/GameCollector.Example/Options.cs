@@ -19,7 +19,7 @@ namespace GameCollector.Example
         [Option("bigfish", HelpText = "Search for Big Fish games [in progress]")]
         public bool BigFish { get; set; } = false;
 
-        [Option("ea_desktop", HelpText = "Search for EA Desktop games")]
+        [Option("ea", HelpText = "Search for EA app games")]
         public bool EADesktop { get; set; } = true;
 
         [Option("egs", HelpText = "Search for Epic games")]
