@@ -10,12 +10,12 @@ namespace GameCollector.SQLiteUtils;
 // Based on https://stackoverflow.com/a/57541054
 
 [AttributeUsage(AttributeTargets.Property, Inherited = false)]
-public class SqlColName : Attribute
+public class SqlColNameAttribute : Attribute
 {
     private string _name = "";
     public string Name { get => _name; set => _name = value; }
 
-    public SqlColName(string name)
+    public SqlColNameAttribute(string name)
     {
         _name = name;
     }
@@ -24,7 +24,7 @@ public class SqlColName : Attribute
 [PublicAPI]
 public static class SQLiteHelpers
 {
-    public static List<T>? ToList<T>(this DataTable table) where T : class, new()
+    public static IList<T>? ToList<T>(this DataTable table) where T : class, new()
     {
         try
         {
@@ -32,7 +32,7 @@ public static class SQLiteHelpers
 
             foreach (var row in table.AsEnumerable())
             {
-                T obj = new T();
+                var obj = new T();
 
                 foreach (var prop in obj.GetType().GetProperties())
                 {
@@ -46,7 +46,7 @@ public static class SQLiteHelpers
                         foreach (var attr in attrs)
                         {
                             //Check if there is a custom property name
-                            if (attr is SqlColName colName)
+                            if (attr is SqlColNameAttribute colName)
                             {
                                 //If the custom column name is specified overwrite property name
                                 if (!colName.Name.IsNullOrWhiteSpace())

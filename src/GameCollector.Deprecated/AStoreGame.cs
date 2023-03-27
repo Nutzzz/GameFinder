@@ -60,7 +60,42 @@ namespace GameCollector.Deprecated
         {
             return $"{Name}";
         }
-        
+
+        public static bool operator ==(AStoreGame left, AStoreGame right)
+        {
+            if (ReferenceEquals(left, null))
+            {
+                return ReferenceEquals(right, null);
+            }
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(AStoreGame left, AStoreGame right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(AStoreGame left, AStoreGame right)
+        {
+            return ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+        }
+
+        public static bool operator <=(AStoreGame left, AStoreGame right)
+        {
+            return ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+        }
+
+        public static bool operator >(AStoreGame left, AStoreGame right)
+        {
+            return !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+        }
+
+        public static bool operator >=(AStoreGame left, AStoreGame right)
+        {
+            return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
+        }
+
         #endregion
     }
 }

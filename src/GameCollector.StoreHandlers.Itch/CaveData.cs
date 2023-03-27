@@ -7,19 +7,19 @@ namespace GameCollector.StoreHandlers.Itch
 {
     public class CaveData
     {
-        [SqlColName("game_id")]
+        [SqlColNameAttribute("game_id")]
         public string? GameId { get; init; }
 
-        [SqlColName("installed_at")]
+        [SqlColNameAttribute("installed_at")]
         public DateTime? InstalledAt { get; init; }
 
-        [SqlColName("last_touched_at")]
+        [SqlColNameAttribute("last_touched_at")]
         public DateTime? LastTouchedAt { get; init; }
 
-        [SqlColName("verdict")]
+        [SqlColNameAttribute("verdict")]
         public string? Verdict { get; init; }
 
-        [SqlColName("install_folder_name")]
+        [SqlColNameAttribute("install_folder_name")]
         public string? InstallFolderName { get; init; }
     }
 }

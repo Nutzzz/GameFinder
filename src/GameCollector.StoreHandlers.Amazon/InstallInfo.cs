@@ -7,7 +7,7 @@ namespace GameCollector.StoreHandlers.Amazon
 {
     public class InstallInfo
     {
-        [SqlColName("Id")]
+        [SqlColNameAttribute("Id")]
         public string? Id { get; init; }
 
         public string? InstallDirectory { get; init; }

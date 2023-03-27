@@ -7,22 +7,22 @@ namespace GameCollector.StoreHandlers.Itch
 {
     public class GameData
     {
-        [SqlColName("id")]
+        [SqlColNameAttribute("id")]
         public string? Id { get; init; }
 
-        [SqlColName("title")]
+        [SqlColNameAttribute("title")]
         public string? Title { get; init; }
 
-        [SqlColName("short_text")]
+        [SqlColNameAttribute("short_text")]
         public string? ShortText { get; init; }
 
-        [SqlColName("classification")]
+        [SqlColNameAttribute("classification")]
         public string? Classification { get; init; }
 
-        [SqlColName("cover_url")]
+        [SqlColNameAttribute("cover_url")]
         public string? CoverUrl { get; init; }
 
-        [SqlColName("still_cover_url")]
+        [SqlColNameAttribute("still_cover_url")]
         public string? StillCoverUrl { get; init; }
     }
 }

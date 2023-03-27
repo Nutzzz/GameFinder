@@ -127,7 +127,7 @@ namespace GameCollector.StoreHandlers.BattleNet
         private string? __pbn__selectedSpeechLanguage;
 
         [ProtoMember(8, Name = @"languages")]
-        public List<BnetLanguageSetting> Languages { get; } = new List<BnetLanguageSetting>();
+        public IList<BnetLanguageSetting> Languages { get; } = new List<BnetLanguageSetting>();
 
         [ProtoMember(9, Name = @"gfx_override_tags")]
         [global::System.ComponentModel.DefaultValue("")]
@@ -298,10 +298,10 @@ namespace GameCollector.StoreHandlers.BattleNet
         private string? __pbn__currentVersionStr;
 
         [ProtoMember(8, Name = @"installedBuildConfig")]
-        public List<BnetBuildConfig> installedBuildConfigs { get; } = new List<BnetBuildConfig>();
+        public IList<BnetBuildConfig> installedBuildConfigs { get; } = new List<BnetBuildConfig>();
 
         [ProtoMember(9, Name = @"backgroundDownloadBuildConfig")]
-        public List<BnetBuildConfig> backgroundDownloadBuildConfigs { get; } = new List<BnetBuildConfig>();
+        public IList<BnetBuildConfig> backgroundDownloadBuildConfigs { get; } = new List<BnetBuildConfig>();
 
         [ProtoMember(10)]
         [global::System.ComponentModel.DefaultValue("")]
@@ -315,7 +315,7 @@ namespace GameCollector.StoreHandlers.BattleNet
         private string? __pbn__decryptionKey;
 
         [ProtoMember(11)]
-        public List<string> completedInstallActions { get; } = new List<string>();
+        public IList<string> completedInstallActions { get; } = new List<string>();
 
     }
 
@@ -611,7 +611,7 @@ namespace GameCollector.StoreHandlers.BattleNet
         private int? __pbn__Pid;
 
         [ProtoMember(3, Name = @"uri")]
-        public List<string> Uris { get; } = new List<string>();
+        public IList<string> Uris { get; } = new List<string>();
 
     }
 
@@ -654,16 +654,16 @@ namespace GameCollector.StoreHandlers.BattleNet
             => Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
         [ProtoMember(1, Name = @"productInstall")]
-        public List<BnetProductInstall> productInstalls { get; } = new List<BnetProductInstall>();
+        public IList<BnetProductInstall> productInstalls { get; } = new List<BnetProductInstall>();
 
         [ProtoMember(2)]
-        public List<BnetInstallHandshake> activeInstalls { get; } = new List<BnetInstallHandshake>();
+        public IList<BnetInstallHandshake> activeInstalls { get; } = new List<BnetInstallHandshake>();
 
         [ProtoMember(3)]
-        public List<BnetActiveProcess> activeProcesses { get; } = new List<BnetActiveProcess>();
+        public IList<BnetActiveProcess> activeProcesses { get; } = new List<BnetActiveProcess>();
 
         [ProtoMember(4)]
-        public List<BnetProductConfig> productConfigs { get; } = new List<BnetProductConfig>();
+        public IList<BnetProductConfig> productConfigs { get; } = new List<BnetProductConfig>();
 
         [ProtoMember(5)]
         public BnetDownloadSettings? downloadSettings { get; set; }
