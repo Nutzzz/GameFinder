@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
+        <ProjectReference Include="..\..\src\GameCollector.EmulatorHandlers.Dolphin\GameCollector.EmulatorHandlers.Dolphin.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.EmulatorHandlers.MAME\GameCollector.EmulatorHandlers.MAME.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.EADesktop\GameCollector.StoreHandlers.EADesktop.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.EGS\GameCollector.StoreHandlers.EGS.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.GOG\GameCollector.StoreHandlers.GOG.csproj" />

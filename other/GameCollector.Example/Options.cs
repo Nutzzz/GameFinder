@@ -70,13 +70,22 @@ namespace GameCollector.Example
         [Option("wargaming", HelpText = "Search for Wargaming.net games [in progress]")]
         public bool WargamingNet { get; set; } = false;
 
-        [Option("wine", HelpText = "Search for wine prefixes")]
-        public bool Wine { get; set; } = true;
-
-        [Option("bottles", HelpText = "Search for wine prefixes managed with bottles")]
-        public bool Bottles { get; set; } = true;
-
         [Option("xbox", HelpText = "Search for Xbox/Microsoft Store UWP apps/games [deprecated]")]
         public bool Xbox { get; set; } = false;
+
+        [Option("mame", HelpText = "Search for MAME ROMs")]
+        public bool Mame { get; set; } = true;
+        [Option("mame_path", HelpText = "Path to MAME executable")]
+        public string MamePath { get; set; } = @"C:\MAME";
+
+        [Option("dolphin", HelpText = "Search for Dolphin ROMs")]
+        public bool Dolphin { get; set; } = true;
+        [Option("dolphin_path", HelpText = "Path to Dolphin executable")]
+        public string DolphinPath { get; set; } = @"C:\Dolphin";
+
+        [Option("wine", HelpText = "Search for wine prefixes")]
+        public bool Wine { get; set; } = true;
+        [Option("bottles", HelpText = "Search for wine prefixes managed with bottles")]
+        public bool Bottles { get; set; } = true;
     }
 }

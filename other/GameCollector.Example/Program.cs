@@ -13,6 +13,8 @@ using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
+using GameCollector.EmulatorHandlers.Dolphin;
+using GameCollector.EmulatorHandlers.MAME;
 using GameCollector.StoreHandlers.Amazon;
 using GameCollector.StoreHandlers.Arc;
 using GameCollector.StoreHandlers.BattleNet;
@@ -99,12 +101,16 @@ public static class Program
         options.Amazon = false;      // NEW
         options.Arc = false;         // NEW
         options.BattleNet = false;   // NEW
+        options.Dolphin = true;      // NEWEST
+        options.DolphinPath = @"X:\Emulation\Dolphin";
         options.EADesktop = false;
         options.EGS = false;
         options.GOG = false;
-        options.Humble = true;       // NEWEST
+        options.Humble = false;      // NEWER
         options.IGClient = false;    // NEWER
         options.Itch = false;        // NEWER
+        options.Mame = true;         // NEWEST
+        options.MamePath = @"X:\Emulation\MAME";
         options.Origin = false;
         options.Riot = false;        // NEW
         options.Steam = false;
@@ -308,41 +314,6 @@ public static class Program
             }
         }
 
-        if (options.Wine)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                logger.LogError("Wine is only supported on Linux!");
-            }
-            else
-            {
-                var prefixManager = new DefaultWinePrefixManager(new FileSystem());
-                foreach (var result in prefixManager.FindPrefixes())
-                {
-                    result.Switch(prefix =>
-                    {
-                        logger.LogInformation($"Found wine prefix at {prefix.ConfigurationDirectory}");
-                    }, error =>
-                    {
-                        logger.LogError(error.Value);
-                    });
-                }
-            }
-        }
-        
-        if (options.Bottles)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                logger.LogError("Bottles is only supported on Linux!");
-            }
-            else
-            {
-                var prefixManager = new BottlesWinePrefixManager(new FileSystem());
-                LogWinePrefixes(prefixManager, logger);
-            }
-        }
-        
         /*
         if (options.BethNet)
         {
@@ -496,6 +467,71 @@ public static class Program
             }
         }
         */
+
+        if (options.Dolphin)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* Dolphin is only supported on Windows [for now]!");
+            }
+            else
+            {
+                logger.LogDebug("* Dolphin");
+                var handler = new DolphinHandler();
+                var results = handler.FindAllGames(options.DolphinPath);
+                LogGamesAndErrors("Dolphin", results, logger);
+            }
+        }
+
+        if (options.Mame)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                logger.LogError("* MAME is only supported on Windows [for now]!");
+            }
+            else
+            {
+                logger.LogDebug("* MAME");
+                var handler = new MAMEHandler();
+                var results = handler.FindAllGames(availableOnly: false, options.MamePath);
+                LogGamesAndErrors("MAME", results, logger);
+            }
+        }
+
+        if (options.Wine)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                logger.LogError("Wine is only supported on Linux!");
+            }
+            else
+            {
+                var prefixManager = new DefaultWinePrefixManager(new FileSystem());
+                foreach (var result in prefixManager.FindPrefixes())
+                {
+                    result.Switch(prefix =>
+                    {
+                        logger.LogInformation($"Found wine prefix at {prefix.ConfigurationDirectory}");
+                    }, error =>
+                    {
+                        logger.LogError(error.Value);
+                    });
+                }
+            }
+        }
+        
+        if (options.Bottles)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                logger.LogError("Bottles is only supported on Linux!");
+            }
+            else
+            {
+                var prefixManager = new BottlesWinePrefixManager(new FileSystem());
+                LogWinePrefixes(prefixManager, logger);
+            }
+        }
     }
     
     private static void LogWinePrefixes<TWinePrefix>(

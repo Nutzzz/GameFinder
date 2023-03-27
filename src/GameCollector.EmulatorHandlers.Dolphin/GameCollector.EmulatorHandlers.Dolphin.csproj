@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding Dolphin ROMs.</Description>
+        <PackageTags>dolphin dolphin-emu emulator games</PackageTags>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DocumentationFile>bin\Debug\GameCollector.EmulatorHandlers.Dolphin.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DocumentationFile>bin\Release\GameCollector.EmulatorHandlers.Dolphin.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameCollector.Common\GameCollector.Common.csproj" />
+        <ProjectReference Include="..\GameCollector.RegistryUtils\GameCollector.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.EmulatorHandlers.Dolphin.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NLog.Extensions.Logging" Version="5.2.2" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('System.IO.Abstractions.props', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

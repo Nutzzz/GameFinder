@@ -3,7 +3,7 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 
 [![CI](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml/badge.svg)](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/Nutzzz/GameCollector/branch/master/graph/badge.svg?token=10PVRFWH39)](https://codecov.io/gh/Nutzzz/GameCollector)
 
-.NET library for finding games. The following launchers are supported (so far):
+.NET library for finding games. The following store launchers are supported (so far):
 
 - Amazon Games
 - Arc
@@ -14,9 +14,14 @@ A fork of [err120/GameFinder](https://github.com/erri120/GameFinder), collecting
 - Humble App
 - Indiegala IGClient
 - itch
+- MAME
 - Riot Client
 - [Steam](#steam) [![nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
 - Ubisoft Connect
+
+The following emulators are supported (so far):
+- Dolphin
+- MAME
 
 The following launchers are not yet supported or support has been dropped:
 

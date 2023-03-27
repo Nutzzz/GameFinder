@@ -17,7 +17,8 @@ namespace GameCollector.Common;
 /// <param name="UninstallArgs"></param>
 /// <param name="LastRunDate"></param>
 /// <param name="IsInstalled"></param>
-/// <param name="IsExpired"></param>
+/// <param name="HasProblem"></param>
+/// <param name="IsClone"></param>
 /// <param name="Metadata"></param>
 [PublicAPI]
 public record Game(
@@ -31,5 +32,6 @@ public record Game(
     string UninstallArgs = "",
     DateTime? LastRunDate = null,
     bool IsInstalled = true,
-    bool IsExpired = false,
+    bool HasProblem = false,
+    bool IsClone = false,
     Dictionary<string, List<string>>? Metadata = null);

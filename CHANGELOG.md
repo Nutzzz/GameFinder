@@ -23,7 +23,10 @@ in progress:
   - itch
   - Riot Client
   - Ubisoft Connect
-- Re-added deprecated Bethesda.net and Xbox packages for posterity
+- Re-added deprecated Bethesda.net and Xbox StoreHandlers for posterity
+- Added support for EmulatorHandlers:
+  - Dolphin
+  - MAME
 - several upgraded NuGet packages
 
 planned:

@@ -24,7 +24,7 @@ public class SqlColNameAttribute : Attribute
 [PublicAPI]
 public static class SQLiteHelpers
 {
-    public static IList<T>? ToList<T>(this DataTable table) where T : class, new()
+    public static List<T>? ToList<T>(this DataTable table) where T : class, new()
     {
         try
         {

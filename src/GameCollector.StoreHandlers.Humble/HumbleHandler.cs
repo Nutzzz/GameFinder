@@ -94,7 +94,7 @@ public class HumbleHandler : AHandler<Game, string>
             {
                 var launch = "";
                 var isInstalled = false;
-                var isExpired = false;
+                var hasProblem = false;
                 var machineName = "";
 
                 if (game.IsAvailable is not null &&
@@ -105,7 +105,7 @@ public class HumbleHandler : AHandler<Game, string>
                     machineName = game.MachineName;
                     if (machineName.EndsWith("_collection", StringComparison.OrdinalIgnoreCase) && // Humble Choice
                         (!hasChoice || isPaused))
-                        isExpired = true;
+                        hasProblem = true;
                 }
                 if (game.Status is not null &&
                     (game.Status.Equals("downloaded", StringComparison.OrdinalIgnoreCase) ||
@@ -164,7 +164,7 @@ public class HumbleHandler : AHandler<Game, string>
                     Uninstall: $"humble://uninstall/{id}",
                     LastRunDate: lastRunDate,
                     IsInstalled: isInstalled,
-                    IsExpired: isExpired,
+                    HasProblem: hasProblem,
                     Metadata: new(StringComparer.OrdinalIgnoreCase)
                     {
                         ["Description"] = new() { game.DescriptionText ?? "" },
