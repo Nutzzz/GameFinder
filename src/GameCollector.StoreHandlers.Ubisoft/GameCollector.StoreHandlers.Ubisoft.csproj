@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="YamlDotNet" Version="13.0.1" />
+      <PackageReference Include="YamlDotNet" Version="13.0.2" />
     </ItemGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove('System.IO.Abstractions.props', '$(MSBuildThisFileDirectory)../'))" />
