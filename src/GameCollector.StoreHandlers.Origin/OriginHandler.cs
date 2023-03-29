@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Web;
 using GameCollector.Common;
 using JetBrains.Annotations;
+using NexusMods.Paths;
 
 namespace GameCollector.StoreHandlers.Origin;
 
@@ -16,7 +16,7 @@ namespace GameCollector.StoreHandlers.Origin;
 /// <param name="Id"></param>
 /// <param name="InstallPath"></param>
 [PublicAPI]
-public record OriginGame(string Id, string InstallPath);
+public record OriginGame(string Id, AbsolutePath InstallPath);
 
 /// <summary>
 /// Handler for finding games install with Origin.
@@ -27,12 +27,7 @@ public class OriginHandler : AHandler<Game, string>
     private readonly IFileSystem _fileSystem;
 
     /// <summary>
-    /// Default constructor that uses the real filesystem <see cref="FileSystem"/>.
-    /// </summary>
-    public OriginHandler() : this(new FileSystem()) { }
-
-    /// <summary>
-    /// Constructor for specifying the <see cref="IFileSystem"/> implementation to use.
+    /// Constructor.
     /// </summary>
     /// <param name="fileSystem"></param>
     public OriginHandler(IFileSystem fileSystem)
@@ -40,13 +35,11 @@ public class OriginHandler : AHandler<Game, string>
         _fileSystem = fileSystem;
     }
 
-    internal static IDirectoryInfo GetManifestDir(IFileSystem fileSystem)
+    internal static AbsolutePath GetManifestDir(IFileSystem fileSystem)
     {
-        return fileSystem.DirectoryInfo.New(fileSystem.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-            "Origin",
-            "LocalContent"
-        ));
+        return fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
+            .CombineUnchecked("Origin")
+            .CombineUnchecked("LocalContent");
     }
 
     /// <inheritdoc/>
@@ -54,16 +47,16 @@ public class OriginHandler : AHandler<Game, string>
     {
         var manifestDir = GetManifestDir(_fileSystem);
 
-        if (!manifestDir.Exists)
+        if (!_fileSystem.DirectoryExists(manifestDir))
         {
-            yield return Result.FromError<Game>($"Manifest folder {manifestDir.FullName} does not exist!");
+            yield return Result.FromError<Game>($"Manifest folder {manifestDir} does not exist!");
             yield break;
         }
 
-        var mfstFiles = manifestDir.EnumerateFiles("*.mfst", SearchOption.AllDirectories).ToList();
+        var mfstFiles = _fileSystem.EnumerateFiles(manifestDir, "*.mfst").ToList();
         if (mfstFiles.Count == 0)
         {
-            yield return Result.FromError<Game>($"Manifest folder {manifestDir.FullName} does not contain any .mfst files");
+            yield return Result.FromError<Game>($"Manifest folder {manifestDir} does not contain any .mfst files");
             yield break;
         }
 
@@ -91,18 +84,21 @@ public class OriginHandler : AHandler<Game, string>
         return games.CustomToDictionary(game => game.Id, game => game, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static Result<Game> ParseMfstFile(IFileSystem fileSystem, IFileInfo fileInfo)
+    private Result<Game> ParseMfstFile(AbsolutePath filePath)
     {
         try
         {
-            var contents = fileInfo.OpenText().ReadToEnd();
+            using var stream = _fileSystem.ReadFile(filePath);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            var contents = reader.ReadToEnd();
+
             var query = HttpUtility.ParseQueryString(contents, Encoding.UTF8);
 
             // using GetValues because some manifest have duplicate key-value entries for whatever reason
             var ids = query.GetValues("id");
             if (ids is null || ids.Length == 0)
             {
-                return Result.FromError<Game>($"Manifest {fileInfo.FullName} does not have a value \"id\"");
+                return Result.FromError<Game>($"Manifest {filePath} does not have a value \"id\"");
             }
 
             var id = ids[0];
@@ -112,17 +108,21 @@ public class OriginHandler : AHandler<Game, string>
             var installPaths = query.GetValues("dipInstallPath");
             if (installPaths is null || installPaths.Length == 0)
             {
-                return Result.FromError<Game>($"Manifest {fileInfo.FullName} does not have a value \"dipInstallPath\"");
+                return Result.FromError<Game>($"Manifest {filePath} does not have a value \"dipInstallPath\"");
             }
 
+            var path = installPaths
+                .OrderByDescending(x => x.Length)
+                .First();
+            
             return Result.FromGame(new Game(
                 Id: id,
                 Name: fileSystem.Path.GetFileName(installPaths[0]),
-                Path: installPaths[0]));
+                Path: _fileSystem.FromFullPath(path)));
         }
         catch (Exception e)
         {
-            return Result.FromException<Game>($"Exception while parsing {fileInfo.FullName}", e);
+            return Result.FromException<Game>($"Exception while parsing {filePath}", e);
         }
     }
 }

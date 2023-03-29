@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using GameCollector.Common;
 using GameCollector.RegistryUtils;
 using JetBrains.Annotations;
+using NexusMods.Paths;
 
 namespace GameCollector.StoreHandlers.GOG;
 
@@ -17,7 +18,7 @@ namespace GameCollector.StoreHandlers.GOG;
 /// <param name="Name"></param>
 /// <param name="Path"></param>
 [PublicAPI]
-public record GOGGame(long Id, string Name, string Path);
+public record GOGGame(long Id, string Name, AbsolutePath Path);
 
 /// <summary>
 /// Handler for finding games installed with GOG Galaxy.
@@ -28,21 +29,17 @@ public class GOGHandler : AHandler<Game, string>
     internal const string GOGRegKey = @"Software\GOG.com\Games";
 
     private readonly IRegistry _registry;
+    private readonly IFileSystem _fileSystem;
 
     /// <summary>
-    /// Default constructor. This uses the <see cref="WindowsRegistry"/> implementation
-    /// of <see cref="IRegistry"/>.
-    /// </summary>
-    [SupportedOSPlatform("windows")]
-    public GOGHandler() : this(new WindowsRegistry()) { }
-
-    /// <summary>
-    /// Constructor for specifying the implementation of <see cref="IRegistry"/>.
+    /// Constructor.
     /// </summary>
     /// <param name="registry"></param>
-    public GOGHandler(IRegistry registry)
+    /// <param name="fileSystem"></param>
+    public GOGHandler(IRegistry registry, IFileSystem fileSystem)
     {
         _registry = registry;
+        _fileSystem = fileSystem;
     }
 
     /// <inheritdoc/>
@@ -89,7 +86,7 @@ public class GOGHandler : AHandler<Game, string>
         return games.CustomToDictionary(game => game.Id, game => game);
     }
 
-    private static Result<Game> ParseSubKey(IRegistryKey gogKey, string subKeyName)
+    private Result<Game> ParseSubKey(IRegistryKey gogKey, string subKeyName)
     {
         try
         {
@@ -119,6 +116,7 @@ public class GOGHandler : AHandler<Game, string>
                 return Result.FromError<Game>($"{subKey.GetName()} doesn't have a string value \"path\"");
             }
 
+            path = path.Replace("\\\\", "\\", StringComparison.Ordinal);
             subKey.TryGetString("launchCommand", out var launch);
             launch ??= "";
             subKey.TryGetString("exe", out var icon);
@@ -129,7 +127,7 @@ public class GOGHandler : AHandler<Game, string>
             return Result.FromGame(new Game(
                 Id: sId,
                 Name: name,
-                Path: path,
+                Path: _fileSystem.FromFullPath(path),
                 Launch: launch,
                 Icon: icon,
                 Uninstall: uninst,

@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
         <ProjectReference Include="..\..\src\GameCollector.YamlUtils\GameCollector.YamlUtils.csproj" />
+        <ProjectReference Include="..\..\extern\NexusMods.App\src\NexusMods.Paths.TestingHelpers\NexusMods.Paths.TestingHelpers.csproj" />
+        <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.Riot\GameFinder.StoreHandlers.Riot.csproj" />
+        <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.Ubisoft\GameFinder.StoreHandlers.Ubisoft.csproj" />
         <ProjectReference Include="..\TestUtils\TestUtils.csproj" />
     </ItemGroup>
 

@@ -1,14 +1,14 @@
-using System.IO.Abstractions.TestingHelpers;
-using GameCollector.RegistryUtils;
-using GameCollector.StoreHandlers.EGS.Tests.AutoData;
+using GameFinder.RegistryUtils;
+using NexusMods.Paths;
+using NexusMods.Paths.TestingHelpers;
 using TestUtils;
 
-namespace GameCollector.StoreHandlers.EGS.Tests;
+namespace GameFinder.StoreHandlers.EGS.Tests;
 
 public partial class EGSTests
 {
-    [Theory, EGSAutoData]
-    public void Test_ShouldWork_FindAllGames(MockFileSystem fs, InMemoryRegistry registry)
+    [Theory, AutoFileSystem]
+    public void Test_ShouldWork_FindAllGames(InMemoryFileSystem fs, InMemoryRegistry registry)
     {
         var (handler, manifestDir) = SetupHandler(fs, registry);
         var expectedGames = SetupGames(fs, manifestDir);
@@ -16,12 +16,12 @@ public partial class EGSTests
         handler.ShouldFindAllGames(expectedGames);
     }
 
-    [Theory, EGSAutoData]
-    public void Test_ShouldWork_FindAllGamesById(MockFileSystem fs, InMemoryRegistry registry)
+    [Theory, AutoFileSystem]
+    public void Test_ShouldWork_FindAllGamesById(InMemoryFileSystem fs, InMemoryRegistry registry)
     {
         var (handler, manifestDir) = SetupHandler(fs, registry);
         var expectedGames = SetupGames(fs, manifestDir).ToArray();
 
-        handler.ShouldFindAllGamesById(expectedGames, game => game.Id);
+        handler.ShouldFindAllGamesById(expectedGames, game => game.CatalogItemId);
     }
 }

@@ -1,52 +1,53 @@
-using System.IO.Abstractions.TestingHelpers;
-using GameCollector.Common;
-using GameCollector.RegistryUtils;
+using GameFinder.RegistryUtils;
+using NexusMods.Paths;
 using TestUtils;
 
-namespace GameCollector.StoreHandlers.EGS.Tests;
+namespace GameFinder.StoreHandlers.EGS.Tests;
 
 public partial class EGSTests
 {
-    private static (EGSHandler handler, string manifestDir) SetupHandler(MockFileSystem fs, InMemoryRegistry registry)
+    private static (EGSHandler handler, AbsolutePath manifestDir) SetupHandler(InMemoryFileSystem fs, InMemoryRegistry registry)
     {
         var fixture = new Fixture();
 
         var manifestDirName = fixture.Create<string>();
-        var manifestDir = fs.Path.Combine(fs.Path.GetTempPath(), manifestDirName);
+        var manifestDir = fs
+            .GetKnownPath(KnownPath.TempDirectory)
+            .CombineUnchecked(manifestDirName);
 
         fs.AddDirectory(manifestDir);
 
         var regKey = registry.AddKey(RegistryHive.CurrentUser, EGSHandler.RegKey);
-        regKey.AddValue(EGSHandler.ModSdkMetadataDir, manifestDir);
+        regKey.AddValue(EGSHandler.ModSdkMetadataDir, manifestDir.GetFullPath());
 
         var handler = new EGSHandler(registry, fs);
         return (handler, manifestDir);
     }
 
-    private static IEnumerable<Game> SetupGames(MockFileSystem fs, string manifestDir)
+    private static IEnumerable<EGSGame> SetupGames(InMemoryFileSystem fs, AbsolutePath manifestDir)
     {
         var fixture = new Fixture();
 
         fixture
-            .Customize<Game>(composer => composer
+            .Customize<EGSGame>(composer => composer
                 .FromFactory<string, string>((catalogItemId, displayName) =>
                 {
-                    var manifestItem = fs.Path.Combine(manifestDir, $"{catalogItemId}.item");
-                    var installLocation = fs.Path.Combine(manifestDir, displayName);
+                    var manifestItem = manifestDir.CombineUnchecked($"{catalogItemId}.item");
+                    var installLocation = manifestDir.CombineUnchecked(displayName);
 
                     var mockData = $@"{{
     ""CatalogItemId"": ""{catalogItemId}"",
     ""DisplayName"": ""{displayName}"",
-    ""InstallLocation"": ""{installLocation.ToEscapedString()}""
+    ""InstallLocation"": ""{installLocation.GetFullPath().ToEscapedString()}""
 }}";
 
                     fs.AddDirectory(installLocation);
                     fs.AddFile(manifestItem, mockData);
 
-                    return new Game(catalogItemId, displayName, installLocation);
+                    return new EGSGame(catalogItemId, displayName, installLocation);
                 })
                 .OmitAutoProperties());
 
-        return fixture.CreateMany<Game>();
+        return fixture.CreateMany<EGSGame>();
     }
 }

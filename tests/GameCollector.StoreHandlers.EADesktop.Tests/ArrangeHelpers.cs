@@ -1,14 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
-using System.IO.Abstractions.TestingHelpers;
 using System.Security.Cryptography;
 using System.Text.Json;
 using AutoFixture.AutoMoq;
-using GameCollector.Common;
-using GameCollector.RegistryUtils;
-using GameCollector.StoreHandlers.EADesktop.Crypto;
+using GameFinder.StoreHandlers.EADesktop.Crypto;
+using NexusMods.Paths;
 
-namespace GameCollector.StoreHandlers.EADesktop.Tests;
+namespace GameFinder.StoreHandlers.EADesktop.Tests;
 
 public partial class EADesktopTests
 {
@@ -22,46 +19,52 @@ public partial class EADesktopTests
     private static (
         EADesktopHandler handler,
         IHardwareInfoProvider hardwareInfoProvider,
-        IDirectoryInfo parentFolder)
-        SetupHandler(MockFileSystem fs, InMemoryRegistry reg)
+        AbsolutePath parentFolder)
+        SetupHandler(InMemoryFileSystem fs)
     {
         var dataFolder = EADesktopHandler.GetDataFolder(fs);
-        fs.AddDirectory(dataFolder.FullName);
+        fs.AddDirectory(dataFolder);
 
         var hardwareInfoProvider = SetupHardwareInfoProvider();
-        var handler = new EADesktopHandler(reg, fs, hardwareInfoProvider);
+        var handler = new EADesktopHandler(fs, hardwareInfoProvider);
         return (handler, hardwareInfoProvider, dataFolder);
     }
 
     [SuppressMessage("Design", "MA0051:Method is too long")]
-    private static IEnumerable<Game> SetupGames(
-        MockFileSystem fs, IHardwareInfoProvider hardwareInfoProvider, IDirectoryInfo dataFolder)
+    private static IEnumerable<EADesktopGame> SetupGames(
+        InMemoryFileSystem fs, IHardwareInfoProvider hardwareInfoProvider, AbsolutePath dataFolder)
     {
         var fixture = new Fixture();
 
         var installInfoFile = EADesktopHandler.GetInstallInfoFile(dataFolder);
-        installInfoFile.Directory!.Create();
+        fs.AddDirectory(installInfoFile.Parent);
 
-        fixture.Customize<Game>(composer => composer
+        fixture.Customize<EADesktopGame>(composer => composer
             .FromFactory<string, string>((softwareID, baseSlug) =>
             {
-                var baseInstallPath = fs.Path.Combine(fs.Path.GetTempPath(), baseSlug);
-                var installerDataPath = fs.Path.Combine(baseInstallPath, "__Installer", "installerdata.xml");
+                var baseInstallPath = fs
+                    .GetKnownPath(KnownPath.TempDirectory)
+                    .CombineUnchecked(baseSlug);
+
+                var installerDataPath = baseInstallPath
+                    .CombineUnchecked("__Installer")
+                    .CombineUnchecked("installerdata.xml");
 
                 fs.AddDirectory(baseInstallPath);
-                fs.AddFile(installerDataPath, new MockFileData(string.Empty));
+                fs.AddFile(installerDataPath, "");
 
-                return (new Game(softwareID, baseSlug, baseInstallPath));
+                var game = new EADesktopGame(softwareID, baseSlug, baseInstallPath);
+                return game;
             })
             .OmitAutoProperties());
 
-        var games = fixture.CreateMany<Game>().ToArray();
+        var games = fixture.CreateMany<EADesktopGame>().ToArray();
 
         var installInfos = games.Select(game => new InstallInfo
         {
-            BaseSlug = game.Metadata is not null ? game.Metadata["BaseSlug"].ToString() : null,
-            BaseInstallPath = game.Path + "\\",
-            SoftwareID = game.Id,
+            BaseSlug = game.BaseSlug,
+            BaseInstallPath = game.BaseInstallPath + "\\",
+            SoftwareID = game.SoftwareID,
         }).ToList();
 
         var installInfo = new InstallInfoFile
@@ -82,14 +85,19 @@ public partial class EADesktopTests
 
             var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
-            using var fileStream = installInfoFile.Open(FileMode.Create, FileAccess.ReadWrite, FileShare.Write);
-            fileStream.Write(new byte[64]);
+            using var stream = new MemoryStream();
+            stream.Write(stackalloc byte[64]);
 
-            using var cryptoStream = new CryptoStream(fileStream, encryptor, CryptoStreamMode.Write);
-            JsonSerializer.Serialize(cryptoStream, installInfo, new JsonSerializerOptions
+            using (var cryptoStream = new CryptoStream(stream, encryptor, CryptoStreamMode.Write))
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            });
+                JsonSerializer.Serialize(cryptoStream, installInfo, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+            }
+
+            var buffer = stream.ToArray();
+            fs.AddFile(installInfoFile, buffer);
         }
 
         return games;
