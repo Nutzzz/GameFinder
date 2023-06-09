@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding games installed with Big Fish Game Manager.</Description>
+        <PackageTags>bigfish big-fish games</PackageTags>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
+
+    <ItemGroup>
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
+        <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.StoreHandlers.BigFish.Tests" />
+    </ItemGroup>
+</Project>

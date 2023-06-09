@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding games installed with Legacy Games Launcher.</Description>
+        <PackageTags>legacy legacy-games games</PackageTags>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
+        <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.StoreHandlers.Legacy.Tests" />
+    </ItemGroup>
+</Project>

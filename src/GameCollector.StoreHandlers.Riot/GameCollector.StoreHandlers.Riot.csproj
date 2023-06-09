@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding games installed with the Riot Client.</Description>
+        <PackageTags>riot riot-client games</PackageTags>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
+        <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
+        <ProjectReference Include="..\GameCollector.YamlUtils\GameCollector.YamlUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.StoreHandlers.Riot.Tests" />
+    </ItemGroup>
+</Project>

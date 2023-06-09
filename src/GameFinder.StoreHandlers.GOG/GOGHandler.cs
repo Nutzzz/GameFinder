@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
@@ -14,7 +15,7 @@ namespace GameFinder.StoreHandlers.GOG;
 /// Handler for finding games installed with GOG Galaxy.
 /// </summary>
 [PublicAPI]
-public class GOGHandler : AHandler<GOGGame, GOGGameId>
+public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
 {
     internal const string GOGRegKey = @"Software\GOG.com\Games";
 
@@ -50,7 +51,30 @@ public class GOGHandler : AHandler<GOGGame, GOGGameId>
     public override IEqualityComparer<GOGGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames()
+    public override AbsolutePath FindClient()
+    {
+        if (_registry is not null)
+        {
+            var localMachine = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+
+            using var regKey = localMachine.OpenSubKey(@"SOFTWARE\GOG.com\GalaxyClient");
+            if (regKey is null) return default;
+
+            if (regKey.TryGetString("clientExecutable", out var clientExe))
+            {
+                using var regKey2 = regKey.OpenSubKey("paths");
+                if (regKey2 is null) return default;
+
+                if (regKey2.TryGetString("client", out var clientPath) && Path.IsPathRooted(clientPath))
+                    return _fileSystem.FromFullPath(SanitizeInputPath(clientPath)).CombineUnchecked(clientExe);
+            }
+        }
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
         try
         {
@@ -74,9 +98,12 @@ public class GOGHandler : AHandler<GOGGame, GOGGameId>
                 };
             }
 
-            return subKeyNames
+            var games = FindGamesFromDatabase(installedOnly).ToList();
+            games.AddRange(subKeyNames
                 .Select(subKeyName => ParseSubKey(gogKey, subKeyName))
-                .ToArray();
+                .ToArray());
+
+            return games;
         }
         catch (Exception e)
         {
@@ -117,10 +144,18 @@ public class GOGHandler : AHandler<GOGGame, GOGGameId>
                 return new ErrorMessage($"{subKey.GetName()} doesn't have a string value \"path\"");
             }
 
+            //subKey.TryGetString("launchCommand", out var launch);
+            subKey.TryGetString("exe", out var exe);
+            subKey.TryGetString("launchParam", out var launchParam);
+            subKey.TryGetString("uninstallCommand", out var uninst);
+
             var game = new GOGGame(
-                GOGGameId.From(id),
-                name,
-                _fileSystem.FromFullPath(SanitizeInputPath(path))
+                Id: GOGGameId.From(id),
+                Name: name,
+                Path: Path.IsPathRooted(path) ? _fileSystem.FromFullPath(SanitizeInputPath(path)) : new(),
+                Exe: Path.IsPathRooted(exe) ? _fileSystem.FromFullPath(SanitizeInputPath(exe)) : new(),
+                LaunchParam: launchParam ?? "",
+                UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromFullPath(SanitizeInputPath(uninst)) : new()
             );
 
             return game;

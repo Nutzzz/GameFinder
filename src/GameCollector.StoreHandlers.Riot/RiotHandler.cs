@@ -1,0 +1,215 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using GameFinder.Common;
+using GameFinder.RegistryUtils;
+using JetBrains.Annotations;
+using NexusMods.Paths;
+using OneOf;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+
+namespace GameCollector.StoreHandlers.Riot;
+
+/// <summary>
+/// Handler for finding games installed with Riot Client.
+/// Uses json file:
+///   %ProgramData%\Riot Games\RiotClientInstalls.json
+/// and yaml files:
+///   %ProgramData%\Riot Games\Metadata\*\*settings.yaml
+/// </summary>
+[PublicAPI]
+public class RiotHandler : AHandler<RiotGame, string>
+{
+    private readonly JsonSerializerOptions JsonSerializerOptions =
+        new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            AllowTrailingCommas = true,
+            NumberHandling = JsonNumberHandling.Strict,
+            TypeInfoResolver = SourceGenerationContext.Default,
+        };
+
+    private readonly IRegistry? _registry;
+    private readonly IFileSystem _fileSystem;
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="fileSystem">
+    /// The implementation of <see cref="IFileSystem"/> to use. For a shared instance use
+    /// <see cref="FileSystem.Shared"/>. For tests either use <see cref="InMemoryFileSystem"/>,
+    /// a custom implementation or just a mock of the interface.
+    /// </param>
+    /// <param name="registry">
+    /// The implementation of <see cref="IRegistry"/> to use. For a shared instance
+    /// use <see cref="WindowsRegistry.Shared"/> on Windows. On Linux use <c>null</c>.
+    /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
+    /// of the interface.
+    /// </param>
+    public RiotHandler(IFileSystem fileSystem, IRegistry? registry)
+    {
+        _fileSystem = fileSystem;
+        _registry = registry;
+    }
+
+    /// <inheritdoc/>
+    public override IEqualityComparer<string>? IdEqualityComparer => null;
+
+    /// <inheritdoc/>
+    public override Func<RiotGame, string> IdSelector => game => game.GameId;
+
+    /// <inheritdoc/>
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
+    public override AbsolutePath FindClient()
+    {
+        try
+        {
+            // could also get client path from HKEY_CLASSES_ROOT\riotclient\shell\open\command\(Default)
+            // or just use protocol "riotclient://"
+
+            var clientFile = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
+                .CombineUnchecked("Riot Games")
+                .CombineUnchecked("RiotClientInstalls.json");
+
+            using var stream = clientFile.Read();
+            var client = JsonSerializer.Deserialize<ClientInstallFile>(stream, JsonSerializerOptions);
+            if (client is not null && client.RcLive is not null)
+            {
+                var clientPath = SanitizeInputPath(client.RcLive);
+                if (Path.IsPathRooted(clientPath))
+                    return _fileSystem.FromFullPath(clientPath);
+            }
+        }
+        catch (Exception) { }
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
+    public override IEnumerable<OneOf<RiotGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    {
+        var clientFile = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
+            .CombineUnchecked("Riot Games")
+            .CombineUnchecked("RiotClientInstalls.json");
+        var metaDir = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
+            .CombineUnchecked("Riot Games")
+            .CombineUnchecked("Metadata");
+        if (!clientFile.FileExists)
+        {
+            yield return new ErrorMessage($"The client install file {clientFile.GetFullPath()} does not exist!");
+            yield break;
+        }
+
+        // could also get client path from HKEY_CLASSES_ROOT\riotclient\shell\open\command\(Default) though I'm not sure how to use "--app-command=" properly
+        var clientPath = "";
+
+        using var stream = clientFile.Read();
+        var client = JsonSerializer.Deserialize<ClientInstallFile>(stream, JsonSerializerOptions);
+        if (client is not null && client.RcLive is not null)
+            clientPath = client.RcLive;
+
+        var settingsFiles = metaDir
+            .EnumerateFiles("*settings.yaml", recursive: true)
+            .ToArray();
+
+        if (settingsFiles.Length == 0)
+        {
+            yield return new ErrorMessage($"The metadata directory {metaDir.GetFullPath()} does not contain any .yaml files");
+            yield break;
+        }
+
+        foreach (var file in settingsFiles)
+        {
+            yield return DeserializeGame(file, clientPath);
+        }
+    }
+
+    private OneOf<RiotGame, ErrorMessage> DeserializeGame(AbsolutePath settingsFile, string clientPath)
+    {
+        using var stream = settingsFile.Read();
+
+        try
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
+            var game = deserializer.Deserialize<SettingsFile>(new StreamReader(stream).ReadToEnd());
+
+            if (game is null)
+            {
+                return new ErrorMessage($"Unable to deserialize file {settingsFile.GetFullPath()}");
+            }
+
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            if (game.UserDataPaths is not null) // This should only be true for "Riot Client.settings.yaml"
+            {
+                return new ErrorMessage($"Not a game file {settingsFile.GetFullPath()}");
+            }
+
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            if (game.ProductInstallFullPath is null || game.ProductInstallRoot is null)
+            {
+                return new ErrorMessage($"No \"product_install_full_path\" property in file {settingsFile.GetFullPath()}");
+            }
+
+            var name = game.ShortcutName ?? settingsFile.FileName[..settingsFile.FileName.IndexOf('.', StringComparison.Ordinal)];
+
+            var id = game.ProductInstallFullPath[(game.ProductInstallRoot.Length + 1)..];
+            if (id.Contains('/', StringComparison.Ordinal))
+                id = id[..id.IndexOf('/', StringComparison.Ordinal)];
+
+            var product = Path.GetFileNameWithoutExtension(settingsFile.FileName);
+            if (product.Contains('.', StringComparison.Ordinal))
+                product = product[..product.IndexOf('.', StringComparison.Ordinal)].ToLower(CultureInfo.InvariantCulture);
+
+            var launch = clientPath;
+            var launchArgs = "--launch-product=" + product;
+            var uninstallArgs = "--uninstall-product=" + product;
+            if (settingsFile.FileName.Contains(".live.", StringComparison.OrdinalIgnoreCase))
+            {
+                launchArgs += " --launch-patchline=live";
+                uninstallArgs += " --uninstall-patchline=live";
+            }
+
+            AbsolutePath icon = new();
+            if (settingsFile.Directory is not null)
+            {
+                foreach (var iconFile in _fileSystem.EnumerateFiles(_fileSystem.FromFullPath(settingsFile.Directory), "*.ico", recursive: false))
+                {
+                    icon = iconFile;
+                    break;
+                }
+            }
+            if (string.IsNullOrEmpty(icon.GetFullPath()))
+                icon = _fileSystem.FromFullPath(SanitizeInputPath(launch));
+
+            return new RiotGame(
+                ProductId: RiotGameId.From(id),
+                Name: Path.GetFileNameWithoutExtension(game.ShortcutName ?? ""),
+                ProductInstallPath: _fileSystem.FromFullPath(SanitizeInputPath(game.ProductInstallFullPath ?? "")),
+                ClientPath: _fileSystem.FromFullPath(SanitizeInputPath(launch)),
+                LaunchArgs: launchArgs,
+                Icon: icon,
+                UninstallArgs: uninstallArgs);
+        }
+        catch (Exception e)
+        {
+            return new ErrorMessage(e, $"Unable to deserialize file {settingsFile.GetFullPath()}");
+        }
+    }
+}

@@ -1,0 +1,311 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using GameFinder.Common;
+using GameFinder.RegistryUtils;
+using JetBrains.Annotations;
+using NexusMods.Paths;
+using OneOf;
+
+namespace GameCollector.StoreHandlers.IGClient;
+
+/// <summary>
+/// Handler for finding games installed with Indiegala IGClient.
+/// Uses json files:
+///   %AppData%\IGClient\storage\installed.json
+///   %AppData%\IGClient\config.json
+/// </summary>
+[PublicAPI]
+public class IGClientHandler : AHandler<IGClientGame, string>
+{
+    internal const string ImgUrl = "https://www.indiegalacdn.com/imgs/devs/";
+    internal const string UninstallRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+
+    private readonly JsonSerializerOptions JsonSerializerOptions =
+        new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            AllowTrailingCommas = true,
+            NumberHandling = JsonNumberHandling.Strict,
+            //TODO: Fix TypeInfoResolver exception with ConfigFile
+            //TypeInfoResolver = SourceGenerationContext.Default,
+        };
+
+    private readonly IRegistry? _registry;
+    private readonly IFileSystem _fileSystem;
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="fileSystem">
+    /// The implementation of <see cref="IFileSystem"/> to use. For a shared instance use
+    /// <see cref="FileSystem.Shared"/>. For tests either use <see cref="InMemoryFileSystem"/>,
+    /// a custom implementation or just a mock of the interface.
+    /// </param>
+    /// <param name="registry">
+    /// The implementation of <see cref="IRegistry"/> to use. For a shared instance
+    /// use <see cref="WindowsRegistry.Shared"/> on Windows. On Linux use <c>null</c>.
+    /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
+    /// of the interface.
+    /// </param>
+    public IGClientHandler(IFileSystem fileSystem, IRegistry? registry)
+    {
+        _fileSystem = fileSystem;
+        _registry = registry;
+    }
+
+    /// <inheritdoc/>
+    public override IEqualityComparer<string>? IdEqualityComparer => null;
+
+    /// <inheritdoc/>
+    public override Func<IGClientGame, string> IdSelector => game => game.GameId;
+
+    /// <inheritdoc/>
+    public override AbsolutePath FindClient()
+    {
+        if (_registry is not null)
+        {
+            var localMachine64 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+
+            using var regKey = localMachine64.OpenSubKey(Path.Combine(UninstallRegKey, "6f4f090a-db12-53b6-ac44-9ecdb7703b4a"));
+            if (regKey is null) return default;
+
+            if (regKey.TryGetString("DisplayIcon", out var icon))
+            {
+                if (icon.Contains(',', StringComparison.Ordinal))
+                    icon = icon[..icon.LastIndexOf(',')];
+                if (Path.IsPathRooted(icon))
+                    return _fileSystem.FromFullPath(SanitizeInputPath(icon));
+            }
+        }
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<OneOf<IGClientGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    {
+        List<OneOf<IGClientGame, ErrorMessage>> games = new();
+        var installFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
+            .CombineUnchecked("IGClient")
+            .CombineUnchecked("storage")
+            .CombineUnchecked("installed.json");
+        if (!installFile.FileExists)
+        {
+            return new OneOf<IGClientGame, ErrorMessage>[]
+            {
+                new ErrorMessage($"The data file {installFile.GetFullPath()} does not exist!"),
+            };
+        }
+        var configFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
+            .CombineUnchecked("IGClient")
+            .CombineUnchecked("config.json");
+        if (!configFile.FileExists)
+        {
+            return new OneOf<IGClientGame, ErrorMessage>[]
+            {
+                new ErrorMessage($"The data file {configFile.GetFullPath()} does not exist!"),
+            };
+        }
+
+        games = ParseInstallFile(installFile);
+        if (!installedOnly)
+            games = ParseConfigFile(configFile, games);
+
+        return games;
+    }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
+    private List<OneOf<IGClientGame, ErrorMessage>> ParseInstallFile(AbsolutePath installFile)
+    {
+        List<OneOf<IGClientGame, ErrorMessage>> games = new();
+
+        try
+        {
+            using var streamInst = installFile.Read();
+            var installs = JsonSerializer.Deserialize<List<InstalledFile>>(streamInst, JsonSerializerOptions);
+            if (installs is null || installs.Count == 0)
+            {
+                games.Add(new ErrorMessage($"Unable to deserialize data file {installFile.GetFullPath()}"));
+                return games;
+            }
+            var id = "";
+            var slugged = "";
+            var name = "";
+            AbsolutePath launch = new();
+            var launchArgs = "";
+            List<string> specs = new();
+            var rating = 0m;
+
+            var i = 0;
+            foreach (var game in installs)
+            {
+                i++;
+                if (game.Path is null ||
+                    game.Path.Count == 0)
+                {
+                    games.Add(new ErrorMessage("Unable to deserialize \"path\" property in data file " +
+                        $"{installFile.GetFullPath()} for game #{i.ToString(CultureInfo.InvariantCulture)}"));
+                    continue;
+                }
+                AbsolutePath path = new();
+                foreach (var gamePath in game.Path)
+                {
+                    if (Path.IsPathRooted(gamePath))
+                        path = _fileSystem.FromFullPath(SanitizeInputPath(gamePath));
+                }
+                var target = game.Target;
+                if (target is null ||
+                    target.ItemData is null ||
+                    target.GameData is null)
+                {
+                    games.Add(new ErrorMessage("Unable to deserialize \"target\" property in data file " +
+                        $"{installFile.GetFullPath()} for game #{i.ToString(CultureInfo.InvariantCulture)}"));
+                    continue;
+                }
+                id = target.ItemData.IdKeyName ?? "";
+                slugged = target.ItemData.SluggedName ?? "";
+                path = path.CombineUnchecked(slugged);
+                name = target.ItemData.Name ?? "";
+
+                if (!string.IsNullOrEmpty(target.GameData.ExePath))
+                {
+                    launch = path.CombineUnchecked(target.GameData.ExePath);
+                    if (!string.IsNullOrEmpty(target.GameData.Args))
+                        launchArgs = target.GameData.Args;
+                }
+                else
+                    launch = Utils.FindExe(path, _fileSystem, name);
+                if (target.GameData.Rating is not null)
+                    rating = target.GameData.Rating.AvgRating ?? 0m;
+                games.Add(new IGClientGame(
+                    IdKeyName: IGClientGameId.From(id),
+                    ItemName: name,
+                    Path: path,
+                    ExePath: launch,
+                    ExeArgs: launchArgs,
+                    DescriptionShort: target.GameData.DescriptionShort ?? "",
+                    DescriptionLong: target.GameData.DescriptionLong ?? "",
+                    DevImage: $"{ImgUrl}{target.ItemData.DevId}/products/{id}/prodmain/{target.ItemData.DevImage}",
+                    DevCover: $"{ImgUrl}{target.ItemData.DevId}/products/{id}/prodcover/{target.ItemData.DevCover}",
+                    SluggedName: slugged,
+                    Specs: target.GameData.Specs ?? new(),
+                    Categories: target.GameData.Categories,
+                    Tags: target.GameData.Tags,
+                    AvgRating: rating));
+            }
+            return games;
+        }
+        catch (Exception e)
+        {
+            return new() { new ErrorMessage($"Exception while deserializing file {installFile.GetFullPath()}\n{e.Message}\n{e.InnerException}") };
+        }
+    }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
+    private List<OneOf<IGClientGame, ErrorMessage>> ParseConfigFile(AbsolutePath configFile, List<OneOf<IGClientGame, ErrorMessage>> games)
+    {
+        try
+        {
+            using var streamCfg = configFile.Read();
+            var allGames = JsonSerializer.Deserialize<Dictionary<string, ConfigFile>>(streamCfg, JsonSerializerOptions);
+            if (allGames is null ||
+                !allGames.ContainsKey("gala_data"))
+            {
+                games.Add(new ErrorMessage($"Unable to deserialize data file {configFile.GetFullPath()}"));
+                return games;
+            }
+            var config = allGames["gala_data"];
+            if (config.Data is null ||
+                config.Data.ShowcaseContent is null ||
+                config.Data.ShowcaseContent.Content is null ||
+                config.Data.ShowcaseContent.Content.UserCollection is null)
+            {
+                games.Add(new ErrorMessage($"Unable to deserialize data file {configFile.GetFullPath()}"));
+                return games;
+            }
+            var id = "";
+            var slugged = "";
+            var name = "";
+            var description = "";
+            var descriptionLong = "";
+            List<string> specs = new();
+            List<string> genres = new();
+            List<string> tags = new();
+            var rating = 0m;
+
+            var c = 0;
+            var collection = config.Data.ShowcaseContent.Content.UserCollection ?? new();
+            foreach (var game in collection)
+            {
+                var installed = false;
+                c++;
+                id = game.ProdIdKeyName;
+                name = game.ProdName;
+                if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name))
+                {
+                    games.Add(new ErrorMessage("Unable to deserialize data in file " +
+                        $"{configFile.GetFullPath()} for game #{c.ToString(CultureInfo.InvariantCulture)}"));
+                    continue;
+                }
+                foreach (var installedGame in games)
+                {
+                    if (installedGame.IsGame() && installedGame.AsGame().GameId.Equals(id, StringComparison.Ordinal))
+                    {
+                        //games.Add(new ErrorMessage($"{name} was already found!"));
+                        installed = true;
+                        break;
+                    }
+                }
+                if (installed) continue;
+
+                slugged = game.ProdSluggedName ?? "";
+
+                if (allGames is not null &&
+                    allGames.TryGetValue(slugged, out var gameData))
+                {
+                    description = gameData.DescriptionShort ?? "";
+                    descriptionLong = gameData.DescriptionLong ?? "";
+                    specs = gameData.Specs ?? new();
+                    genres = gameData.Categories ?? new();
+                    tags = gameData.Tags ?? new();
+                    if (gameData.Rating is not null)
+                        rating = gameData.Rating.AvgRating ?? 0m;
+                }
+
+                games.Add(new IGClientGame(
+                    IdKeyName: IGClientGameId.From(id),
+                    ItemName: name,
+                    Path: new(),
+                    IsInstalled: false,
+                    DescriptionShort: description,
+                    DescriptionLong: descriptionLong,
+                    DevImage: $"https://www.indiegalacdn.com/imgs/devs/{game.ProdDevNamespace}/products/{id}/prodmain/{game.ProdDevImage}",
+                    DevCover: $"https://www.indiegalacdn.com/imgs/devs/{game.ProdDevNamespace}/products/{id}/prodcover/{game.ProdDevCover}",
+                    SluggedName: slugged,
+                    Specs: specs,
+                    Categories: genres,
+                    Tags: tags,
+                    AvgRating: rating
+                ));
+            }
+            return games;
+        }
+        catch (Exception e)
+        {
+            return new() { new ErrorMessage($"Exception while deserializing file {configFile.GetFullPath()}\n{e.Message}\n{e.InnerException}") };
+        }
+    }
+}

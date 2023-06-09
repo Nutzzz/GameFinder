@@ -1,29 +1,45 @@
-# GameFinder
+# GameCollector
+#### a fork of [GameFinder](https://github.com/erri120/GameFinder)
 
-[![CI](https://github.com/erri120/GameFinder/actions/workflows/ci.yml/badge.svg)](https://github.com/erri120/GameFinder/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/erri120/GameFinder/branch/master/graph/badge.svg?token=10PVRFWH39)](https://codecov.io/gh/erri120/GameFinder)
+[![CI](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml/badge.svg)](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/Nutzzz/GameCollector/branch/master/graph/badge.svg?token=10PVRFWH39)](https://codecov.io/gh/Nutzzz/GameCollector)
 
-.NET library for finding games. The following launchers are supported:
+.NET library for finding games. GameCollector expands on upstream GameFinder by adding additional supported store launchers, emulators, and additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). The following launchers and emulators are supported:
 
-- [Steam](#steam) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
-- [GOG Galaxy](#gog-galaxy) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
-- [Epic Games Store](#epic-games-store) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
-- [Origin](#origin) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)
-- [EA Desktop](#ea-desktop) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
-- [Xbox Game Pass](#xbox-game-pass) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox)
+- Amazon Games
+- Arc
+- [Bethesda.net](#bethesdanet) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated,upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet)
+- Big Fish Game Manager
+- Blizzard Battle.net
+- Dolphin Emulator
+- [EA app](#ea-app) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
+- [Epic Games Store](#epic-games-store) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
+- Game Jolt Client
+- [GOG Galaxy](#gog-galaxy) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
+- Humble App
+- Indiegala IGClient
+- itch
+- Legacy Games Launcher
+- Multiple Arcade Machine Emulator (MAME)
+- Oculus
+- [Origin](#origin) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)
+- Paradox Launcher
+- Plarium Play
+- Riot Client
+- Rockstar Games Launcher
+- [Steam](#steam) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
+- Ubisoft Connect
+- Wargaming.net Game Center
+- [Xbox Game Pass](#xbox-game-pass) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox)
 
-The following launchers are not yet supported or support has been dropped:
-
-- [Bethesda.net](#bethesdanet) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet)
-
-If you are interested in understanding _how_ GameFinder finds these games, check [the wiki](https://github.com/erri120/GameFinder/wiki) for more information.
+If you are interested in understanding _how_ GameCollector/GameFinder finds these games, check [the upstream wiki](https://github.com/erri120/GameFinder/wiki) for more information.
 
 Additionally, the following Linux tools are supported:
 
-- [Wine](#wine) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Wine)](https://www.nuget.org/packages/GameFinder.Wine)
+- [Wine](#wine) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Wine?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.Wine)
 
 ## Example
 
-The [example project](./other/GameFinder.Example) uses every available store handler and can be used as a reference. You can go to the [GitHub Actions Page](https://github.com/erri120/GameFinder/actions/workflows/ci.yml) and click on one of the latest CI workflow runs to download a build of this project.
+The [example project](./other/GameFinder.Example) uses every available store handler and can be used as a reference. You can go to the [GitHub Actions Page](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) and click on one of the latest CI workflow runs to download a build of this project.
 
 ## Usage
 
@@ -105,7 +121,37 @@ if (games.TryGetValue(someId, out var game))
 }
 ```
 
-## Supported Launchers
+## Supported Emulators
+
+This is a new category of handler for GameCollector. They are Windows-only for now. These both require you pass the path to the emulator executable.
+
+### Dolphin
+### MAME
+
+## New Supported Launchers
+
+The following handlers have been added by GameCollector. They are all Windows-only for now:
+
+### Amazon Games
+### Arc
+### Big Fish Game Manager
+### Blizzard Battle.net
+### Game Jolt
+### Humble App
+### Indiegala IGClient
+### itch
+### Legacy Games Launcher
+### Oculus
+### Paradox Launcher
+### Plarium Play
+### Riot Client
+### Rockstar Games Launcher
+### Ubisoft Connect
+### Wargaming.net Game Center
+
+## Upstream Supported Launchers
+
+The following handlers come from upstream [GameFinder](https://github.com/erri120/GameFinder):
 
 ### Steam
 
@@ -116,6 +162,8 @@ Steam is supported natively on Windows and Linux. Use [SteamDB](https://steamdb.
 ```csharp
 var handler = new SteamHandler(FileSystem.Shared, OperatingSystem.IsWindows() ? WindowsRegistry.Shared : null);
 ```
+
+GameCollector adds the ability to check a Steam profile for owned not-installed games. A specific [Steam ID](https://store.steampowered.com/account) may be specified, though it will automatically attempt to find one. However, this feature requires that [an API key be activated](https://steamcommunity.com/dev/apikey) and specified, and the [user profile set to public](https://steamcommunity.com/my/edit/settings).
 
 ### GOG Galaxy
 
@@ -163,7 +211,7 @@ var handler = new EGSHandler(wineRegistry, wineFileSystem);
 
 ### Origin
 
-Origin is supported natively on Windows, and with [Wine](#wine) on Linux. **Note:** [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app) and will replace it with [EA Desktop](#ea-desktop).
+Origin is supported natively on Windows, and with [Wine](#wine) on Linux. **Note:** [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app) and will replace it with [EA app](#ea-app).
 
 **Usage (native on Windows):**
 
@@ -182,11 +230,11 @@ var wineFileSystem = winePrefix.CreateOverlayFileSystem(FileSystem.Shared);
 var handler = new OriginHandler(wineFileSystem);
 ```
 
-### EA Desktop
+### EA app
 
-EA Desktop is the replacement for [Origin](#origin): See [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app). This is by far, the most complicated Store Handler. **You should read the [wiki entry](https://github.com/erri120/GameFinder/wiki/EA-Desktop).** My implementation decrypts the encrypted file, created by EA Desktop. You should be aware that the key used to encrypt the file is derived from hardware information. If the user changes their hardware, the decryption process might fail because they key has changed.
+The EA app is the replacement for [Origin](#origin) on Windows: See [EA is deprecating Origin](https://www.ea.com/en-gb/news/ea-app). This is by far the most complicated Store Handler. **You should read the [upstream wiki entry](https://github.com/erri120/GameFinder/wiki/EA-Desktop).** This implementation decrypts the encrypted file created by the EA app. You should be aware that the key used to encrypt the file is derived from hardware information. If the user changes their hardware, the decryption process might fail because they key has changed.
 
-EA Desktop is only supported on Windows.
+The EA app is only supported on Windows.
 
 **Usage:**
 
@@ -196,7 +244,7 @@ var handler = new EADesktopHandler(FileSystem.Shared, new HardwareInfoProvider()
 
 ### Xbox Game Pass
 
-This package used to be deprecated, but I've re-added support in GameFinder [3.0.0](./CHANGELOG.md#300---2023-05-09). Xbox Game Pass used to install games inside a `SYSTEM` protected folder, making modding not feasible for the average user. You can read more about this [here](https://github.com/Nexus-Mods/NexusMods.App/issues/175).
+This package used to be deprecated, but support was re-added in GameFinder [3.0.0](./CHANGELOG.md#300---2023-05-09). Xbox Game Pass used to install games inside a `SYSTEM` protected folder, making modding not feasible for the average user. You can read more about this [here](https://github.com/Nexus-Mods/NexusMods.App/issues/175).
 
 Xbox Game Pass is only supported on Windows.
 
@@ -208,14 +256,14 @@ var handler = new XboxHandler(FileSystem.Shared);
 
 ### Bethesda.net
 
-[As of May 11, 2022, the Bethesda.net launcher is no longer in use](https://bethesda.net/en/article/2RXxG1y000NWupPalzLblG/sunsetting-the-bethesda-net-launcher-and-migrating-to-steam). The package [GameFinder.StoreHandlers.BethNet](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet/) has been deprecated and marked as _legacy_.
+[As of May 11, 2022, the Bethesda.net launcher is no longer in use](https://bethesda.net/en/article/2RXxG1y000NWupPalzLblG/sunsetting-the-bethesda-net-launcher-and-migrating-to-steam). The upstream package [GameFinder.StoreHandlers.BethNet](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet/) has been deprecated and marked as _legacy_.
 
 
 ## Wine
 
 [Wine](https://www.winehq.org/) is a compatibility layer capable of running Windows applications on Linux. Wine uses [prefixes](https://wiki.winehq.org/FAQ#Wineprefixes) to create and store virtual `C:` drives. A user can install and run Windows program inside these prefixes, and applications running inside the prefixes likely won't even notice they are not actually running on Windows.
 
-Since GameFinder is all about finding games, it also has to be able to find games inside Wine prefixes to provide good Linux support. The package `NexusMods.Paths` from [NexusMods.App](https://github.com/Nexus-Mods/NexusMods.App) provides a file system abstraction `IFileSystem` which enables path re-mappings:
+Since GameCollector/GameFinder is all about finding games, it also has to be able to find games inside Wine prefixes to provide good Linux support. The package `NexusMods.Paths` from [NexusMods.App](https://github.com/Nexus-Mods/NexusMods.App) provides a file system abstraction `IFileSystem` which enables path re-mappings:
 
 ```csharp
 AWinePrefix prefix = //...
@@ -277,7 +325,7 @@ foreach (var result in prefixManager.FindPrefixes())
 
 ### Proton
 
-Valve's [Proton](https://github.com/ValveSoftware/Proton) is a compatibility tool for Steam and is mostly based on Wine. The Wine prefixes managed by Proton are in the `compatdata` directory of the steam library where the game itself is installed. Since the path is relative to the game itself and requires the app id, I've decided to put this functionality in `GameFinder.StoreHandlers.Steam`:
+Valve's [Proton](https://github.com/ValveSoftware/Proton) is a compatibility tool for Steam and is mostly based on Wine. The Wine prefixes managed by Proton are in the `compatdata` directory of the steam library where the game itself is installed. Since the path is relative to the game itself and requires the app id, erri120 decided to put this functionality in `GameFinder.StoreHandlers.Steam`:
 
 ```csharp
 SteamGame? steamGame = steamHandler.FindOneGameById(1237970, out var errors);

@@ -1,0 +1,280 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using GameFinder.Common;
+using GameFinder.RegistryUtils;
+using JetBrains.Annotations;
+using NexusMods.Paths;
+using OneOf;
+
+namespace GameCollector.StoreHandlers.GameJolt;
+
+/// <summary>
+/// Handler for finding games installed with Game Jolt Client.
+/// </summary>
+[PublicAPI]
+public class GameJoltHandler : AHandler<GameJoltGame, string>
+{
+    internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
+
+    private readonly JsonSerializerOptions JsonSerializerOptions =
+        new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            AllowTrailingCommas = true,
+            NumberHandling = JsonNumberHandling.Strict,
+            TypeInfoResolver = SourceGenerationContext.Default,
+        };
+
+    private readonly IRegistry? _registry;
+    private readonly IFileSystem _fileSystem;
+
+    /// <summary>
+    /// The supported wttf version of this handler. You can change the version policy with
+    /// <see cref="VersionPolicy"/>.
+    /// </summary>
+    public const int SupportedWttfVersion = 1;
+
+    /// <summary>
+    /// The supported manifest version of this handler. You can change the version policy with
+    /// <see cref="VersionPolicy"/>.
+    /// </summary>
+    public const int SupportedManifestVersion = 3;
+
+    /// <summary>
+    /// Policy to use when the wttf or manifest version does not match <see cref="SupportedWttfVersion"/>
+    /// or <see cref="SupportedManifestVersion"/>.
+    /// The default behavior is <see cref="GameJolt.VersionPolicy.Warn"/>.
+    /// </summary>
+    public VersionPolicy VersionPolicy { get; set; } = VersionPolicy.Warn;
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="fileSystem">
+    /// The implementation of <see cref="IFileSystem"/> to use. For a shared instance use
+    /// <see cref="FileSystem.Shared"/>. For tests either use <see cref="InMemoryFileSystem"/>,
+    /// a custom implementation or just a mock of the interface.
+    /// </param>
+    /// <param name="registry">
+    /// The implementation of <see cref="IRegistry"/> to use. For a shared instance
+    /// use <see cref="WindowsRegistry.Shared"/> on Windows. On Linux use <c>null</c>.
+    /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
+    /// of the interface.
+    /// </param>
+    public GameJoltHandler(IFileSystem fileSystem, IRegistry? registry)
+    {
+        _fileSystem = fileSystem;
+        _registry = registry;
+    }
+
+    /// <inheritdoc/>
+    public override IEqualityComparer<string>? IdEqualityComparer => null;
+
+    /// <inheritdoc/>
+    public override Func<GameJoltGame, string> IdSelector => game => game.GameId;
+
+    /// <inheritdoc/>
+    public override AbsolutePath FindClient()
+    {
+        if (_registry is not null)
+        {
+            var currentUser = _registry.OpenBaseKey(RegistryHive.CurrentUser);
+
+            using var regKey = currentUser.OpenSubKey(Path.Combine(UninstallRegKey, "game-jolt-client_is1"));
+            if (regKey is null) return default;
+
+            if (regKey.TryGetString("InstallLocation", out var installDir) && Path.IsPathRooted(installDir))
+                return _fileSystem.FromFullPath(SanitizeInputPath(installDir)).CombineUnchecked("GameJoltClient.exe");
+        }
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code")]
+    public override IEnumerable<OneOf<GameJoltGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    {
+        List<OneOf<GameJoltGame, ErrorMessage>> games = new();
+        var filePath = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
+            .CombineUnchecked("game-jolt-client")
+            .CombineUnchecked("User Data")
+            .CombineUnchecked("Default");
+        if (!filePath.DirectoryExists())
+        {
+            games.Add(new ErrorMessage($"{filePath.GetFullPath()} does not exist"));
+            return games;
+        }
+
+        var packagesFile = filePath.CombineUnchecked("packages.wttf");
+        var gamesFile = filePath.CombineUnchecked("games.wttf");
+        try
+        {
+            using var stream = packagesFile.Read();
+            var packageFile = JsonSerializer.Deserialize<PackagesFile>(stream, JsonSerializerOptions);
+            using var stream2 = gamesFile.Read();
+            var gameFile = JsonSerializer.Deserialize<GamesFile>(stream2, JsonSerializerOptions);
+
+            if (packageFile is null || gameFile is null)
+            {
+                games.Add(new ErrorMessage($"packages.wttf or games.wttf in {filePath.GetFullPath()} cannot be read!"));
+                return games;
+            }
+
+            var pkgFileVersionNullable = packageFile.Version;
+            if (!pkgFileVersionNullable.HasValue)
+            {
+                games.Add(new ErrorMessage($"File {packagesFile.GetFullPath()} does not have a version!"));
+                return games;
+            }
+            var gameFileVersionNullable = gameFile.Version;
+            if (!gameFileVersionNullable.HasValue)
+            {
+                games.Add(new ErrorMessage($"File {gamesFile.GetFullPath()} does not have a version!"));
+                return games;
+            }
+
+            var fileVersion = pkgFileVersionNullable.Value;
+            var (versionMessage, isVersionError) = CreateVersionMessage(VersionPolicy, fileVersion, SupportedWttfVersion, packagesFile);
+            if (versionMessage is not null)
+            {
+                games.Add(new ErrorMessage(versionMessage));
+                if (isVersionError) return games;
+            }
+            fileVersion = gameFileVersionNullable.Value;
+            (versionMessage, isVersionError) = CreateVersionMessage(VersionPolicy, fileVersion, SupportedWttfVersion, gamesFile);
+            if (versionMessage is not null)
+            {
+                games.Add(new ErrorMessage(versionMessage));
+                if (isVersionError) return games;
+            }
+
+            Dictionary<ulong, (string title, string dev, string imgUrl, string wideUrl)> gamesObjs = new();
+            foreach (var obj in gameFile.Objects.EnumerateObject())
+            {
+                var game = JsonSerializer.Deserialize<Game>(obj.Value, JsonSerializerOptions);
+                if (game is not null && game.Id is not null)
+                {
+                    var dev = "";
+                    var imgUrl = "";
+                    var wideUrl = "";
+                    if (game.ThumbnailMediaItem is not null)
+                        imgUrl = game.ThumbnailMediaItem.ImgUrl;
+                    if (game.HeaderMediaItem is not null)
+                        wideUrl = game.HeaderMediaItem.ImgUrl;
+                    if (game.Developer is not null)
+                        dev = game.Developer.DisplayName;
+
+                    gamesObjs.Add((ulong)game.Id, new(game.Title ?? "", dev ?? "", imgUrl ?? "", wideUrl ?? ""));
+                }
+            }
+
+            foreach (var obj in packageFile.Objects.EnumerateObject())
+            {
+                var package = JsonSerializer.Deserialize<Package>(obj.Value, JsonSerializerOptions);
+                if (package is not null && package.GameId is not null)
+                {
+                    var id = (ulong)package.GameId;
+                    var path = package.InstallDir;
+                    AbsolutePath instDir = new();
+                    AbsolutePath exePath = new();
+
+                    if (Path.IsPathRooted(path))
+                    {
+                        instDir = _fileSystem.FromFullPath(SanitizeInputPath(path));
+
+                        var exe = "";
+                        var manifestFile = instDir.CombineUnchecked(".manifest");
+                        if (manifestFile.FileExists)
+                        {
+                            using var stream3 = manifestFile.Read();
+                            var manifest = JsonSerializer.Deserialize<ManifestFile>(stream3, JsonSerializerOptions);
+                            if (manifest is null)
+                                continue;
+                            var manifestVersionNullable = manifest.Version;
+                            if (!manifestVersionNullable.HasValue)
+                            {
+                                games.Add(new ErrorMessage($"File {manifestFile.GetFullPath()} does not have a version!"));
+                                continue;
+                            }
+                            fileVersion = manifestVersionNullable.Value;
+                            (versionMessage, isVersionError) = CreateVersionMessage(VersionPolicy, fileVersion, SupportedManifestVersion, manifestFile);
+                            if (versionMessage is not null)
+                            {
+                                games.Add(new ErrorMessage(versionMessage));
+                                if (isVersionError) continue;
+                            }
+                            if (manifest.GameInfo is not null && manifest.GameInfo.Dir is not null)
+                                exePath = instDir.CombineUnchecked(SanitizeInputPath(manifest.GameInfo.Dir));
+                            if (manifest.LaunchOptions is not null)
+                                exe = manifest.LaunchOptions.Executable;
+                            if (!string.IsNullOrEmpty(exe))
+                                exePath = exePath.CombineUnchecked(exe);
+                        }
+
+                        if (string.IsNullOrEmpty(exe))
+                        {
+                            foreach (var opt in package.LaunchOptions)
+                            {
+                                if (opt.Os is not null && (opt.Os.Equals("windows_64", StringComparison.OrdinalIgnoreCase) ||
+                                    (string.IsNullOrEmpty(exe) && opt.Os.Equals("windows", StringComparison.OrdinalIgnoreCase))))
+                                {
+                                    exe = opt.ExecutablePath;
+                                }
+                            }
+                            if (!string.IsNullOrEmpty(exe))
+                                exePath = instDir.CombineUnchecked(exe);
+                        }
+                    }
+
+                    games.Add(new GameJoltGame(
+                        Id: GameJoltGameId.From(id),
+                        Title: gamesObjs.ContainsKey(id) ? gamesObjs[id].title : exePath.GetFileNameWithoutExtension(),
+                        InstallDir: instDir,
+                        ExecutablePath: exePath,
+                        Developer: gamesObjs.ContainsKey(id) ? gamesObjs[id].dev : "",
+                        ImageUrl: gamesObjs.ContainsKey(id) ? gamesObjs[id].imgUrl : "",
+                        HeaderUrl: gamesObjs.ContainsKey(id) ? gamesObjs[id].wideUrl : "",
+                        PackageId: package.Id ?? 0));
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            games.Add(new ErrorMessage(e, "Exception while parsing wttf files"));
+        }
+
+        return games;
+    }
+
+    internal static (string? message, bool isError) CreateVersionMessage(
+        VersionPolicy versionPolicy, int fileVersion, int supportedVersion, AbsolutePath filePath)
+    {
+        if (fileVersion == supportedVersion) return (null, false);
+
+        return versionPolicy switch
+        {
+            VersionPolicy.Warn => (
+                $"{filePath} has a file version " +
+                $"{fileVersion.ToString(CultureInfo.InvariantCulture)} but this library only supports version " +
+                $"{supportedVersion.ToString(CultureInfo.InvariantCulture)}. " +
+                $"This message is a WARNING because the consumer of this library has set {nameof(VersionPolicy)} to {nameof(VersionPolicy.Warn)}",
+                false),
+            VersionPolicy.Error => (
+                $"{filePath} has a file version " +
+                $"{fileVersion.ToString(CultureInfo.InvariantCulture)} but this library only supports version " +
+                $"{supportedVersion.ToString(CultureInfo.InvariantCulture)}. " +
+                $"This is an ERROR because the consumer of this library has set {nameof(VersionPolicy)} to {nameof(VersionPolicy.Error)}",
+                true),
+            VersionPolicy.Ignore => (null, false),
+            _ => throw new ArgumentOutOfRangeException(nameof(versionPolicy), versionPolicy, message: null),
+        };
+    }
+}

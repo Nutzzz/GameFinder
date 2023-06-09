@@ -13,9 +13,20 @@ internal record InstallInfoFile(
 internal record InstallInfo(
     string? BaseInstallPath,
     string? BaseSlug,
+    [property: JsonPropertyName("dlcSubPath")]
+    string? DLCSubPath,
     string? InstallCheck,
     [property: JsonPropertyName("softwareId")]
-    string? SoftwareId);
+    string? SoftwareId,
+    string? ExecutableCheck,
+    LocalUninstallProperties? LocalUninstallProperties
+);
 
 [UsedImplicitly]
 internal record Schema(int Version);
+
+[UsedImplicitly]
+internal record LocalUninstallProperties(
+    string? UninstallCommand,
+    string? UninstallParameters
+);

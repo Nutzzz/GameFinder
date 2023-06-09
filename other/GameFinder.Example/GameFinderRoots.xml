@@ -10,4 +10,22 @@
         <type fullname="GameFinder.StoreHandlers.Xbox.Properties" />
         <type fullname="GameFinder.StoreHandlers.Xbox.Identity" />
     </assembly>
+
+    <assembly fullname="GameCollector.EmuHandlers.BigFish">
+        <!-- XML Deserialization doesn't support source generators yet -->
+        <type fullname="GameCollector.EmuHandlers.BigFish.GameState" />
+    </assembly>
+    <assembly fullname="GameCollector.EmuHandlers.WargamingNet">
+        <!-- XML Deserialization doesn't support source generators yet -->
+        <type fullname="GameCollector.EmuHandlers.WargamingNet.Metadata" />
+    </assembly>
+
+    <assembly fullname="GameCollector.EmuHandlers.MAME">
+        <!-- XML Deserialization doesn't support source generators yet -->
+        <type fullname="GameCollector.EmuHandlers.MAME.Driver" />
+        <type fullname="GameCollector.EmuHandlers.MAME.Input" />
+        <type fullname="GameCollector.EmuHandlers.MAME.Display" />
+        <type fullname="GameCollector.EmuHandlers.MAME.Machine" />
+        <type fullname="GameCollector.EmuHandlers.MAME.GameList" />
+    </assembly>
 </linker>

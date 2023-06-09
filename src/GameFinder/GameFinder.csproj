@@ -23,4 +23,31 @@
         <ProjectReference Include="..\GameFinder.Wine\GameFinder.Wine.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\GameFinder.StoreHandlers.BethNet\GameFinder.StoreHandlers.BethNet.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameCollector.SQLiteUtils\GameCollector.SQLiteUtils.csproj" />
+        <ProjectReference Include="..\GameCollector.YamlUtils\GameCollector.YamlUtils.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Amazon\GameCollector.StoreHandlers.Amazon.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Arc\GameCollector.StoreHandlers.Arc.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.BattleNet\GameCollector.StoreHandlers.BattleNet.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.BigFish\GameCollector.StoreHandlers.BigFish.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.GameJolt\GameCollector.StoreHandlers.GameJolt.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Humble\GameCollector.StoreHandlers.Humble.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.IGClient\GameCollector.StoreHandlers.IGClient.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Itch\GameCollector.StoreHandlers.Itch.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Legacy\GameCollector.StoreHandlers.Legacy.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Oculus\GameCollector.StoreHandlers.Oculus.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Paradox\GameCollector.StoreHandlers.Paradox.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Plarium\GameCollector.StoreHandlers.Plarium.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Riot\GameCollector.StoreHandlers.Riot.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Rockstar\GameCollector.StoreHandlers.Rockstar.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.Ubisoft\GameCollector.StoreHandlers.Ubisoft.csproj" />
+        <ProjectReference Include="..\GameCollector.StoreHandlers.WargamingNet\GameCollector.StoreHandlers.WargamingNet.csproj" />
+        <ProjectReference Include="..\GameCollector.EmuHandlers.Dolphin\GameCollector.EmuHandlers.Dolphin.csproj" />
+        <ProjectReference Include="..\GameCollector.EmuHandlers.MAME\GameCollector.EmuHandlers.MAME.csproj" />
+    </ItemGroup>
+
 </Project>

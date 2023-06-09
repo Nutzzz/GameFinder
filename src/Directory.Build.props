@@ -2,13 +2,13 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <PropertyGroup>
-        <Authors>erri120</Authors>
+        <Authors>Nutzzz, erri120</Authors>
 
         <PackageReadmeFile>docs\README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-        <PackageProjectUrl>https://github.com/erri120/GameFinder</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/erri120/GameFinder.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/Nutzzz/GameCollector</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Nutzzz/GameCollector.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
 
         <IncludeSymbols>true</IncludeSymbols>

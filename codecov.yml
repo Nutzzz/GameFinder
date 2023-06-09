@@ -25,20 +25,22 @@ component_management:
       paths:
         - "src/GameFinder.Common/**"
         - "src/GameFinder.RegistryUtils/**"
+        - "src/GameCollector.SQLiteUtils/**"
+        - "src/GameCollector.YamlUtils/**"
     - component_id: wine
       name: Wine
       paths:
         - "src/GameFinder.Wine/**"
     - component_id: store_handler_ea_desktop
-      name: EA Desktop
+      name: EA app
       paths:
         - "src/GameFinder.StoreHandlers.EADesktop/**"
     - component_id: store_handler_egs
-      name: EGS
+      name: Epic Games Launcher
       paths:
         - "src/GameFinder.StoreHandlers.EGS/**"
     - component_id: store_handler_gog
-      name: GOG
+      name: GOG GALAXY
       paths:
         - "src/GameFinder.StoreHandlers.GOG/**"
     - component_id: store_handler_origin
@@ -49,3 +51,83 @@ component_management:
       name: Steam
       paths:
         - "src/GameFinder.StoreHandlers.Steam/**"
+    - component_id: store_handler_xbox
+      name: Xbox Game Pass
+      paths:
+        - "src/GameFinder.StoreHandlers.Xbox/**"
+    - component_id: store_handler_bethnet
+      name: Bethesda.net Launcher
+      paths:
+        - "src/GameFinder.StoreHandlers.BethNet/**"
+    - component_id: store_handler_amazon
+      name: Amazon Games
+      paths:
+        - "src/GameCollector.StoreHandlers.Amazon/**"
+    - component_id: store_handler_arc
+      name: Arc
+      paths:
+        - "src/GameCollector.StoreHandlers.Arc/**"
+    - component_id: store_handler_battlenet
+      name: Battle.net
+      paths:
+        - "src/GameCollector.StoreHandlers.BattleNet/**"
+    - component_id: store_handler_bigfish
+      name: Big Fish Game Manager
+      paths:
+        - "src/GameCollector.StoreHandlers.BigFish/**"
+    - component_id: store_handler_gamejolt
+      name: Game Jolt Client
+      paths:
+        - "src/GameCollector.StoreHandlers.GameJolt/**"
+    - component_id: store_handler_humble
+      name: Humble App
+      paths:
+        - "src/GameCollector.StoreHandlers.Humble/**"
+    - component_id: store_handler_igclient
+      name: Indiegala Client
+      paths:
+        - "src/GameCollector.StoreHandlers.IGClient/**"
+    - component_id: store_handler_itch
+      name: itch
+      paths:
+        - "src/GameCollector.StoreHandlers.Itch/**"
+    - component_id: store_handler_legacy
+      name: Legacy Games Launcher
+      paths:
+        - "src/GameCollector.StoreHandlers.Legacy/**"
+    - component_id: store_handler_oculus
+      name: Oculus
+      paths:
+        - "src/GameCollector.StoreHandlers.Oculus/**"
+    - component_id: store_handler_paradox
+      name: Paradox Launcher
+      paths:
+        - "src/GameCollector.StoreHandlers.Paradox/**"
+    - component_id: store_handler_plarium
+      name: Plarium Play
+      paths:
+        - "src/GameCollector.StoreHandlers.Plarium/**"
+    - component_id: store_handler_riot
+      name: Riot Client
+      paths:
+        - "src/GameCollector.StoreHandlers.Riot/**"
+    - component_id: store_handler_rockstar
+      name: Rockstar Games Launcher
+      paths:
+        - "src/GameCollector.StoreHandlers.Rockstar/**"
+    - component_id: store_handler_ubisoft
+      name: Ubisoft Connect
+      paths:
+        - "src/GameCollector.StoreHandlers.Ubisoft/**"
+    - component_id: store_handler_wargamingnet
+      name: Wargaming.net Game Center
+      paths:
+        - "src/GameCollector.StoreHandlers.WargamingNet/**"
+    - component_id: emu_handler_dolphin
+      name: Dolphin Emulator
+      paths:
+        - "src/GameCollector.EmuHandlers.Dolphin/**"
+    - component_id: emu_handler_mame
+      name: MAME
+      paths:
+        - "src/GameCollector.EmuHandlers.MAME/**"

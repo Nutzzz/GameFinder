@@ -4,6 +4,54 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com) and this project adheres to [Semantic Versioning](https://semver.org).
 
+# Changelog
+
+## Unreleased
+
+**TODO**:
+
+- Add unit tests
+- Update documentation
+
+**Changes**:
+
+- Added a generic `record GameData` to collect data for all handlers:
+  - `string GameId`
+  - `string Name`
+  - `AbsolutePath Path`
+  - `AbsolutePath? SavePath`
+  - `AbsolutePath Launch`
+  - `string LaunchArgs`
+  - `string LaunchUrl`
+  - `AbsolutePath Icon`
+  - `AbsolutePath Uninstall`
+  - `string UninstallArgs`
+  - `string UninstallUrl`
+  - `DateTime? InstallDate`
+  - `DateTime? LastRunDate`
+  - `uint NumRuns`
+  - `TimeSpan? RunTime`
+  - `bool IsInstalled`
+  - `bool IsHidden`
+  - `bool HasProblem`
+  - `List<string>? Tags`
+  - `ushort? MyRating`
+  - `string? BaseGame`
+  - `Dictionary<string, List<string>>? Metadata`
+- Metadata may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
+- The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
+- Added emulators:
+  - Dolphin, MAME
+- Added additional store launchers:
+  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Rockstar, Ubisoft, Wargaming.net
+- Re-added Bethesda.net for posterity.
+- Add `FindClient` to get path to store client executable.
+- EADesktop handler now attempts to get a proper game title from the Registry.
+- EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to find installed games after a Windows system reset or reinstall.
+- Steam handler can now use [SteamWebAPI2](https://github.com/babelshift/SteamWebAPI2) library to collect information about owned, not-installed games. This feature requires an API key to be specified and the user profile set to public.
+
+# Upstream Changelog
+
 ## [Unreleased](https://github.com/erri120/GameFinder/compare/v3.1.0...HEAD)
 
 ## [Released](https://github.com/erri120/GameFinder/releases)

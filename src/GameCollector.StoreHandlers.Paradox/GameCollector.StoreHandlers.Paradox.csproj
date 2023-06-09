@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Description>Library for finding games installed with Paradox Launcher.</Description>
+        <PackageTags>paradox games</PackageTags>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
+
+    <ItemGroup>
+        <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
+        <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.StoreHandlers.Paradox.Tests" />
+    </ItemGroup>
+</Project>

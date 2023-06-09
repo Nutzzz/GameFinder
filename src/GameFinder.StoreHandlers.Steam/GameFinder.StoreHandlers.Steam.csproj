@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="SteamWebAPI2" Version="4.4.*" />
         <PackageReference Include="ValveKeyValue" Version="0.8.2.*" />
     </ItemGroup>
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using GameFinder.Common;
+using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
@@ -18,6 +19,7 @@ namespace GameFinder.StoreHandlers.Origin;
 [PublicAPI]
 public class OriginHandler : AHandler<OriginGame, OriginGameId>
 {
+    private readonly IRegistry? _registry;
     private readonly IFileSystem _fileSystem;
 
     /// <summary>
@@ -29,9 +31,16 @@ public class OriginHandler : AHandler<OriginGame, OriginGameId>
     /// a custom implementation or just a mock of the interface. See the README for more information
     /// if you want to use Wine.
     /// </param>
-    public OriginHandler(IFileSystem fileSystem)
+    /// <param name="registry">
+    /// The implementation of <see cref="IRegistry"/> to use. For a shared instance
+    /// use <see cref="WindowsRegistry.Shared"/> on Windows. On Linux use <c>null</c>.
+    /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
+    /// of the interface.
+    /// </param>
+    public OriginHandler(IFileSystem fileSystem, IRegistry? registry)
     {
         _fileSystem = fileSystem;
+        _registry = registry;
     }
 
     internal static AbsolutePath GetManifestDir(IFileSystem fileSystem)
@@ -48,7 +57,24 @@ public class OriginHandler : AHandler<OriginGame, OriginGameId>
     public override IEqualityComparer<OriginGameId> IdEqualityComparer => OriginGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<OriginGame, ErrorMessage>> FindAllGames()
+    public override AbsolutePath FindClient()
+    {
+        if (_registry is not null)
+        {
+            var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+
+            using var regKey = localMachine32.OpenSubKey(@"SOFTWARE\Origin");
+            if (regKey is null) return default;
+
+            if (regKey.TryGetString("ClientPath", out var clientPath) && Path.IsPathRooted(clientPath))
+                return _fileSystem.FromFullPath(SanitizeInputPath(clientPath));
+        }
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<OneOf<OriginGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
         var manifestDir = GetManifestDir(_fileSystem);
 
@@ -115,8 +141,8 @@ public class OriginHandler : AHandler<OriginGame, OriginGameId>
                 .First();
 
             var game = new OriginGame(
-                OriginGameId.From(id),
-                _fileSystem.FromFullPath(SanitizeInputPath(path))
+                Id: OriginGameId.From(id),
+                InstallPath: Path.IsPathRooted(path) ? _fileSystem.FromFullPath(SanitizeInputPath(path)) : new()
             );
 
             return game;

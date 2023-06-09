@@ -10,4 +10,8 @@ namespace GameFinder.StoreHandlers.Origin;
 /// <param name="Id"></param>
 /// <param name="InstallPath"></param>
 [PublicAPI]
-public record OriginGame(OriginGameId Id, AbsolutePath InstallPath) : IGame;
+public record OriginGame(OriginGameId Id,
+                         AbsolutePath InstallPath) :
+    GameData(GameId: Id.ToString(),
+             Name: InstallPath.GetFileNameWithoutExtension(),
+             Path: InstallPath);

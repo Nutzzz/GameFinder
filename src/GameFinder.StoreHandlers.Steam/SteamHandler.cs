@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using GameFinder.Common;
@@ -17,9 +18,10 @@ namespace GameFinder.StoreHandlers.Steam;
 /// Handler for finding games installed with Steam.
 /// </summary>
 [PublicAPI]
-public class SteamHandler : AHandler<SteamGame, SteamGameId>
+public partial class SteamHandler : AHandler<SteamGame, SteamGameId>
 {
     internal const string RegKey = @"Software\Valve\Steam";
+    internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
     private readonly IRegistry? _registry;
     private readonly IFileSystem _fileSystem;
@@ -58,13 +60,44 @@ public class SteamHandler : AHandler<SteamGame, SteamGameId>
     public override IEqualityComparer<SteamGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames()
+    public override AbsolutePath FindClient()
     {
+        if (_registry is not null)
+        {
+            var currentUser = _registry.OpenBaseKey(RegistryHive.CurrentUser);
+
+            using var regKey = currentUser.OpenSubKey(RegKey);
+            if (regKey is null) return default;
+
+            if (regKey.TryGetString("SteamExe", out var steamExe) && Path.IsPathRooted(steamExe))
+                return _fileSystem.FromFullPath(SanitizeInputPath(steamExe));
+        }
+
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    {
+        return FindAllGames(installedOnly, baseOnly, 0);
+    }
+
+    /// <summary>
+    /// Finds all Steam games
+    /// </summary>
+    /// <param name="installedOnly"></param>
+    /// <param name="baseOnly"></param>
+    /// <param name="userId"></param>
+    public IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, ulong userId = 0)
+    {
+        List<OneOf<SteamGame, ErrorMessage>> allGames = new();
+        Dictionary<SteamGameId, OneOf<SteamGame, ErrorMessage>> installedGames = new();
+
         var steamSearchResult = FindSteam();
         if (steamSearchResult.TryGetError(out var error))
         {
-            yield return error;
-            yield break;
+            allGames.Add(error);
+            return allGames;
         }
 
         var libraryFoldersFile = steamSearchResult.AsT0;
@@ -75,15 +108,15 @@ public class SteamHandler : AHandler<SteamGame, SteamGameId>
         var libraryFolderPaths = ParseLibraryFoldersFile(libraryFoldersFile);
         if (libraryFolderPaths is null || libraryFolderPaths.Count == 0)
         {
-            yield return new ErrorMessage($"Found no Steam Libraries in {libraryFoldersFile}");
-            yield break;
+            allGames.Add(new ErrorMessage($"Found no Steam Libraries in {libraryFoldersFile}"));
+            return allGames;
         }
 
         foreach (var libraryFolderPath in libraryFolderPaths)
         {
             if (!_fileSystem.DirectoryExists(libraryFolderPath))
             {
-                yield return new ErrorMessage($"Steam Library {libraryFolderPath} does not exist!");
+                installedGames.Add(SteamGameId.From(0), new ErrorMessage($"Steam Library {libraryFolderPath} does not exist!"));
                 continue;
             }
 
@@ -93,17 +126,23 @@ public class SteamHandler : AHandler<SteamGame, SteamGameId>
 
             if (acfFiles.Length == 0)
             {
-                yield return new ErrorMessage($"Library folder {libraryFolderPath} does not contain any manifests");
+                installedGames.Add(SteamGameId.From(0), new ErrorMessage($"Library folder {libraryFolderPath} does not contain any manifests"));
                 continue;
             }
 
             foreach (var acfFile in acfFiles)
             {
-                yield return ParseAppManifestFile(acfFile, libraryFolderPath, cloudSavesDirectories);
+                var game = ParseAppManifestFile(acfFile, libraryFolderPath, cloudSavesDirectories);
+                installedGames.Add(game.IsT0 ? game.AsT0.AppId : SteamGameId.From(0), game);
             }
         }
-    }
 
+        if (installedOnly || _apiKey is null)
+            return installedGames.Values;
+
+        return FindOwnedGamesFromAPI(installedGames, userId);
+    }
+    
     private AbsolutePath GetUserDataDirectory(AbsolutePath libraryFoldersFile)
     {
         return libraryFoldersFile
@@ -330,12 +369,30 @@ public class SteamHandler : AHandler<SteamGame, SteamGameId>
                 .CombineUnchecked("common")
                 .CombineUnchecked(installDir);
 
+            var icon = "";
+            if (_registry is not null)
+            {
+                var localMachine64 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                using var subKey64 = localMachine64.OpenSubKey(Path.Combine(UninstallRegKey, "Steam App " + appId.ToString(CultureInfo.InvariantCulture)));
+                using var subKey32 = localMachine32.OpenSubKey(Path.Combine(UninstallRegKey, "Steam App " + appId.ToString(CultureInfo.InvariantCulture)));
+                if (subKey64 is not null)
+                    icon = subKey64.GetString("DisplayIcon");
+                if (string.IsNullOrEmpty(icon) && subKey32 is not null)
+                    icon = subKey32.GetString("DisplayIcon");
+            }
+
             var gameId = SteamGameId.From(appId);
             AbsolutePath? cloudSavesDirectory = cloudSavesDirectories.TryGetValue(gameId, out var tmp)
                 ? tmp
                 : null;
 
-            var game = new SteamGame(gameId, name, gamePath, cloudSavesDirectory);
+            var game = new SteamGame(
+                AppId: gameId,
+                Name: name,
+                Path: gamePath,
+                CloudSavesDirectory: cloudSavesDirectory,
+                DisplayIcon: string.IsNullOrEmpty(icon) ? default : _fileSystem.FromFullPath(SanitizeInputPath(icon)));
             return game;
         }
         catch (Exception e)
