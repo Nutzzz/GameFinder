@@ -1,4 +1,8 @@
+using NexusMods.Paths;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -79,5 +83,80 @@ public static class Utils
         // https://github.com/dotnet/runtime/blob/main/LICENSE.TXT
         // source: https://github.com/dotnet/runtime/blob/d9f453924f7c3cca9f02d920a57e1477293f216e/src/libraries/Common/src/System/IO/PathInternal.Windows.cs#L69-L75
         return (uint)((value | 0x20) - 'a') <= 'z' - 'a';
+    }
+
+    /// <summary>
+    /// Returns the path to the best-guess of a game executable found recursively in a given path.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="name"></param>
+    /// <param name="fileSystem"></param>
+    /// <returns></returns>
+    public static AbsolutePath FindExe(AbsolutePath path, IFileSystem fileSystem, string name = "")
+    {
+        try
+        {
+            AbsolutePath exe = new();
+            var exes = fileSystem.EnumerateFiles(path, "*.exe", recursive: true).ToList();
+
+            //TODO: Explore ways of making FindExe() better
+            if (exes.Count == 1)
+                exe = exes[0];
+            else
+            {
+                var j = 0;
+                foreach (var file in exes)
+                {
+                    j++;
+                    var tmpFile = file.FileName;
+                    List<string> badNames = new()
+                {
+                    "unins", "install", "patch", "redist", "prereq", "dotnet", "setup", "config", "w9xpopen", "edit", "help",
+                    "python", "server", "service", "cleanup", "anticheat", "touchup", "error", "crash", "report", "helper", "handler",
+                };
+                    List<string> goodNames = new()
+                    {
+                        //"launch", "scummvm",
+                    };
+                    foreach (var badName in badNames)
+                    {
+                        if (tmpFile.Contains(badName, StringComparison.OrdinalIgnoreCase))
+                            continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        var nameSanitized = string.Concat(name.Split(Path.GetInvalidFileNameChars()));
+                        var nameAlphanum = name.Where(c => c == 32 || (char.IsLetterOrDigit(c) && c < 128)).ToString();
+                        if (tmpFile.Contains(nameSanitized, StringComparison.OrdinalIgnoreCase) ||
+                            tmpFile.Contains(nameSanitized.Replace(' ', '-'), StringComparison.OrdinalIgnoreCase) ||
+                            tmpFile.Contains(nameSanitized.Replace(' ', '_'), StringComparison.OrdinalIgnoreCase) ||
+                            tmpFile.Contains(nameSanitized.Remove(' '), StringComparison.OrdinalIgnoreCase) ||
+                            (nameAlphanum is not null &&
+                            (tmpFile.Contains(nameAlphanum, StringComparison.OrdinalIgnoreCase) ||
+                            tmpFile.Contains(nameAlphanum.Replace(' ', '-'), StringComparison.OrdinalIgnoreCase) ||
+                            tmpFile.Contains(nameAlphanum.Replace(' ', '_'), StringComparison.OrdinalIgnoreCase) ||
+                            tmpFile.Contains(nameAlphanum.Remove(' '), StringComparison.OrdinalIgnoreCase))))
+                        {
+                            exe = file;
+                            break;
+                        }
+                    }
+                    foreach (var goodName in goodNames)
+                    {
+                        if (tmpFile.Contains(goodName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            exe = file;
+                            break;
+                        }
+                    }
+                    exe = file;
+                }
+            }
+            return exe;
+        }
+        catch (Exception) { }
+        
+        return default;
     }
 }

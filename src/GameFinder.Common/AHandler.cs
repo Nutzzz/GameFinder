@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
+using NexusMods.Paths;
 using OneOf;
 
 namespace GameFinder.Common;
@@ -58,12 +59,22 @@ public abstract class AHandler<TGame, TId> : AHandler
     }
 
     /// <summary>
-    /// Finds all games installed with this store.
+    /// Returns the path to the store client.
     /// </summary>
     /// <returns></returns>
     [MustUseReturnValue]
     [System.Diagnostics.Contracts.Pure]
-    public abstract IEnumerable<OneOf<TGame, ErrorMessage>> FindAllGames();
+    public abstract AbsolutePath FindClient();
+
+    /// <summary>
+    /// Finds all games installed with this store.
+    /// </summary>
+    /// <param name="installedOnly"></param>
+    /// <param name="baseOnly"></param>
+    /// <returns></returns>
+    [MustUseReturnValue]
+    [System.Diagnostics.Contracts.Pure]
+    public abstract IEnumerable<OneOf<TGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false);
 
     /// <summary>
     /// Calls <see cref="FindAllGames"/> and converts the result into a dictionary where

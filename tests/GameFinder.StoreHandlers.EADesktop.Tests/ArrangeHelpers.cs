@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text.Json;
 using AutoFixture.AutoMoq;
+using GameFinder.RegistryUtils;
 using GameFinder.StoreHandlers.EADesktop.Crypto;
 using NexusMods.Paths;
 
@@ -20,13 +21,13 @@ public partial class EADesktopTests
         EADesktopHandler handler,
         IHardwareInfoProvider hardwareInfoProvider,
         AbsolutePath parentFolder)
-        SetupHandler(InMemoryFileSystem fs)
+        SetupHandler(InMemoryFileSystem fs, InMemoryRegistry registry)
     {
         var dataFolder = EADesktopHandler.GetDataFolder(fs);
         fs.AddDirectory(dataFolder);
 
         var hardwareInfoProvider = SetupHardwareInfoProvider();
-        var handler = new EADesktopHandler(fs, hardwareInfoProvider);
+        var handler = new EADesktopHandler(fs, registry, hardwareInfoProvider);
         return (handler, hardwareInfoProvider, dataFolder);
     }
 
@@ -63,8 +64,11 @@ public partial class EADesktopTests
         var installInfos = games.Select(game => new InstallInfo(
             game.BaseInstallPath + "\\",
             game.BaseSlug,
+            game.IsDLC ? (!game.IsDLC).ToString() : "",
             InstallCheck: null,
-            game.EADesktopGameId.Value))
+            game.EADesktopGameId.Value,
+            ExecutableCheck: null,
+            LocalUninstallProperties: null))
             .ToList();
 
         var installInfo = new InstallInfoFile(

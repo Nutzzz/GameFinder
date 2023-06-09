@@ -1,0 +1,53 @@
+namespace GameCollector.EmuHandlers.Dolphin;
+
+// https://wiki.dolphin-emu.org/index.php?title=GameIDs
+public enum DolphinSystem
+{
+    Unknown = -1,
+    Commodore64 = 'C',
+    GameCube_Demo = 'D',
+    Arcade = 'E',
+    NES = 'F',
+    GameCube = 'G',
+    WiiChannels = 'H',
+    SuperNintendo = 'J',
+    SegaMaster = 'L',
+    SegaGenesis = 'M',
+    Nintendo64 = 'N',
+    TurboGrafx16 = 'P',
+    TurboGrafx16_CD = 'Q',
+    Wii = 'R',
+    Wii_new = 'S',
+    WiiWare = 'W',
+    MSX = 'X',
+    Wii_DLC1 = 'r',
+    Wii_DLC2 = 's',
+    Wii_DLC3 = 'w',
+}
+public enum DolphinRegion
+{
+    Unknown = -1,
+    System = 'A',
+    Ufouria = 'B',
+    Germany = 'D',
+    USA = 'E',
+    France = 'F',
+    Netherlands = 'H',
+    Italy = 'I',
+    Japan = 'J',
+    Korea = 'K',
+    Japan_PAL_Import = 'L',
+    US_PAL_Import = 'M',
+    Japan_NTSC_Import = 'N',
+    PAL = 'P',
+    Japan_Korea_Import = 'Q',
+    Russia = 'R',
+    Spain = 'S',
+    US_Korea_Import = 'T',
+    Australia = 'U',
+    Scandinavia = 'V',
+    Taiwan = 'W',
+    EU_Alt1 = 'X',
+    EU_Alt2 = 'Y',
+    EU_Alt3 = 'Z',
+}

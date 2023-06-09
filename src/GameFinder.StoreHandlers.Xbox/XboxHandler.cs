@@ -45,7 +45,14 @@ public class XboxHandler : AHandler<XboxGame, XboxGameId>
     public override IEqualityComparer<XboxGameId> IdEqualityComparer => XboxGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<XboxGame, ErrorMessage>> FindAllGames()
+    public override AbsolutePath FindClient()
+    {
+        // Could use "msxbox://" or @"explorer.exe shell:AppsFolder\Microsoft.WindowsStore_8wekyb3d8bbwe!App"
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<OneOf<XboxGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
         var (paths, errors) = GetAppFolders(_fileSystem);
         foreach (var error in errors)
@@ -170,7 +177,12 @@ public class XboxHandler : AHandler<XboxGame, XboxGameId>
 
             var displayName = appManifest.Properties.DisplayName;
             var id = appManifest.Identity.Name;
-            var game = new XboxGame(XboxGameId.From(id), displayName, manifestFilePath.Parent);
+            var game = new XboxGame(Id: XboxGameId.From(id),
+                                    DisplayName: displayName,
+                                    Path: manifestFilePath.Parent,
+                                    Logo: manifestFilePath.Parent.CombineUnchecked(appManifest.Properties.Logo),
+                                    Description: appManifest.Properties.Description,
+                                    Publisher: appManifest.Properties.PublisherDisplayName);
             return game;
         }
         catch (Exception e)
