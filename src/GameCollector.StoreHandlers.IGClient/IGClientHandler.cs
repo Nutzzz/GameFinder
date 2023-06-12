@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using GameFinder.Common;
@@ -116,7 +115,10 @@ public class IGClientHandler : AHandler<IGClientGame, string>
 
         games = ParseInstallFile(installFile);
         if (!installedOnly)
-            games = ParseConfigFile(configFile, games);
+        {
+            var ownedGames = ParseConfigFile(configFile, games);
+            games.AddRange(ownedGames);
+        }
 
         return games;
     }
@@ -138,13 +140,6 @@ public class IGClientHandler : AHandler<IGClientGame, string>
                 games.Add(new ErrorMessage($"Unable to deserialize data file {installFile.GetFullPath()}"));
                 return games;
             }
-            var id = "";
-            var slugged = "";
-            var name = "";
-            AbsolutePath launch = new();
-            var launchArgs = "";
-            List<string> specs = new();
-            var rating = 0m;
 
             var i = 0;
             foreach (var game in installs)
@@ -157,6 +152,15 @@ public class IGClientHandler : AHandler<IGClientGame, string>
                         $"{installFile.GetFullPath()} for game #{i.ToString(CultureInfo.InvariantCulture)}"));
                     continue;
                 }
+
+                var id = "";
+                var slugged = "";
+                var name = "";
+                AbsolutePath launch = new();
+                var launchArgs = "";
+                List<string> specs = new();
+                var rating = 0m;
+
                 AbsolutePath path = new();
                 foreach (var gamePath in game.Path)
                 {
@@ -217,15 +221,17 @@ public class IGClientHandler : AHandler<IGClientGame, string>
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
     private List<OneOf<IGClientGame, ErrorMessage>> ParseConfigFile(AbsolutePath configFile, List<OneOf<IGClientGame, ErrorMessage>> games)
     {
+        List<OneOf<IGClientGame, ErrorMessage>> ownedGames = new();
         try
         {
             using var streamCfg = configFile.Read();
             var allGames = JsonSerializer.Deserialize<Dictionary<string, ConfigFile>>(streamCfg, JsonSerializerOptions);
             if (allGames is null ||
+                allGames.Count == 0 ||
                 !allGames.ContainsKey("gala_data"))
             {
-                games.Add(new ErrorMessage($"Unable to deserialize data file {configFile.GetFullPath()}"));
-                return games;
+                ownedGames.Add(new ErrorMessage($"Unable to deserialize data file {configFile.GetFullPath()}"));
+                return ownedGames;
             }
             var config = allGames["gala_data"];
             if (config.Data is null ||
@@ -233,30 +239,20 @@ public class IGClientHandler : AHandler<IGClientGame, string>
                 config.Data.ShowcaseContent.Content is null ||
                 config.Data.ShowcaseContent.Content.UserCollection is null)
             {
-                games.Add(new ErrorMessage($"Unable to deserialize data file {configFile.GetFullPath()}"));
-                return games;
+                ownedGames.Add(new ErrorMessage($"Unable to deserialize data file {configFile.GetFullPath()}"));
+                return ownedGames;
             }
-            var id = "";
-            var slugged = "";
-            var name = "";
-            var description = "";
-            var descriptionLong = "";
-            List<string> specs = new();
-            List<string> genres = new();
-            List<string> tags = new();
-            var rating = 0m;
-
             var c = 0;
             var collection = config.Data.ShowcaseContent.Content.UserCollection ?? new();
             foreach (var game in collection)
             {
-                var installed = false;
                 c++;
-                id = game.ProdIdKeyName;
-                name = game.ProdName;
-                if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name))
+                var installed = false;
+                var id = game.ProdIdKeyName;
+                var name = game.ProdName;
+                if (string.IsNullOrEmpty(id))
                 {
-                    games.Add(new ErrorMessage("Unable to deserialize data in file " +
+                    ownedGames.Add(new ErrorMessage("Unable to deserialize data in file " +
                         $"{configFile.GetFullPath()} for game #{c.ToString(CultureInfo.InvariantCulture)}"));
                     continue;
                 }
@@ -264,14 +260,24 @@ public class IGClientHandler : AHandler<IGClientGame, string>
                 {
                     if (installedGame.IsGame() && installedGame.AsGame().GameId.Equals(id, StringComparison.Ordinal))
                     {
-                        //games.Add(new ErrorMessage($"{name} was already found!"));
+                        //ownedGames.Add(new ErrorMessage($"{name} was already found!"));
                         installed = true;
                         break;
                     }
                 }
                 if (installed) continue;
 
+                var slugged = "";
+                var description = "";
+                var descriptionLong = "";
+                List<string> specs = new();
+                List<string> genres = new();
+                List<string> tags = new();
+                var rating = 0m;
+
                 slugged = game.ProdSluggedName ?? "";
+                if (string.IsNullOrEmpty(name))
+                    name = slugged.Replace('-', ' ');
 
                 if (allGames is not null &&
                     allGames.TryGetValue(slugged, out var gameData))
@@ -285,15 +291,15 @@ public class IGClientHandler : AHandler<IGClientGame, string>
                         rating = gameData.Rating.AvgRating ?? 0m;
                 }
 
-                games.Add(new IGClientGame(
+                ownedGames.Add(new IGClientGame(
                     IdKeyName: IGClientGameId.From(id),
                     ItemName: name,
                     Path: new(),
                     IsInstalled: false,
                     DescriptionShort: description,
                     DescriptionLong: descriptionLong,
-                    DevImage: $"https://www.indiegalacdn.com/imgs/devs/{game.ProdDevNamespace}/products/{id}/prodmain/{game.ProdDevImage}",
-                    DevCover: $"https://www.indiegalacdn.com/imgs/devs/{game.ProdDevNamespace}/products/{id}/prodcover/{game.ProdDevCover}",
+                    DevImage: $"{ImgUrl}{game.ProdDevNamespace}/products/{id}/prodmain/{game.ProdDevImage}",
+                    DevCover: $"{ImgUrl}{game.ProdDevNamespace}/products/{id}/prodcover/{game.ProdDevCover}",
                     SluggedName: slugged,
                     Specs: specs,
                     Categories: genres,
@@ -301,11 +307,11 @@ public class IGClientHandler : AHandler<IGClientGame, string>
                     AvgRating: rating
                 ));
             }
-            return games;
         }
         catch (Exception e)
         {
-            return new() { new ErrorMessage($"Exception while deserializing file {configFile.GetFullPath()}\n{e.Message}\n{e.InnerException}") };
+            ownedGames.Add(new ErrorMessage($"Exception while deserializing file {configFile.GetFullPath()}\n{e.Message}\n{e.InnerException}"));
         }
+        return ownedGames;
     }
 }
