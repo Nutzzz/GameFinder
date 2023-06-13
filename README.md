@@ -125,29 +125,29 @@ if (games.TryGetValue(someId, out var game))
 
 This is a new category of handler for GameCollector. They are Windows-only for now. These both require you pass the path to the emulator executable.
 
-### Dolphin
-### MAME
+- Dolphin
+- MAME
 
 ## New Supported Launchers
 
 The following handlers have been added by GameCollector. They are all Windows-only for now:
 
-### Amazon Games
-### Arc
-### Big Fish Game Manager
-### Blizzard Battle.net
-### Game Jolt
-### Humble App
-### Indiegala IGClient
-### itch
-### Legacy Games Launcher
-### Oculus
-### Paradox Launcher
-### Plarium Play
-### Riot Client
-### Rockstar Games Launcher
-### Ubisoft Connect
-### Wargaming.net Game Center
+- Amazon Games
+- Arc
+- Big Fish Game Manager
+- Blizzard Battle.net
+- Game Jolt
+- Humble App
+- Indiegala IGClient
+- itch
+- Legacy Games Launcher
+- Oculus
+- Paradox Launcher
+- Plarium Play
+- Riot Client
+- Rockstar Games Launcher
+- Ubisoft Connect
+- Wargaming.net Game Center
 
 ## Upstream Supported Launchers
 
@@ -187,6 +187,8 @@ var wineRegistry = winePrefix.CreateRegistry(FileSystem.Shared);
 var handler = new GOGHandler(wineRegistry, wineFileSystem);
 ```
 
+GameCollector adds finding owned not-installed GOG games.
+
 ### Epic Games Store
 
 The Epic Games Store is supported natively on Windows, and with [Wine](#wine) on Linux. Use the [Epic Games Store Database](https://github.com/erri120/egs-db) to find the ID of a game (**WIP**).
@@ -208,6 +210,8 @@ var wineRegistry = winePrefix.CreateRegistry(FileSystem.Shared);
 
 var handler = new EGSHandler(wineRegistry, wineFileSystem);
 ```
+
+GameCollector adds finding owned not-installed EGS games.
 
 ### Origin
 
