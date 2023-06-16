@@ -5,12 +5,12 @@ on:
     paths:
       - "codecov.yml"
       - ".github/workflows/validate-codecov.yml"
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
     paths:
       - "codecov.yml"
       - ".github/workflows/validate-codecov.yml"
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   validate:

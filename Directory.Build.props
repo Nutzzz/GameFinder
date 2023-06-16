@@ -1,6 +1,13 @@
 <Project>
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
+        <VersionPrefix>3.0.0</VersionPrefix>
+        <Authors>Nutzzz, erri120</Authors>
+        <PackageProjectUrl>https://github.com/Nutzzz/GameCollector</PackageProjectUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/Nutzzz/GameCollector.git</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
