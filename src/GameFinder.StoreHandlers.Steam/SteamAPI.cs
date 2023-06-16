@@ -176,29 +176,36 @@ public partial class SteamHandler : AHandler<SteamGame, SteamGameId>
                 "To get a key, go to <https://steamcommunity.com/dev/apikey>.");
         }
 
-        SteamWebInterfaceFactory apiFactory = new(_apiKey);
-
-        var userInterface = apiFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
-        var userResponse = await userInterface.GetPlayerSummaryAsync(userId)
-            .ConfigureAwait(continueOnCapturedContext);
-        //DateTimeOffset? userLastModified = userResponse.LastModified;
-        var userData = userResponse.Data;
-        var visibility = userData.ProfileVisibility;
-        //var profile = userData.ProfileUrl;
-
-        if (visibility != ProfileVisibility.Public)
+        try
         {
-            return new ErrorMessage("Can't get Steam not-installed owned games. Profile must be public. \n" +
-                "To change this, go to <https://steamcommunity.com/my/edit/settings>.");
-        }
+            SteamWebInterfaceFactory apiFactory = new(_apiKey);
 
-        var playerInterface = apiFactory.CreateSteamWebInterface<PlayerService>();
-        var ownedGames = await playerInterface.GetOwnedGamesAsync(
-            userId,
-            includeAppInfo: true,
-            includeFreeGames: true)
-            .ConfigureAwait(continueOnCapturedContext);
-        return ownedGames.Data;
+            var userInterface = apiFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
+            var userResponse = await userInterface.GetPlayerSummaryAsync(userId)
+                .ConfigureAwait(continueOnCapturedContext);
+            //DateTimeOffset? userLastModified = userResponse.LastModified;
+            var userData = userResponse.Data;
+            var visibility = userData.ProfileVisibility;
+            //var profile = userData.ProfileUrl;
+
+            if (visibility != ProfileVisibility.Public)
+            {
+                return new ErrorMessage("Can't get Steam not-installed owned games. Profile must be public. \n" +
+                    "To change this, go to <https://steamcommunity.com/my/edit/settings>.");
+            }
+
+            var playerInterface = apiFactory.CreateSteamWebInterface<PlayerService>();
+            var ownedGames = await playerInterface.GetOwnedGamesAsync(
+                userId,
+                includeAppInfo: true,
+                includeFreeGames: true)
+                .ConfigureAwait(continueOnCapturedContext);
+            return ownedGames.Data;
+        }
+        catch (Exception e)
+        {
+            return new ErrorMessage(e, "Exception looking for Steam owned games");
+        }
     }
 
     private List<OneOf<SteamGame, ErrorMessage>> GetOwnedGames(ulong userId)
