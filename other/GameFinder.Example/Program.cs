@@ -107,35 +107,33 @@ public static class Program
 
         logger.LogInformation("Operating System: {OSDescription}", RuntimeInformation.OSDescription);
 
-        if (options.All)
+        if (options.All) // Enable all handlers
         {
-            options.Steam = true;
-            options.GOG = true;
-            options.EGS = true;
-            options.Origin = true;
-            options.Xbox = true;
-            options.EADesktop = true;
-            options.Wine = true;
-            options.Bottles = true;
-            options.BethNet = true; // deprecated
             options.Amazon = true;
             options.Arc = true;
             options.BattleNet = true;
+            options.BethNet = true;
             options.BigFish = true;
+            options.Dolphin ??= "";
+            options.EADesktop = true;
+            options.EGS = true;
             options.GameJolt = true;
+            options.GOG = true;
             options.Humble = true;
             options.IGClient = true;
             options.Itch = true;
             options.Legacy = true;
+            options.MAME ??= "";
             options.Oculus = true;
+            options.Origin = true;
             options.Paradox = true;
             options.Plarium = true;
             options.Riot = true;
             options.Rockstar = true;
+            options.Steam = true;
             options.Ubisoft = true;
             options.WargamingNet = true;
-            options.Dolphin = true;
-            options.MAME = true;
+            options.Xbox = true;
         }
 
         if (OperatingSystem.IsWindows())
@@ -173,26 +171,26 @@ public static class Program
             if (options.Ubisoft) RunUbisoftHandler(windowsRegistry, realFileSystem);
             if (options.WargamingNet) RunWargamingNetHandler(windowsRegistry, realFileSystem);
 
-            if (options.Dolphin)
+            if (options.Dolphin is not null)
             {
-                if (Path.IsPathRooted(options.DolphinPath))
+                if (Path.IsPathRooted(options.Dolphin))
                 {
-                    var path = realFileSystem.FromFullPath(options.DolphinPath);
+                    var path = realFileSystem.FromFullPath(options.Dolphin);
                     RunDolphinHandler(realFileSystem, windowsRegistry, path);
                 }
                 else
-                    logger.LogError("Bad path {DolphinPath}", options.DolphinPath);
+                    logger.LogError("Bad Dolphin path {DolphinPath}", options.Dolphin);
             }
 
-            if (options.MAME)
+            if (options.MAME is not null)
             {
-                if (Path.IsPathRooted(options.MAMEPath))
+                if (Path.IsPathRooted(options.MAME))
                 {
-                    var path = realFileSystem.FromFullPath(options.MAMEPath);
+                    var path = realFileSystem.FromFullPath(options.MAME);
                     RunMAMEHandler(realFileSystem, path);
                 }
                 else
-                    logger.LogError("Bad path {MAMEPath}", options.MAMEPath);
+                    logger.LogError("Bad MAME path {MAMEPath}", options.MAME);
             }
         }
 
@@ -270,7 +268,7 @@ public static class Program
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
-    private static void RunSteamHandler(IFileSystem fileSystem, IRegistry? registry, string steamAPI)
+    private static void RunSteamHandler(IFileSystem fileSystem, IRegistry? registry, string? steamAPI)
     {
         var logger = _provider.CreateLogger(nameof(SteamHandler));
         var handler = new SteamHandler(fileSystem, registry, steamAPI);
