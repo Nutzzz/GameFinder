@@ -1,4 +1,5 @@
 using System.Web;
+using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 using NexusMods.Paths.TestingHelpers;
 using TestUtils;
@@ -8,10 +9,10 @@ namespace GameFinder.StoreHandlers.Origin.Tests;
 public partial class OriginTests
 {
     [Theory, AutoFileSystem]
-    public void Test_ShouldWork_WithDuplicateKeys(InMemoryFileSystem fs, string manifestName,
-        string id, AbsolutePath installPath)
+    public void Test_ShouldWork_WithDuplicateKeys(InMemoryFileSystem fs, InMemoryRegistry registry,
+        string manifestName, string id, AbsolutePath installPath)
     {
-        var (handler, manifestDir) = SetupHandler(fs);
+        var (handler, manifestDir) = SetupHandler(fs, registry);
 
         var manifest = manifestDir.CombineUnchecked($"{manifestName}.mfst");
         fs.AddFile(manifest, $"?id={HttpUtility.UrlEncode(id)}" +

@@ -1,16 +1,17 @@
 using System.Web;
+using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 
 namespace GameFinder.StoreHandlers.Origin.Tests;
 
 public partial class OriginTests
 {
-    private static (OriginHandler handler, AbsolutePath manifestDir) SetupHandler(InMemoryFileSystem fs)
+    private static (OriginHandler handler, AbsolutePath manifestDir) SetupHandler(InMemoryFileSystem fs, InMemoryRegistry registry)
     {
         var manifestDir = OriginHandler.GetManifestDir(fs);
         fs.AddDirectory(manifestDir);
 
-        var handler = new OriginHandler(fs);
+        var handler = new OriginHandler(fs, registry);
         return (handler, manifestDir);
     }
 
