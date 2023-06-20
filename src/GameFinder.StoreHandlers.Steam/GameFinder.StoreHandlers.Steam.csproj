@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with Steam.</Description>
+        <Description>Library for finding games owned and installed with Steam.</Description>
         <PackageTags>valve steam games</PackageTags>
+        <AssemblyName>GameCollector.StoreHandlers.Steam</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

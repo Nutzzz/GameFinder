@@ -4,6 +4,7 @@
         <Title>GameFinder.StoreHandlers.BethNet</Title>
         <TargetFrameworks>net7.0</TargetFrameworks>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <AssemblyName>GameCollector.StoreHandlers.BethNet</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

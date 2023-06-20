@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with the Epic Games Store.</Description>
+        <Description>Library for finding games owned and installed with the Epic Games Store.</Description>
         <PackageTags>epic egs epic-games-store games</PackageTags>
+        <AssemblyName>GameCollector.StoreHandlers.EGS</AssemblyName>
     </PropertyGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with Big Fish Game Manager.</Description>
+        <Description>Library for finding games owned and installed with Big Fish Game Manager.</Description>
         <PackageTags>bigfish big-fish games</PackageTags>
     </PropertyGroup>
 

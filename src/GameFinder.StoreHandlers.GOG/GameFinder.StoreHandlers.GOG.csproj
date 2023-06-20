@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with GOG Galaxy.</Description>
+        <Description>Library for finding games owned and installed with GOG Galaxy.</Description>
         <PackageTags>gog gog-galaxy games</PackageTags>
+        <AssemblyName>GameCollector.StoreHandlers.GOG</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

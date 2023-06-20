@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with itch.</Description>
+        <Description>Library for finding games owned and installed with itch.</Description>
         <PackageTags>itch games</PackageTags>
     </PropertyGroup>
 

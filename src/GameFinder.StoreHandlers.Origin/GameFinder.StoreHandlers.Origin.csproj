@@ -2,6 +2,7 @@
     <PropertyGroup>
         <Description>Library for finding games installed with Origin.</Description>
         <PackageTags>ea origin games</PackageTags>
+        <AssemblyName>GameCollector.StoreHandlers.Origin</AssemblyName>
     </PropertyGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />

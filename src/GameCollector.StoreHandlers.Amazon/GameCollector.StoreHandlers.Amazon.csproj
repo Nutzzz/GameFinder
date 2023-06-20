@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with Amazon Games.</Description>
+        <Description>Library for finding games owned and installed with Amazon Games.</Description>
         <PackageTags>amazon amazon-games games</PackageTags>
     </PropertyGroup>
 
