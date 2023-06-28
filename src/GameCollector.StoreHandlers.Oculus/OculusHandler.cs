@@ -21,7 +21,7 @@ namespace GameCollector.StoreHandlers.Oculus;
 /// Handler for finding games installed with Oculus.
 /// </summary>
 [PublicAPI]
-public class OculusHandler : AHandler<OculusGame, string>
+public class OculusHandler : AHandler<OculusGame, OculusGameId>
 {
     internal const string OculusRegKey = @"SOFTWARE\Oculus VR, LLC\Oculus";
 
@@ -49,10 +49,10 @@ public class OculusHandler : AHandler<OculusGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<OculusGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override Func<OculusGame, string> IdSelector => game => game.GameId;
+    public override Func<OculusGame, OculusGameId> IdSelector => game => game.HashKey;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

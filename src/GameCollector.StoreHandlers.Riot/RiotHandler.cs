@@ -24,7 +24,7 @@ namespace GameCollector.StoreHandlers.Riot;
 ///   %ProgramData%\Riot Games\Metadata\*\*settings.yaml
 /// </summary>
 [PublicAPI]
-public class RiotHandler : AHandler<RiotGame, string>
+public class RiotHandler : AHandler<RiotGame, RiotGameId>
 {
     private readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -60,10 +60,10 @@ public class RiotHandler : AHandler<RiotGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<RiotGameId>? IdEqualityComparer => RiotGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<RiotGame, string> IdSelector => game => game.GameId;
+    public override Func<RiotGame, RiotGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
     [UnconditionalSuppressMessage(

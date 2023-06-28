@@ -20,7 +20,7 @@ namespace GameCollector.StoreHandlers.Itch;
 ///   %AppData%\itch\db\butler.db
 /// </summary>
 [PublicAPI]
-public class ItchHandler : AHandler<ItchGame, string>
+public class ItchHandler : AHandler<ItchGame, ItchGameId>
 {
     internal const string ItchUrl = "itch://games/";
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -59,10 +59,10 @@ public class ItchHandler : AHandler<ItchGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<ItchGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override Func<ItchGame, string> IdSelector => game => game.GameId;
+    public override Func<ItchGame, ItchGameId> IdSelector => game => game.Id;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

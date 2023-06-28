@@ -17,7 +17,7 @@ namespace GameCollector.StoreHandlers.Plarium;
 /// Handler for finding games installed with Plarium Play.
 /// </summary>
 [PublicAPI]
-public class PlariumHandler : AHandler<PlariumGame, string>
+public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
 {
     internal const string PlariumRegKey = @"Software\PlariumPlayInstaller";
 
@@ -54,10 +54,10 @@ public class PlariumHandler : AHandler<PlariumGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<PlariumGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override Func<PlariumGame, string> IdSelector => game => game.GameId;
+    public override Func<PlariumGame, PlariumGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

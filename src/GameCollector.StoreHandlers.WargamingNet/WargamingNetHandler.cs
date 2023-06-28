@@ -17,7 +17,7 @@ namespace GameCollector.StoreHandlers.WargamingNet;
 /// Handler for finding games installed with Wargaming.net Game Center.
 /// </summary>
 [PublicAPI]
-public class WargamingNetHandler : AHandler<WargamingNetGame, string>
+public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId>
 {
     internal const string UninstRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
@@ -63,10 +63,10 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<WargamingNetGameId>? IdEqualityComparer => WargamingNetGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<WargamingNetGame, string> IdSelector => game => game.GameId;
+    public override Func<WargamingNetGame, WargamingNetGameId> IdSelector => game => game.AppId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

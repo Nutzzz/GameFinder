@@ -16,7 +16,7 @@ namespace GameCollector.StoreHandlers.Rockstar;
 /// Handler for finding games installed with Rockstar Games Launcher.
 /// </summary>
 [PublicAPI]
-public class RockstarHandler : AHandler<RockstarGame, string>
+public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
 {
     internal const string RockstarKey = @"SOFTWARE\Rockstar Games";
     internal const string UninstallRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -45,10 +45,10 @@ public class RockstarHandler : AHandler<RockstarGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<RockstarGameId>? IdEqualityComparer => RockstarGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<RockstarGame, string> IdSelector => game => game.GameId;
+    public override Func<RockstarGame, RockstarGameId> IdSelector => game => game.Id;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

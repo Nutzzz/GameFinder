@@ -24,7 +24,7 @@ namespace GameCollector.StoreHandlers.BattleNet;
 ///   %AppData%\Battle.net\Battle.net.config
 /// </summary>
 [PublicAPI]
-public class BattleNetHandler : AHandler<BattleNetGame, string>
+public class BattleNetHandler : AHandler<BattleNetGame, BattleNetGameId>
 {
     internal const string BattleNetRegKey = @"SOFTWARE\Blizzard Entertainment\Battle.net\Capabilities";
 
@@ -62,10 +62,10 @@ public class BattleNetHandler : AHandler<BattleNetGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<BattleNetGameId>? IdEqualityComparer => BattleNetGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<BattleNetGame, string> IdSelector => game => game.GameId;
+    public override Func<BattleNetGame, BattleNetGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

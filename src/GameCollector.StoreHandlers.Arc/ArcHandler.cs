@@ -19,7 +19,7 @@ namespace GameCollector.StoreHandlers.Arc;
 ///   HKCU\Software\Arc\Core
 /// </summary>
 [PublicAPI]
-public class ArcHandler : AHandler<ArcGame, string>
+public class ArcHandler : AHandler<ArcGame, ArcGameId>
 {
     internal const string ArcRegKey = @"SOFTWARE\Perfect World Entertainment";
     internal const string ArcRegKey2 = @"Software\Arc";
@@ -48,10 +48,10 @@ public class ArcHandler : AHandler<ArcGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<ArcGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override Func<ArcGame, string> IdSelector => game => game.GameId;
+    public override Func<ArcGame, ArcGameId> IdSelector => game => game.AppId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

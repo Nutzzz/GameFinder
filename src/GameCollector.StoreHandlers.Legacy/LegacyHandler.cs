@@ -21,7 +21,7 @@ namespace GameCollector.StoreHandlers.Legacy;
 ///   HKCU\Software\Legacy Games
 /// </summary>
 [PublicAPI]
-public class LegacyHandler : AHandler<LegacyGame, string>
+public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
 {
     internal const string LegacyRegKey = @"Software\Legacy Games";
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -60,10 +60,10 @@ public class LegacyHandler : AHandler<LegacyGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<LegacyGameId>? IdEqualityComparer => LegacyGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<LegacyGame, string> IdSelector => game => game.GameId;
+    public override Func<LegacyGame, LegacyGameId> IdSelector => game => game.InstallerUuid;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

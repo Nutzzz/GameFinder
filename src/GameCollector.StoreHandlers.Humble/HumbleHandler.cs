@@ -22,7 +22,7 @@ namespace GameCollector.StoreHandlers.Humble;
 ///   HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall
 /// </summary>
 [PublicAPI]
-public class HumbleHandler : AHandler<HumbleGame, string>
+public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
 {
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
@@ -59,10 +59,10 @@ public class HumbleHandler : AHandler<HumbleGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<HumbleGameId>? IdEqualityComparer => HumbleGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<HumbleGame, string> IdSelector => game => game.GameId;
+    public override Func<HumbleGame, HumbleGameId> IdSelector => game => game.HumbleGameId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

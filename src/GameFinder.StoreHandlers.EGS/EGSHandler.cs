@@ -181,7 +181,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             if (string.IsNullOrEmpty(exe))
             {
                 if (baseOnly)
-                    return new ErrorMessage($"Manifest {itemFile.GetFullPath()} is a DLC");
+                    return new ErrorMessage($"Manifest {itemFile.GetFullPath()} is a DLC or has no LaunchExecutable");
                 isDLC = true;
             }
             else

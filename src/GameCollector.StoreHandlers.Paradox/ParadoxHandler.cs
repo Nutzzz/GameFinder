@@ -17,7 +17,7 @@ namespace GameCollector.StoreHandlers.Paradox;
 /// Handler for finding games installed with Paradox Launcher.
 /// </summary>
 [PublicAPI]
-public class ParadoxHandler : AHandler<ParadoxGame, string>
+public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
 {
     internal const string ParadoxRegKey = @"Software\Paradox Interactive\Paradox Launcher v2";
 
@@ -54,10 +54,10 @@ public class ParadoxHandler : AHandler<ParadoxGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<ParadoxGameId>? IdEqualityComparer => ParadoxGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<ParadoxGame, string> IdSelector => game => game.GameId;
+    public override Func<ParadoxGame, ParadoxGameId> IdSelector => game => game.Id;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

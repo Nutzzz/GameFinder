@@ -19,7 +19,7 @@ namespace GameCollector.StoreHandlers.BigFish;
 ///   HKLM32\SOFTWARE\Big Fish Games\Persistence
 /// </summary>
 [PublicAPI]
-public class BigFishHandler : AHandler<BigFishGame, string>
+public class BigFishHandler : AHandler<BigFishGame, BigFishGameId>
 {
     internal const string BigFishUrl = "https://www.bigfishgames.com/games/";
     internal const string BigFishRegKey = @"SOFTWARE\Big Fish Games";
@@ -49,10 +49,10 @@ public class BigFishHandler : AHandler<BigFishGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<BigFishGameId>? IdEqualityComparer => BigFishGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<BigFishGame, string> IdSelector => game => game.GameId;
+    public override Func<BigFishGame, BigFishGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

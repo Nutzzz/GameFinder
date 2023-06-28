@@ -19,7 +19,7 @@ namespace GameCollector.EmuHandlers.Dolphin;
 /// Handler for finding ROMs for Dolphin.
 /// </summary>
 [PublicAPI]
-public partial class DolphinHandler : AHandler<DolphinGame, string>
+public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
 {
     internal const string DolphinRegKey = @"Software\Dolphin Emulator";
 
@@ -52,10 +52,10 @@ public partial class DolphinHandler : AHandler<DolphinGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<DolphinGameId>? IdEqualityComparer => DolphinGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<DolphinGame, string> IdSelector => game => game.GameId;
+    public override Func<DolphinGame, DolphinGameId> IdSelector => game => game.DolphinGameId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

@@ -22,7 +22,7 @@ namespace GameCollector.StoreHandlers.Ubisoft;
 ///   .\cache\configuration\configurations
 /// </summary>
 [PublicAPI]
-public class UbisoftHandler : AHandler<UbisoftGame, string>
+public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
 {
     internal const string ConnectRegKey = @"SOFTWARE\Ubisoft\Launcher";
     internal const string UninstallRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -63,10 +63,10 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<UbisoftGameId>? IdEqualityComparer => UbisoftGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<UbisoftGame, string> IdSelector => game => game.GameId;
+    public override Func<UbisoftGame, UbisoftGameId> IdSelector => game => game.GameCode;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

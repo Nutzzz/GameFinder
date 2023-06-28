@@ -20,7 +20,7 @@ namespace GameCollector.StoreHandlers.IGClient;
 ///   %AppData%\IGClient\config.json
 /// </summary>
 [PublicAPI]
-public class IGClientHandler : AHandler<IGClientGame, string>
+public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
 {
     internal const string ImgUrl = "https://www.indiegalacdn.com/imgs/devs/";
     internal const string UninstallRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -60,10 +60,10 @@ public class IGClientHandler : AHandler<IGClientGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<IGClientGameId>? IdEqualityComparer => IGClientGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<IGClientGame, string> IdSelector => game => game.GameId;
+    public override Func<IGClientGame, IGClientGameId> IdSelector => game => game.IdKeyName;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

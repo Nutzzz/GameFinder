@@ -25,7 +25,7 @@ namespace GameCollector.EmuHandlers.MAME;
 /// Handler for finding MAME ROMs.
 /// </summary>
 [PublicAPI]
-public partial class MAMEHandler : AHandler<MAMEGame, string>
+public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
 {
     /// <summary>
     ///     Number of ROMs to process per batch. ROM files are batched when passing as arguments to MAME both 
@@ -59,10 +59,10 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<MAMEGameId>? IdEqualityComparer => MAMEGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<MAMEGame, string> IdSelector => game => game.GameId;
+    public override Func<MAMEGame, MAMEGameId> IdSelector => game => game.GameName;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

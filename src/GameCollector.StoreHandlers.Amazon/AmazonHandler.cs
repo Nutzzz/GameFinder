@@ -23,7 +23,7 @@ namespace GameCollector.StoreHandlers.Amazon;
 ///   HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall
 /// </summary>
 [PublicAPI]
-public class AmazonHandler : AHandler<AmazonGame, string>
+public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
 {
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
@@ -51,10 +51,10 @@ public class AmazonHandler : AHandler<AmazonGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<AmazonGameId>? IdEqualityComparer => AmazonGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<AmazonGame, string> IdSelector => game => game.GameId;
+    public override Func<AmazonGame, AmazonGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()

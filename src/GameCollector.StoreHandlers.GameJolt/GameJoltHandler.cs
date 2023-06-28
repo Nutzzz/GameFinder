@@ -17,7 +17,7 @@ namespace GameCollector.StoreHandlers.GameJolt;
 /// Handler for finding games installed with Game Jolt Client.
 /// </summary>
 [PublicAPI]
-public class GameJoltHandler : AHandler<GameJoltGame, string>
+public class GameJoltHandler : AHandler<GameJoltGame, GameJoltGameId>
 {
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
@@ -74,10 +74,10 @@ public class GameJoltHandler : AHandler<GameJoltGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<GameJoltGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override Func<GameJoltGame, string> IdSelector => game => game.GameId;
+    public override Func<GameJoltGame, GameJoltGameId> IdSelector => game => game.Id;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
