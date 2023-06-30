@@ -132,14 +132,14 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     {
         return fileSystem
             .GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("EA Desktop");
+            .Combine("EA Desktop");
     }
 
     internal static AbsolutePath GetInstallInfoFile(AbsolutePath dataFolder)
     {
         return dataFolder
-            .CombineUnchecked(AllUsersFolderName)
-            .CombineUnchecked(InstallInfoFileName);
+            .Combine(AllUsersFolderName)
+            .Combine(InstallInfoFileName);
     }
 
     internal static OneOf<string, ErrorMessage> DecryptInstallInfoFile(IFileSystem fileSystem, AbsolutePath installInfoFile, IHardwareInfoProvider hardwareInfoProvider)
@@ -353,9 +353,9 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         var game = new EADesktopGame(
             EADesktopGameId: EADesktopGameId.From(softwareId),
             Name: string.IsNullOrEmpty(name) ? baseSlug : name,
-            BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromFullPath(SanitizeInputPath(baseInstallPath)) : new(),
+            BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(baseInstallPath)) : new(),
             Executable: executable,
-            UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromFullPath(SanitizeInputPath(uninstall)) : new(),
+            UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(uninstall)) : new(),
             UninstallParameters: uninstallArgs,
             IsInstalled: isInstalled,
             IsDLC: isDLC,

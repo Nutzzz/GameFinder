@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using FluentResults;
 using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
 using GameFinder.StoreHandlers.Steam.Services;
@@ -30,7 +30,6 @@ public sealed record AppManifest
     /// <example><c>E:/SteamLibrary/steamapps/appmanifest_262060.acf</c></example>
     /// <seealso cref="InstallationDirectoryName"/>
     /// <seealso cref="GetInstallationDirectoryPath"/>
-    [SuppressMessage("ReSharper", "CommentTypo")]
     public required AbsolutePath ManifestPath { get; init; }
 
     #region Parsed Values
@@ -231,6 +230,7 @@ public sealed record AppManifest
     private static readonly RelativePath CommonDirectoryName = "common".ToRelativePath();
     private static readonly RelativePath ShaderCacheDirectoryName = "shadercache".ToRelativePath();
     private static readonly RelativePath WorkshopDirectoryName = "workshop".ToRelativePath();
+    private static readonly RelativePath CompatabilityDataDirectoryName = "compatdata".ToRelativePath();
 
     /// <summary>
     /// Parses the file at <see cref="ManifestPath"/> again and returns a new
@@ -250,18 +250,17 @@ public sealed record AppManifest
     /// <remarks>This uses <see cref="ManifestPath"/> to get to the installation directory.</remarks>
     /// <example><c>E:/SteamLibrary/steamapps/common/DarkestDungeon</c></example>
     /// <seealso cref="InstallationDirectoryName"/>
-    [SuppressMessage("ReSharper", "CommentTypo")]
     public AbsolutePath GetInstallationDirectoryPath() => ManifestPath.Parent
-        .CombineUnchecked(CommonDirectoryName)
-        .CombineUnchecked(InstallationDirectoryName);
+        .Combine(CommonDirectoryName)
+        .Combine(InstallationDirectoryName);
 
     /// <summary>
     /// Gets the path to the <c>appworkshop_*.acf</c> file.
     /// </summary>
     /// <example><c>E:/SteamLibrary/steamapps/workshop/appworkshop_262060.acf</c></example>
     public AbsolutePath GetWorkshopManifestFilePath() => ManifestPath.Parent
-        .CombineUnchecked(WorkshopDirectoryName)
-        .CombineUnchecked($"appworkshop_{AppId.Value.ToString(CultureInfo.InvariantCulture)}.acf");
+        .Combine(WorkshopDirectoryName)
+        .Combine($"appworkshop_{AppId.Value.ToString(CultureInfo.InvariantCulture)}.acf");
 
     /// <summary>
     /// Gets all locally installed DLCs.
@@ -287,17 +286,16 @@ public sealed record AppManifest
     /// Gets the user-data path for the current app using <see cref="LastOwner"/> and
     /// <see cref="AppId"/>.
     /// </summary>
-    /// <param name="steamUserDataDirectory">
-    /// Path to the <c>userdata</c> directory in the Steam installation. Example:
-    /// <c>C:/Program Files/Steam/userdata</c>
+    /// <param name="steamDirectory">
+    /// Path to the Steam installation directory. Example:
+    /// <c>C:/Program Files/Steam</c>
     /// </param>
-    /// <example><c>C:/Program Files/Steam/userdata/149956546\262060</c></example>
+    /// <example><c>C:/Program Files/Steam/userdata/149956546/262060</c></example>
     /// <returns></returns>
-    public AbsolutePath GetUserDataDirectoryPath(AbsolutePath steamUserDataDirectory)
+    public AbsolutePath GetUserDataDirectoryPath(AbsolutePath steamDirectory)
     {
-        return steamUserDataDirectory
-            .CombineUnchecked(LastOwner.AccountId.ToString(CultureInfo.InvariantCulture))
-            .CombineUnchecked(AppId.Value.ToString(CultureInfo.InvariantCulture));
+        return SteamLocationFinder.GetUserDataDirectoryPath(steamDirectory, LastOwner)
+            .Combine(AppId.Value.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>
@@ -305,8 +303,16 @@ public sealed record AppManifest
     /// </summary>
     /// <example><c>E:/SteamLibrary/common/steamapps/shadercache/262060</c></example>
     public AbsolutePath GetShaderCacheDirectoryPath() => ManifestPath.Parent
-        .CombineUnchecked(ShaderCacheDirectoryName)
-        .CombineUnchecked(AppId.Value.ToString(CultureInfo.InvariantCulture));
+        .Combine(ShaderCacheDirectoryName)
+        .Combine(AppId.Value.ToString(CultureInfo.InvariantCulture));
+
+    /// <summary>
+    /// Gets the path to the compatability data directory used by Proton.
+    /// </summary>
+    /// <example><c>/mnt/ssd/SteamLibrary/common/steamapps/compatdata/262060</c></example>
+    public AbsolutePath GetCompatabilityDataDirectoryPath() => ManifestPath.Parent
+        .Combine(CompatabilityDataDirectoryName)
+        .Combine(AppId.Value.ToString(CultureInfo.InvariantCulture));
 
     #endregion
 
@@ -375,6 +381,20 @@ public sealed record AppManifest
         hashCode.Add(UserConfig);
         hashCode.Add(MountedConfig);
         return hashCode.ToHashCode();
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+
+        sb.Append("{ ");
+        sb.Append($"AppId = {AppId}, ");
+        sb.Append($"Name = {Name}, ");
+        sb.Append($"InstallationDirectoryName = {InstallationDirectoryName}");
+        sb.Append(" }");
+
+        return sb.ToString();
     }
 
     #endregion

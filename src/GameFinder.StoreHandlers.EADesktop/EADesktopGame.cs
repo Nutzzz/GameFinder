@@ -49,7 +49,7 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
     public AbsolutePath GetInstallerDataFile()
     {
         return BaseInstallPath
-            .CombineUnchecked("__Installer")
-            .CombineUnchecked("installerdata.xml");
+            .Combine("__Installer")
+            .Combine("installerdata.xml");
     }
 }

@@ -46,8 +46,8 @@ public class OriginHandler : AHandler<OriginGame, OriginGameId>
     internal static AbsolutePath GetManifestDir(IFileSystem fileSystem)
     {
         return fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("Origin")
-            .CombineUnchecked("LocalContent");
+            .Combine("Origin")
+            .Combine("LocalContent");
     }
 
     /// <inheritdoc/>
@@ -142,7 +142,7 @@ public class OriginHandler : AHandler<OriginGame, OriginGameId>
 
             var game = new OriginGame(
                 Id: OriginGameId.From(id),
-                InstallPath: Path.IsPathRooted(path) ? _fileSystem.FromFullPath(SanitizeInputPath(path)) : new()
+                InstallPath: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(path)) : new()
             );
 
             return game;

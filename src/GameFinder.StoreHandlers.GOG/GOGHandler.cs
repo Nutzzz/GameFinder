@@ -152,10 +152,10 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
             var game = new GOGGame(
                 Id: GOGGameId.From(id),
                 Name: name,
-                Path: Path.IsPathRooted(path) ? _fileSystem.FromFullPath(SanitizeInputPath(path)) : new(),
-                Exe: Path.IsPathRooted(exe) ? _fileSystem.FromFullPath(SanitizeInputPath(exe)) : new(),
+                Path: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(path)) : new(),
+                Exe: Path.IsPathRooted(exe) ? _fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(exe)) : new(),
                 LaunchParam: launchParam ?? "",
-                UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromFullPath(SanitizeInputPath(uninst)) : new()
+                UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(uninst)) : new()
             );
 
             return game;
