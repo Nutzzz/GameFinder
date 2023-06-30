@@ -17,7 +17,6 @@ using GameFinder.StoreHandlers.Steam;
 using GameFinder.StoreHandlers.Xbox;
 using GameFinder.Wine;
 using GameFinder.Wine.Bottles;
-using GameFinder.StoreHandlers.BethNet;
 using GameCollector.StoreHandlers.Amazon;
 using GameCollector.StoreHandlers.Arc;
 using GameCollector.StoreHandlers.BattleNet;
@@ -112,7 +111,6 @@ public static class Program
             options.Amazon = true;
             options.Arc = true;
             options.BattleNet = true;
-            options.BethNet = true;
             options.BigFish = true;
             options.Dolphin ??= "";
             options.EADesktop = true;
@@ -153,7 +151,6 @@ public static class Program
 
                 RunEADesktopHandler(realFileSystem, windowsRegistry, hardwareInfoProvider);
             }
-            if (options.BethNet) RunBethNetHandler();
             if (options.Amazon) RunAmazonHandler(windowsRegistry, realFileSystem);
             if (options.Arc) RunArcHandler(windowsRegistry, realFileSystem);
             if (options.BattleNet) RunBattleNetHandler(realFileSystem);
@@ -279,14 +276,6 @@ public static class Program
             if (!fileSystem.DirectoryExists(protonPrefix.ConfigurationDirectory)) return;
             logger.LogInformation("Proton Directory for this game: {}", protonPrefix.ProtonDirectory.GetFullPath());
         });
-    }
-
-    private static void RunBethNetHandler()
-    {
-        if (!OperatingSystem.IsWindows()) return;
-        var logger = _provider.CreateLogger(nameof(BethNetHandler));
-        var handler = new BethNetHandler(logger);
-        handler.FindAllGames();
     }
 
     private static void RunAmazonHandler(IRegistry registry, IFileSystem fileSystem)

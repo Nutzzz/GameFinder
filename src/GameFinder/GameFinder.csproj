@@ -24,10 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GameFinder.StoreHandlers.BethNet\GameFinder.StoreHandlers.BethNet.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\GameCollector.SQLiteUtils\GameCollector.SQLiteUtils.csproj" />
         <ProjectReference Include="..\GameCollector.YamlUtils\GameCollector.YamlUtils.csproj" />
         <ProjectReference Include="..\GameCollector.StoreHandlers.Amazon\GameCollector.StoreHandlers.Amazon.csproj" />

@@ -20,10 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.BethNet\GameFinder.StoreHandlers.BethNet.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Amazon\GameCollector.StoreHandlers.Amazon.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Arc\GameCollector.StoreHandlers.Arc.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.BattleNet\GameCollector.StoreHandlers.BattleNet.csproj" />

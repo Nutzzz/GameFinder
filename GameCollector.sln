@@ -88,10 +88,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFinder.StoreHandlers.Xb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFinder", "src\GameFinder\GameFinder.csproj", "{8F9D4B7D-5269-4053-BB20-9DB7B5F8DF8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFinder.Deprecated", "src\GameFinder.Deprecated\GameFinder.Deprecated.csproj", "{028C162A-E4AE-457D-B344-BD4E20591094}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameFinder.StoreHandlers.BethNet", "src\GameFinder.StoreHandlers.BethNet\GameFinder.StoreHandlers.BethNet.csproj", "{699E6574-4655-415B-A768-885CB1FA355A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCollector.SQLiteUtils", "src\GameCollector.SQLiteUtils\GameCollector.SQLiteUtils.csproj", "{B399A554-BDD6-4A2D-A71A-5CC88FF4DE4C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCollector.YamlUtils", "src\GameCollector.YamlUtils\GameCollector.YamlUtils.csproj", "{FD458F9E-A2BC-4E60-B26A-F8DEC2AD7DDD}"

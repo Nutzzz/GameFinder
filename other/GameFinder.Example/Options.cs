@@ -16,9 +16,6 @@ public class Options
     [Option("battlenet", HelpText = "Search for Battle.net games", Hidden = true, Group = "Handlers")]
     public bool BattleNet { get; set; } = false;
 
-    [Option("bethnet", HelpText = "Search for Bethesda.net games [deprecated]", Hidden = true, Group = "Handlers")]
-    public bool BethNet { get; set; } = false;
-
     [Option("bigfish", HelpText = "Search for Big Fish Game Manager games", Hidden = true, Group = "Handlers")]
     public bool BigFish { get; set; } = false;
 
