@@ -180,7 +180,7 @@ public class XboxHandler : AHandler<XboxGame, XboxGameId>
             var game = new XboxGame(Id: XboxGameId.From(id),
                                     DisplayName: displayName,
                                     Path: manifestFilePath.Parent,
-                                    Logo: manifestFilePath.Parent.CombineUnchecked(appManifest.Properties.Logo),
+                                    Logo: manifestFilePath.Parent.Combine(appManifest.Properties.Logo),
                                     Description: appManifest.Properties.Description,
                                     Publisher: appManifest.Properties.PublisherDisplayName);
             return game;
@@ -224,7 +224,7 @@ public class XboxHandler : AHandler<XboxGame, XboxGameId>
                     c = reader.ReadChar();
                 }
 
-                var part = sb.ToString().ToRelativePath();
+                var part = RelativePath.FromUnsanitizedInput(sb.ToString());
                 folders.Add(parentFolder.Combine(part));
             }
 

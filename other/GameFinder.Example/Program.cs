@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using CommandLine;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
@@ -30,11 +33,13 @@ using GameCollector.StoreHandlers.Oculus;
 using GameCollector.StoreHandlers.Paradox;
 using GameCollector.StoreHandlers.Plarium;
 using GameCollector.StoreHandlers.Riot;
+using GameCollector.StoreHandlers.RobotCache;
 using GameCollector.StoreHandlers.Rockstar;
 using GameCollector.StoreHandlers.Ubisoft;
 using GameCollector.StoreHandlers.WargamingNet;
 using GameCollector.EmuHandlers.Dolphin;
 using GameCollector.EmuHandlers.MAME;
+using GameCollector.DataHandlers.TheGamesDb;
 using Microsoft.Extensions.Logging;
 using NexusMods.Paths;
 using NLog;
@@ -96,40 +101,45 @@ public static class Program
             .WithParsed(x => Run(x, logger));
     }
 
-    private static void Run(Options options, ILogger logger)
+    private async static void Run(Options options, ILogger logger)
     {
         var realFileSystem = FileSystem.Shared;
+        CancellationTokenSource cancelSource = new();
+        var cancelToken = cancelSource.Token;
+        List<Task> tasks = new();
 
         var logFile = realFileSystem.GetKnownPath(KnownPath.CurrentDirectory).Combine("log.log");
         if (realFileSystem.FileExists(logFile)) realFileSystem.DeleteFile(logFile);
 
         logger.LogInformation("Operating System: {OSDescription}", RuntimeInformation.OSDescription);
 
-        if (options.All) // Enable all handlers
+        if (options.All) // Enable all emulator and handlers
         {
             options.Amazon = true;
             options.Arc = true;
             options.BattleNet = true;
             options.BigFish = true;
-            options.Dolphin ??= "";
-            options.EADesktop = true;
-            options.EGS = true;
+            //options.Dolphin ??= "";
+            options.EA = true;
+            options.Epic = true;
             options.GameJolt = true;
             options.GOG = true;
             options.Humble = true;
-            options.IGClient = true;
+            options.IG = true;
             options.Itch = true;
             options.Legacy = true;
-            options.MAME ??= "";
+            //options.MAME ??= "";
             options.Oculus = true;
             options.Origin = true;
             options.Paradox = true;
             options.Plarium = true;
             options.Riot = true;
+            options.RobotCache = true;
             options.Rockstar = true;
             options.Steam = true;
+            //options.TheGamesDB = true;
             options.Ubisoft = true;
-            options.WargamingNet = true;
+            options.Wargaming = true;
             options.Xbox = true;
         }
 
@@ -137,87 +147,110 @@ public static class Program
         {
             var windowsRegistry = WindowsRegistry.Shared;
             if (options.Steam) RunSteamHandler(realFileSystem, windowsRegistry, options.SteamAPI);
-            if (options.GOG) RunGOGHandler(windowsRegistry, realFileSystem);
-            if (options.EGS) RunEGSHandler(windowsRegistry, realFileSystem);
-            if (options.Origin) RunOriginHandler(realFileSystem);
-            if (options.Xbox) RunXboxHandler(realFileSystem);
-            if (options.EADesktop)
+            //if (options.Steam) tasks.Add(Task.Run(() => RunSteamHandler(realFileSystem, windowsRegistry, options.SteamAPI), cancelToken));
+            if (options.GOG) tasks.Add(Task.Run(() => RunGOGHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Epic || options.EGS) RunEGSHandler(windowsRegistry, realFileSystem);
+            //if (options.Epic || options.EGS) tasks.Add(Task.Run(() => RunEGSHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Origin) tasks.Add(Task.Run(() => RunOriginHandler(realFileSystem), cancelToken));
+            if (options.Xbox) tasks.Add(Task.Run(() => RunXboxHandler(realFileSystem), cancelToken));
+            if (options.EA || options.EADesktop)
             {
-                var hardwareInfoProvider = new HardwareInfoProvider();
-                var decryptionKey = Decryption.CreateDecryptionKey(new HardwareInfoProvider());
-                var sDecryptionKey = Convert.ToHexString(decryptionKey).ToLower(CultureInfo.InvariantCulture);
-                logger.LogDebug("EA Decryption Key: {DecryptionKey}", sDecryptionKey);
+                tasks.Add(Task.Run(() =>
+                {
+                    var hardwareInfoProvider = new HardwareInfoProvider();
+                    var decryptionKey = Decryption.CreateDecryptionKey(new HardwareInfoProvider());
+                    var sDecryptionKey = Convert.ToHexString(decryptionKey).ToLower(CultureInfo.InvariantCulture);
+                    logger.LogDebug("EA Decryption Key: {DecryptionKey}", sDecryptionKey);
 
-                RunEADesktopHandler(realFileSystem, windowsRegistry, hardwareInfoProvider);
+                    RunEADesktopHandler(realFileSystem, windowsRegistry, hardwareInfoProvider);
+                }, cancelToken));
             }
-            if (options.Amazon) RunAmazonHandler(windowsRegistry, realFileSystem);
-            if (options.Arc) RunArcHandler(windowsRegistry, realFileSystem);
-            if (options.BattleNet) RunBattleNetHandler(realFileSystem);
-            if (options.BigFish) RunBigFishHandler(windowsRegistry, realFileSystem);
-            if (options.GameJolt) RunGameJoltHandler(realFileSystem);
-            if (options.Humble) RunHumbleHandler(windowsRegistry, realFileSystem);
-            if (options.IGClient) RunIGClientHandler(realFileSystem);
-            if (options.Itch) RunItchHandler(realFileSystem);
-            if (options.Legacy) RunLegacyHandler(windowsRegistry, realFileSystem);
-            if (options.Oculus) RunOculusHandler(windowsRegistry, realFileSystem);
-            if (options.Paradox) RunParadoxHandler(windowsRegistry, realFileSystem);
-            if (options.Plarium) RunPlariumHandler(realFileSystem);
-            if (options.Riot) RunRiotHandler(realFileSystem);
-            if (options.Rockstar) RunRockstarHandler(windowsRegistry, realFileSystem);
-            if (options.Ubisoft) RunUbisoftHandler(windowsRegistry, realFileSystem);
-            if (options.WargamingNet) RunWargamingNetHandler(windowsRegistry, realFileSystem);
+            if (options.Amazon) tasks.Add(Task.Run(() => RunAmazonHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Arc) tasks.Add(Task.Run(() => RunArcHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.BattleNet || options.Blizzard) tasks.Add(Task.Run(() => RunBattleNetHandler(realFileSystem), cancelToken));
+            if (options.BigFish) tasks.Add(Task.Run(() => RunBigFishHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.GameJolt) tasks.Add(Task.Run(() => RunGameJoltHandler(realFileSystem), cancelToken));
+            if (options.Humble) tasks.Add(Task.Run(() => RunHumbleHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.IG || options.Indiegala || options.IGClient) tasks.Add(Task.Run(() => RunIGClientHandler(realFileSystem), cancelToken));
+            if (options.Itch) tasks.Add(Task.Run(() => RunItchHandler(realFileSystem), cancelToken));
+            if (options.Legacy) tasks.Add(Task.Run(() => RunLegacyHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Oculus) tasks.Add(Task.Run(() => RunOculusHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Paradox) tasks.Add(Task.Run(() => RunParadoxHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Plarium) tasks.Add(Task.Run(() => RunPlariumHandler(realFileSystem), cancelToken));
+            if (options.Riot) tasks.Add(Task.Run(() => RunRiotHandler(realFileSystem), cancelToken));
+            if (options.RobotCache) tasks.Add(Task.Run(() => RunRobotCacheHandler(realFileSystem), cancelToken));
+            if (options.Rockstar) tasks.Add(Task.Run(() => RunRockstarHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Ubisoft || options.Uplay) tasks.Add(Task.Run(() => RunUbisoftHandler(windowsRegistry, realFileSystem), cancelToken));
+            if (options.Wargaming || options.WargamingNet) tasks.Add(Task.Run(() => RunWargamingNetHandler(windowsRegistry, realFileSystem), cancelToken));
 
             if (options.Dolphin is not null)
             {
-                if (Path.IsPathRooted(options.Dolphin))
+                tasks.Add(Task.Run(() =>
                 {
-                    var path = realFileSystem.FromFullPath(options.Dolphin);
-                    RunDolphinHandler(realFileSystem, windowsRegistry, path);
-                }
-                else
-                    logger.LogError("Bad Dolphin path {DolphinPath}", options.Dolphin);
+                    if (Path.IsPathRooted(options.Dolphin))
+                    {
+                        var path = realFileSystem.FromUnsanitizedFullPath(options.Dolphin);
+                        RunDolphinHandler(realFileSystem, windowsRegistry, path);
+                    }
+                    else
+                        logger.LogError("Bad Dolphin path {DolphinPath}", options.Dolphin);
+                }, cancelToken));
             }
 
             if (options.MAME is not null)
             {
-                if (Path.IsPathRooted(options.MAME))
+                tasks.Add(Task.Run(() =>
                 {
-                    var path = realFileSystem.FromFullPath(options.MAME);
-                    RunMAMEHandler(realFileSystem, path);
-                }
-                else
-                    logger.LogError("Bad MAME path {MAMEPath}", options.MAME);
+                    if (Path.IsPathRooted(options.MAME))
+                    {
+                        var path = realFileSystem.FromUnsanitizedFullPath(options.MAME);
+                        RunMAMEHandler(realFileSystem, path);
+                    }
+                    else
+                        logger.LogError("Bad MAME path {MAMEPath}", options.MAME);
+                }, cancelToken));
             }
         }
 
         if (OperatingSystem.IsLinux())
         {
-            if (options.Steam) RunSteamHandler(realFileSystem, registry: null, options.SteamAPI);
-            var winePrefixes = new List<AWinePrefix>();
+            if (options.Steam) tasks.Add(Task.Run(() => RunSteamHandler(realFileSystem, registry: null, options.SteamAPI), cancelToken));
 
-            if (options.Wine)
+            tasks.Add(Task.Run(() =>
             {
-                var prefixManager = new DefaultWinePrefixManager(realFileSystem);
-                winePrefixes.AddRange(LogWinePrefixes(prefixManager, _provider.CreateLogger("Wine")));
-            }
+                var winePrefixes = new List<AWinePrefix>();
+                if (options.Wine)
+                {
+                    var prefixManager = new DefaultWinePrefixManager(realFileSystem);
+                    winePrefixes.AddRange(LogWinePrefixes(prefixManager, _provider.CreateLogger("Wine")));
+                }
 
-            if (options.Bottles)
-            {
-                var prefixManager = new BottlesWinePrefixManager(realFileSystem);
-                winePrefixes.AddRange(LogWinePrefixes(prefixManager, _provider.CreateLogger("Bottles")));
-            }
+                if (options.Bottles)
+                {
+                    var prefixManager = new BottlesWinePrefixManager(realFileSystem);
+                    winePrefixes.AddRange(LogWinePrefixes(prefixManager, _provider.CreateLogger("Bottles")));
+                }
 
-            foreach (var winePrefix in winePrefixes)
-            {
-                var wineFileSystem = winePrefix.CreateOverlayFileSystem(realFileSystem);
-                var wineRegistry = winePrefix.CreateRegistry(realFileSystem);
+                foreach (var winePrefix in winePrefixes)
+                {
+                    var wineFileSystem = winePrefix.CreateOverlayFileSystem(realFileSystem);
+                    var wineRegistry = winePrefix.CreateRegistry(realFileSystem);
 
-                if (options.GOG) RunGOGHandler(wineRegistry, wineFileSystem);
-                if (options.EGS) RunEGSHandler(wineRegistry, wineFileSystem);
-                if (options.Origin) RunOriginHandler(wineFileSystem);
-                if (options.Xbox) RunXboxHandler(wineFileSystem);
-            }
+                    if (options.GOG) RunGOGHandler(wineRegistry, wineFileSystem);
+                    if (options.Epic) RunEGSHandler(wineRegistry, wineFileSystem);
+                    if (options.Origin) RunOriginHandler(wineFileSystem);
+                    if (options.Xbox) RunXboxHandler(wineFileSystem);
+                }
+            }, cancelToken));
         }
+
+        if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI), cancelToken));
+
+        Parallel.ForEach(tasks, task =>
+        {
+            task.Start();
+        });
+        await Task.WhenAll(tasks).ConfigureAwait(false);
 
         logger.LogInformation($"{nameof(Program)} complete");
     }
@@ -368,6 +401,13 @@ public static class Program
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
+    private static void RunRobotCacheHandler(IFileSystem fileSystem)
+    {
+        var logger = _provider.CreateLogger(nameof(RobotCacheHandler));
+        var handler = new RobotCacheHandler(fileSystem);
+        LogGamesAndErrors(handler.FindAllGames(), logger);
+    }
+
     private static void RunRockstarHandler(IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(RockstarHandler));
@@ -403,6 +443,14 @@ public static class Program
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
+    private static async void RunTheGamesDbHandler(IFileSystem fileSystem, string? tgdbApi)
+    {
+        var logger = _provider.CreateLogger(nameof(TheGamesDbHandler));
+        //var handler = new TheGamesDbHandler(fileSystem, tgdbApi, logger);
+        var handler = new TheGamesDbHandler(fileSystem, logger);
+        LogGamesAndErrors(handler.FindAllGames(), logger);
+    }
+
     private static List<AWinePrefix> LogWinePrefixes<TWinePrefix>(IWinePrefixManager<TWinePrefix> prefixManager, ILogger logger)
     where TWinePrefix : AWinePrefix
     {
@@ -419,6 +467,7 @@ public static class Program
                 logger.LogError("{Error}", error);
             });
         }
+        logger.LogInformation("{num} prefixes found.", res.Count);
 
         return res;
     }
@@ -426,10 +475,12 @@ public static class Program
     private static void LogGamesAndErrors<TGame>(IEnumerable<OneOf<TGame, ErrorMessage>> results, ILogger logger, Action<TGame>? action = null)
         where TGame : class
     {
+        var numGames = 0;
         foreach (var result in results)
         {
             result.Switch(game =>
             {
+                numGames++;
                 logger.LogInformation("Found {Game}", game);
                 action?.Invoke(game);
             }, error =>
@@ -437,5 +488,6 @@ public static class Program
                 logger.LogError("{Error}", error);
             });
         }
+        logger.LogInformation("{num} games found.", numGames);
     }
 }

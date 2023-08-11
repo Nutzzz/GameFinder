@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using FluentResults;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
@@ -22,6 +23,7 @@ namespace GameFinder.StoreHandlers.Steam;
 [PublicAPI]
 public partial class SteamHandler : AHandler<SteamGame, AppId>
 {
+    internal const string RegKey = @"Software\Valve\Steam";
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
     private readonly IRegistry? _registry;
@@ -64,11 +66,12 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
     public override AbsolutePath FindClient()
     {
         var steamPathResult = SteamLocationFinder.FindSteam(_fileSystem, _registry);
-        if (steamPathResult.IsFailed)
+        if (!steamPathResult.IsFailed)
         {
-            yield return ConvertResultToErrorMessage(steamPathResult);
-            yield break;
+            return steamPathResult.Value;
         }
+
+        return new();
     }
 
     /// <inheritdoc/>
@@ -86,12 +89,12 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
     public IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, ulong userId = 0)
     {
         List<OneOf<SteamGame, ErrorMessage>> allGames = new();
-        Dictionary<SteamGameId, OneOf<SteamGame, ErrorMessage>> installedGames = new();
+        Dictionary<AppId, OneOf<SteamGame, ErrorMessage>> installedGames = new();
 
-        var steamSearchResult = FindSteam();
-        if (steamSearchResult.TryGetError(out var error))
+        var steamPathResult = SteamLocationFinder.FindSteam(_fileSystem, _registry);
+        if (steamPathResult.IsFailed)
         {
-            allGames.Add(error);
+            allGames.Add(ConvertResultToErrorMessage(steamPathResult));
             return allGames;
         }
 
@@ -101,19 +104,19 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
         var libraryFoldersResult = LibraryFoldersManifestParser.ParseManifestFile(libraryFoldersFilePath);
         if (libraryFoldersResult.IsFailed)
         {
-            yield return ConvertResultToErrorMessage(libraryFoldersResult);
-            yield break;
+            allGames.Add(ConvertResultToErrorMessage(libraryFoldersResult));
+            return allGames;
         }
 
         var libraryFolders = libraryFoldersResult.Value;
-        if (libraryFolders.Count == 0) yield break;
+        if (libraryFolders.Count == 0) return allGames;
 
         foreach (var libraryFolder in libraryFolders)
         {
             var libraryFolderPath = libraryFolder.Path;
             if (!_fileSystem.DirectoryExists(libraryFolderPath))
             {
-                yield return new ErrorMessage($"Steam Library at {libraryFolderPath} doesn't exist!");
+                allGames.Add(new ErrorMessage($"Steam Library at {libraryFolderPath} doesn't exist!"));
                 continue;
             }
 
@@ -122,20 +125,35 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
                 var appManifestResult = AppManifestParser.ParseManifestFile(acfFilePath);
                 if (appManifestResult.IsFailed)
                 {
-                    yield return ConvertResultToErrorMessage(appManifestResult);
+                    allGames.Add(ConvertResultToErrorMessage(appManifestResult));
                     continue;
                 }
 
-                var steamGame = new SteamGame
+                var registryEntryResult = RegistryEntryParser.ParseRegistryEntry(appManifestResult.Value.AppId, _fileSystem, _registry);
+                /*
+                if (registryEntryResult.IsFailed)
                 {
-                    SteamPath = steamPath,
-                    AppManifest = appManifestResult.Value,
-                    LibraryFolder = libraryFolder,
-                };
+                    yield return ConvertResultToErrorMessage(registryEntryResult);
+                }
+                */
 
-                yield return steamGame;
+                var steamGame = new SteamGame(
+                    steamPath,
+                    appManifestResult.Value ?? default,
+                    registryEntryResult.Value ?? default,
+                    libraryFolder ?? default,
+                    OwnedGame: default,
+                    IsInstalled: true
+                );
+
+                installedGames.Add(steamGame.AppId, steamGame);
             }
         }
+
+        if (installedOnly || _apiKey is null)
+            return installedGames.Values;
+
+        return FindOwnedGamesFromAPI(installedGames, userId);
     }
 
     private static ErrorMessage ConvertResultToErrorMessage<T>(Result<T> result)

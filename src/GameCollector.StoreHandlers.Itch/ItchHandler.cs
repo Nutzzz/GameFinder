@@ -59,10 +59,10 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<ItchGameId>? IdEqualityComparer => null;
+    public override Func<ItchGame, ItchGameId> IdSelector => game => game.Id;
 
     /// <inheritdoc/>
-    public override Func<ItchGame, ItchGameId> IdSelector => game => game.Id;
+    public override IEqualityComparer<ItchGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -81,7 +81,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
                     regKey.TryGetString("InstallLocation", out var loc) &&
                     Path.IsPathRooted(loc))
 
-                    return _fileSystem.FromFullPath(SanitizeInputPath(loc)).CombineUnchecked($"app-{ver}");
+                    return _fileSystem.FromUnsanitizedFullPath(loc).Combine($"app-{ver}");
             }
         }
 
@@ -160,8 +160,8 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
             yield return new ItchGame(
                 Id: ItchGameId.From(id),
                 Title: name,
-                Path: Path.IsPathRooted(path) ? _fileSystem.FromFullPath(SanitizeInputPath(path)) : new(),
-                LaunchPath: Path.IsPathRooted(launch) ? _fileSystem.FromFullPath(SanitizeInputPath(launch)) : new(),
+                Path: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(path) : new(),
+                LaunchPath: Path.IsPathRooted(launch) ? _fileSystem.FromUnsanitizedFullPath(launch) : new(),
                 OpenUrl: ItchUrl + id,
                 InstalledAt: installDate,
                 SecondsRun: runTime,
@@ -230,8 +230,8 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
     internal static AbsolutePath GetDatabaseFilePath(IFileSystem fileSystem)
     {
         return fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-            .CombineUnchecked("itch")
-            .CombineUnchecked("db")
-            .CombineUnchecked("butler.db");
+            .Combine("itch")
+            .Combine("db")
+            .Combine("butler.db");
     }
 }

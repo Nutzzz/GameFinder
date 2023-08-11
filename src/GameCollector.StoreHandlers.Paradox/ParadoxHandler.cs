@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
+using GameCollector.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using NexusMods.Paths.Extensions;
@@ -70,7 +71,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("LauncherInstallation", out var launcher) && Path.IsPathRooted(launcher))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(launcher)).CombineUnchecked("bootstrapper-v2.exe");
+                    return _fileSystem.FromUnsanitizedFullPath(launcher).Combine("bootstrapper-v2.exe");
             }
         }
 
@@ -85,7 +86,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
     public override IEnumerable<OneOf<ParadoxGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
         var pdxPath = GetParadoxV2Path();
-        var userFile = pdxPath.CombineUnchecked("userSettings.json");
+        var userFile = pdxPath.Combine("userSettings.json");
         using var userStream = userFile.Read();
         var userSettings = JsonSerializer.Deserialize<UserSettings>(userStream, JsonSerializerOptions);
         if (userSettings is null)
@@ -94,7 +95,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
             yield break;
         }
 
-        Dictionary<string, string?> instPaths = new();
+        Dictionary<string, string?> instPaths = new(StringComparer.OrdinalIgnoreCase);
         foreach (var libPath in userSettings.GameLibraryPaths)
         {
             if (libPath.ValueKind == JsonValueKind.String)
@@ -107,7 +108,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
                     instPaths[id.ToString()] = path.ToString();
             }
         }
-        Dictionary<string, ulong?> runDates = new();
+        Dictionary<string, ulong?> runDates = new(StringComparer.OrdinalIgnoreCase);
         var gamesLaunched = userSettings.GamesLaunched;
         foreach (var obj in gamesLaunched.EnumerateObject())
         {
@@ -115,7 +116,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
             runDates.Add(obj.Name, date > 0 ? date : null);
         }
 
-        var metaFile = pdxPath.CombineUnchecked("game-metadata").CombineUnchecked("game-metadata");
+        var metaFile = pdxPath.Combine("game-metadata").Combine("game-metadata");
         using var metaStream = metaFile.Read();
         var metadata = JsonSerializer.Deserialize<GameMetadata>(metaStream, JsonSerializerOptions);
         if (metadata is not null && metadata.Data is not null && metadata.Data.Games is not null)
@@ -124,7 +125,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
             {
                 var id = game.Id;
                 var name = game.Name ?? (game.Id is null ? "" : game.Id.Replace('_', ' '));
-                var strExe = SanitizeInputPath(game.ExePath ?? "");
+                var exe = Path.IsPathRooted(game.ExePath) ? _fileSystem.FromUnsanitizedFullPath(game.ExePath) : new();
                 var args = game.ExeArgs;
                 var strIcon = "";
                 var strTaskIcon = "";
@@ -134,46 +135,44 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
                 ulong? lastLaunch = 0;
                 if (game.ThemeSettings is not null)
                 {
-                    strIcon = SanitizeInputPath(game.ThemeSettings.AppIcon ?? "");
-                    strTaskIcon = SanitizeInputPath(game.ThemeSettings.AppTaskbarIcon ?? "");
-                    strBg = SanitizeInputPath(game.ThemeSettings.Background ?? "");
-                    strLogo = SanitizeInputPath(game.ThemeSettings.Logo ?? "");
+                    strIcon = game.ThemeSettings.AppIcon ?? "";
+                    strTaskIcon = game.ThemeSettings.AppTaskbarIcon ?? "";
+                    strBg = game.ThemeSettings.Background ?? "";
+                    strLogo = game.ThemeSettings.Logo ?? "";
                 }
 
                 if (id is not null && instPaths.ContainsKey(id))
                 {
-                    strPath = SanitizeInputPath(instPaths[id] ?? "");
+                    strPath = instPaths[id] ?? "";
                     if (runDates.ContainsKey(id))
                         lastLaunch = runDates[id];
                 }
                 else if (instPaths.ContainsKey("default"))
-                    strPath = SanitizeInputPath(instPaths["default"] ?? "");
+                    strPath = instPaths["default"] ?? "";
 
                 AbsolutePath path = new();
                 if (!string.IsNullOrEmpty(strPath))
                 {
                     if (Path.IsPathRooted(strPath))
-                        path = _fileSystem.FromFullPath(strPath);
+                        path = _fileSystem.FromUnsanitizedFullPath(strPath);
                     else
-                        path = GetParadoxV2Path().CombineUnchecked(strPath.ToRelativePath());
+                        path = GetParadoxV2Path().Combine(strPath.ToRelativePath());
                 }
-                AbsolutePath exe = new();
-                if (Path.IsPathRooted(strExe))
-                    exe = _fileSystem.FromFullPath(strExe);
 
                 AbsolutePath dataPath = new();
                 if (path != default && path.DirectoryExists() && (exe == default || !exe.FileExists))
                 {
-                    var settingsFile = path.CombineUnchecked("launcher-settings.json");
+                    var settingsFile = path.Combine("launcher-settings.json");
                     using var settingsStream = settingsFile.Read();
                     var settings = JsonSerializer.Deserialize<LauncherSettings>(settingsStream, JsonSerializerOptions);
                     if (settings is not null && settings.ExePath is not null)
                     {
-                        exe = path.CombineUnchecked(SanitizeInputPath(settings.ExePath));
+                        exe = path.Combine(settings.ExePath);
                         if (settings.GameDataPath is not null)
                         {
-                            var strDataPath = SanitizeInputPath(settings.GameDataPath.Replace("%USER_DOCUMENTS%", _fileSystem.GetKnownPath(KnownPath.MyDocumentsDirectory).GetFullPath()));
-                            dataPath = _fileSystem.FromFullPath(strDataPath);
+                            var strDataPath = settings.GameDataPath.Replace("%USER_DOCUMENTS%",
+                                _fileSystem.GetKnownPath(KnownPath.MyDocumentsDirectory).GetFullPath(), StringComparison.Ordinal);
+                            dataPath = _fileSystem.FromUnsanitizedFullPath(strDataPath);
                         }
                     }
                     if (exe == default || !exe.FileExists)
@@ -187,11 +186,11 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
                     GameDataPath: dataPath,
                     ExePath: exe,
                     ExeArgs: args,
-                    AppIcon: Path.IsPathRooted(strIcon) ? _fileSystem.FromFullPath(strIcon) : default,
+                    AppIcon: Path.IsPathRooted(strIcon) ? _fileSystem.FromUnsanitizedFullPath(strIcon) : new(),
                     LastLaunch: lastLaunch,
-                    AppTaskbarIcon: Path.IsPathRooted(strTaskIcon) ? _fileSystem.FromFullPath(strTaskIcon) : default,
-                    Background: Path.IsPathRooted(strBg) ? _fileSystem.FromFullPath(strBg) : default,
-                    Logo: Path.IsPathRooted(strLogo) ? _fileSystem.FromFullPath(strLogo) : default
+                    AppTaskbarIcon: Path.IsPathRooted(strTaskIcon) ? _fileSystem.FromUnsanitizedFullPath(strTaskIcon) : new(),
+                    Background: Path.IsPathRooted(strBg) ? _fileSystem.FromUnsanitizedFullPath(strBg) : new(),
+                    Logo: Path.IsPathRooted(strLogo) ? _fileSystem.FromUnsanitizedFullPath(strLogo) : new()
                 );
             }
         }
@@ -199,13 +198,13 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
     public AbsolutePath GetParadoxV1Path()
     {
         return _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
-        .CombineUnchecked("Paradox Interactive")
-        .CombineUnchecked("launcher");
+        .Combine("Paradox Interactive")
+        .Combine("launcher");
     }
     public AbsolutePath GetParadoxV2Path()
     {
         return _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-        .CombineUnchecked("Paradox Interactive")
-        .CombineUnchecked("launcher-v2");
+        .Combine("Paradox Interactive")
+        .Combine("launcher-v2");
     }
 }

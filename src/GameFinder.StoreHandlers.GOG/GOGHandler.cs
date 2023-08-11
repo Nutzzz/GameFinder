@@ -66,7 +66,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 if (regKey2 is null) return default;
 
                 if (regKey2.TryGetString("client", out var clientPath) && Path.IsPathRooted(clientPath))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(clientPath)).CombineUnchecked(clientExe);
+                    return _fileSystem.FromUnsanitizedFullPath(clientPath).Combine(clientExe);
             }
         }
 
@@ -152,10 +152,10 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
             var game = new GOGGame(
                 Id: GOGGameId.From(id),
                 Name: name,
-                Path: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(path)) : new(),
-                Exe: Path.IsPathRooted(exe) ? _fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(exe)) : new(),
+                Path: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(path) : new(),
+                Exe: Path.IsPathRooted(exe) ? _fileSystem.FromUnsanitizedFullPath(exe) : new(),
                 LaunchParam: launchParam ?? "",
-                UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromUnsanitizedFullPath(SanitizeInputPath(uninst)) : new()
+                UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromUnsanitizedFullPath(uninst) : new()
             );
 
             return game;

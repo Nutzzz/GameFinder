@@ -4,11 +4,11 @@
         <InternalsVisibleTo Include="GameFinder.Common.Tests" />
     </ItemGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
-
     <ItemGroup>
-        <PackageReference Include="FluentResults" Version="3.15.*" />
-        <PackageReference Include="OneOf" Version="3.0.*" />
-        <PackageReference Include="Vogen" Version="3.0.*" />
+        <PackageReference Include="FluentResults" />
+        <PackageReference Include="OneOf" />
+        <PackageReference Include="Vogen" />
     </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

@@ -26,8 +26,8 @@ public record GameJoltGame(GameJoltGameId Id,
                       string? HeaderUrl = null,
                       ulong? PackageId = null) :
     GameData(GameId: Id.ToString(),
-             Name: Title,
-             Path: InstallDir,
+             GameName: Title,
+             GamePath: InstallDir,
              Launch: ExecutablePath,
              Icon: ExecutablePath,
              Metadata: new(StringComparer.OrdinalIgnoreCase)

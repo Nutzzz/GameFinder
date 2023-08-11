@@ -17,8 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 - Added a generic `record GameData` to collect data for all handlers:
   - `string GameId`
-  - `string Name`
-  - `AbsolutePath Path`
+  - `string GameName`
+  - `AbsolutePath GamePath`
   - `AbsolutePath? SavePath`
   - `AbsolutePath Launch`
   - `string LaunchArgs`
@@ -40,10 +40,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
   - `Dictionary<string, List<string>>? Metadata`
 - Metadata may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
 - The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
+- Added metadata provider:
+  - TheGamesDb.net
 - Added emulators:
   - Dolphin, MAME
 - Added additional store launchers:
-  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Rockstar, Ubisoft, Wargaming.net
+  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Robot Cache, Rockstar, Ubisoft, Wargaming.net
 - Add `FindClient` to get path to store client executable.
 - EADesktop handler now attempts to get a proper game title from the Registry.
 - EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to find installed games after a Windows system reset or reinstall.
@@ -51,20 +53,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 # Upstream Changelog
 
-## [Unreleased](https://github.com/erri120/GameFinder/compare/v3.1.0...HEAD)
+## [Unreleased](https://github.com/erri120/GameFinder/compare/v3.2.1...HEAD)
 
-## [3.2.0](https://github.com/erri120/GameFinder/compare/v3.1.0...v3.2.0) - TBD
+## [Released](https://github.com/erri120/GameFinder/releases)
 
-This is the first in a series of major updates that rework one of the store handlers. In this update, I focused on Steam and completely reworked the handler and data models. The `SteamGame` record now contains a reference to the parsed `AppManifest`, which itself is now fully fleshed out and has everything you need. Furthermore, you can now also parse the workshop manifest file, if it exists, to get a list of all installed Steam workshop items.
+## [3.2.1](https://github.com/erri120/GameFinder/compare/v3.2.0...v3.2.1) - 2023-07-25
+
+- Xbox: parsed relative path is now sanitized
+
+## [3.2.0](https://github.com/erri120/GameFinder/compare/v3.1.0...v3.2.0) - 2023-07-25
+
+This is the first in a series of major updates that rework one of the store handlers. In this update, I focused on Steam and completely reworked the handler and data models. The `SteamGame` record now contains a reference to the parsed `AppManifest`, which itself is now fully fleshed out and has everything you need. Furthermore, you can now also parse the workshop manifest file, if it exists, to get a list of all installed Steam workshop items:
+
+- `AppManifest`: for `appmanifest_*.acf` files.
+- `LibraryFoldersManifest`: for the single `libraryfolders.vdf` file inside the `Steam/config` folder.
+- `WorkshopManifest`: for `appworkshop_*.acf` files.
+- `LocalUserConfig` for the single `localconfig.vdf` file inside the `userdata/{steamId}/config` folder.
 
 Finally, I've been thinking a lot about result types. Over the years, I've updated GameFinder to use various different approaches for dealing with errors. This update is the beginning of me phasing out my hacky `OneOf<TResult, ErrorMessage>` solution, and replacing it with [FluentResults](https://altmann/FluentResults).
 
 **Changes**:
 
 - Steam: complete rework
-- Updated `NexusMods.Paths` to `0.0.6`
-
-## [Released](https://github.com/erri120/GameFinder/releases)
+- Updated `NexusMods.Paths` to `0.1.1`
 
 ## [3.1.0](https://github.com/erri120/GameFinder/compare/v3.0.2...v3.1.0) - 2023-05-23
 

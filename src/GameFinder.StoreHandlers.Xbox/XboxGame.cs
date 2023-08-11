@@ -22,8 +22,8 @@ public record XboxGame(XboxGameId Id,
                        string? Description = null,
                        string? Publisher = null) :
     GameData(GameId: Id.ToString(),
-             Name: DisplayName,
-             Path: Path,
+             GameName: DisplayName,
+             GamePath: Path,
              Icon: Logo,
              Metadata: new(StringComparer.OrdinalIgnoreCase)
              {

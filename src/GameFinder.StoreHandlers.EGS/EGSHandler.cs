@@ -87,7 +87,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             if (regKey is null) return default;
 
             if (regKey.TryGetString("ModSdkCommand", out var command) && Path.IsPathRooted(command))
-                return _fileSystem.FromFullPath(SanitizeInputPath(command));
+                return _fileSystem.FromUnsanitizedFullPath(command);
         }
 
         return default;
@@ -169,7 +169,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                 return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"DisplayName\"");
             }
 
-            var loc = SanitizeInputPath(manifest.InstallLocation ?? "");
+            var loc = manifest.InstallLocation ?? "";
             if (string.IsNullOrEmpty(loc) || !Path.IsPathRooted(loc))
             {
                 return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"InstallLocation\"");
@@ -185,7 +185,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                 isDLC = true;
             }
             else
-                launch = _fileSystem.FromFullPath(loc).CombineUnchecked(exe);
+                launch = _fileSystem.FromUnsanitizedFullPath(loc).Combine(exe);
 
             var game = new EGSGame(
                 CatalogItemId: EGSGameId.From(manifest.CatalogItemId),

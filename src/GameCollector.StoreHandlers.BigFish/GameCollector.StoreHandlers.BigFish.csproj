@@ -4,11 +4,11 @@
         <PackageTags>bigfish big-fish games</PackageTags>
     </PropertyGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
-
     <ItemGroup>
-        <PackageReference Include="HtmlAgilityPack" Version="1.11.*" />
+        <PackageReference Include="HtmlAgilityPack" />
     </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />

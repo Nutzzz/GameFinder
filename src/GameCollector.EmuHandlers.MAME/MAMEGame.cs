@@ -9,7 +9,7 @@ namespace GameCollector.EmuHandlers.MAME;
 /// <summary>
 /// Represents a ROM for MAME Emulator.
 /// </summary>
-/// <param name="GameName"></param>
+/// <param name="Name"></param>
 /// <param name="Description"></param>
 /// <param name="Path"></param>
 /// <param name="MAMEExecutable"></param>
@@ -28,29 +28,29 @@ namespace GameCollector.EmuHandlers.MAME;
 /// <param name="DisplayRotation"></param>
 /// <param name="VersionAdded"></param>
 [PublicAPI]
-public record MAMEGame(MAMEGameId GameName,
-                         string Description,
-                         AbsolutePath Path,
-                         AbsolutePath MAMEExecutable = new(),
-                         string CommandLineArgs = "",
-                         AbsolutePath Icon = new(),
-                         bool IsAvailable = true,
-                         bool HasProblem = false,
-                         string? Parent = null,
-                         string? Year = null,
-                         string? Manufacturer = null,
-                         List<string>? Categories = null,
-                         bool IsMature = false,
-                         string? Players = null,
-                         string? DriverStatus = null,
-                         string? DisplayType = null,
-                         string? DisplayRotation = null,
-                         string? VersionAdded = null) :
-    GameData(GameId: GameName.ToString() ?? "",
-             Name: Description,
-             Path: Path,
+public record MAMEGame(MAMEGameId Name,
+                       string Description,
+                       AbsolutePath Path,
+                       AbsolutePath MAMEExecutable = new(),
+                       string CommandLineArgs = "",
+                       AbsolutePath Icon = new(),
+                       bool IsAvailable = true,
+                       bool HasProblem = false,
+                       string? Parent = null,
+                       string? Year = null,
+                       string? Manufacturer = null,
+                       List<string>? Categories = null,
+                       bool IsMature = false,
+                       string? Players = null,
+                       string? DriverStatus = null,
+                       string? DisplayType = null,
+                       string? DisplayRotation = null,
+                       string? VersionAdded = null) :
+    GameData(GameId: Name.ToString() ?? "",
+             GameName: Description,
+             GamePath: Path,
              Launch: MAMEExecutable,
-             LaunchArgs: (GameName.ToString() ?? "") + (string.IsNullOrEmpty(CommandLineArgs) ? "" : " " + CommandLineArgs),
+             LaunchArgs: (Name.ToString() ?? "") + (string.IsNullOrEmpty(CommandLineArgs) ? "" : " " + CommandLineArgs),
              Icon: Icon,
              IsInstalled: IsAvailable,
              HasProblem: HasProblem,

@@ -88,17 +88,17 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
             var file = game.File;
             if (Path.IsPathRooted(file))
             {
-                var filePath = _fileSystem.FromFullPath(SanitizeInputPath(file));
+                var filePath = _fileSystem.FromUnsanitizedFullPath(file);
                 if (filePath.FileExists)
                 {
                     var name = Path.GetFileNameWithoutExtension(file);
-                    var path = _fileSystem.FromFullPath(filePath.Directory);
+                    var path = _fileSystem.FromUnsanitizedFullPath(filePath.Directory);
                     var id = game.GameId ?? name;
                     AbsolutePath icon = new();
                     if (id.Length > 5)
-                        icon = userPath.CombineUnchecked("Cache")
-                            .CombineUnchecked("GameCovers")
-                            .CombineUnchecked(string.Concat(id[..6], ".png"));
+                        icon = userPath.Combine("Cache")
+                            .Combine("GameCovers")
+                            .Combine(string.Concat(id[..6], ".png"));
                     _ = DateTime.TryParse(game.ApploaderDate, CultureInfo.InvariantCulture, out var loaderDate);
                     yield return new DolphinGame(
                         DolphinGameId: DolphinGameId.From(id),
@@ -122,11 +122,11 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
         AbsolutePath dolphinDir = default;
 
         if (_dolphinPath != default)
-            dolphinDir = _fileSystem.FromFullPath(_dolphinPath.Directory);
+            dolphinDir = _fileSystem.FromUnsanitizedFullPath(_dolphinPath.Directory);
 
-        if (dolphinDir != default && dolphinDir.CombineUnchecked("portable.txt").FileExists)
+        if (dolphinDir != default && dolphinDir.Combine("portable.txt").FileExists)
         {
-            userPath = dolphinDir.CombineUnchecked("User");
+            userPath = dolphinDir.Combine("User");
             if (userPath.DirectoryExists())
                 return userPath;
         }
@@ -134,7 +134,7 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
         var userPathEnv = Environment.GetEnvironmentVariable("DOLPHIN_EMU_USERPATH");
         if (Path.IsPathRooted(userPathEnv))
         {
-            userPath = _fileSystem.FromFullPath(userPathEnv);
+            userPath = _fileSystem.FromUnsanitizedFullPath(userPathEnv);
             if (userPath.DirectoryExists())
                 return userPath;
         }
@@ -149,31 +149,31 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
                 {
                     if (local.Equals("1", StringComparison.Ordinal) && dolphinDir != default && dolphinDir.DirectoryExists())
                     {
-                        userPath = dolphinDir.CombineUnchecked("User");
+                        userPath = dolphinDir.Combine("User");
                         if (userPath.DirectoryExists())
                             return userPath;
                     }
                 }
                 if (regKey.TryGetString("UserConfigPath", out var path) && Path.IsPathRooted(path))
                 {
-                    userPath = _fileSystem.FromFullPath(path);
+                    userPath = _fileSystem.FromUnsanitizedFullPath(path);
                     if (userPath.DirectoryExists())
                         return userPath;
                 }
             }
         }
 
-        userPath = _fileSystem.GetKnownPath(KnownPath.MyDocumentsDirectory).CombineUnchecked("Dolphin Emulator");
+        userPath = _fileSystem.GetKnownPath(KnownPath.MyDocumentsDirectory).Combine("Dolphin Emulator");
         if (userPath.DirectoryExists())
             return userPath;
 
-        userPath = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory).CombineUnchecked("Dolphin Emulator");
+        userPath = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory).Combine("Dolphin Emulator");
         if (userPath.DirectoryExists())
             return userPath;
         
         if (dolphinDir != default && dolphinDir.DirectoryExists())
         {
-            userPath = dolphinDir.CombineUnchecked("User");
+            userPath = dolphinDir.Combine("User");
             if (userPath.DirectoryExists())
                 return userPath;
         }
@@ -181,7 +181,7 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
         return default;
     }
 
-    // TODO: This is pretty ugly; since Dolphin is open source, a neater solution is probably available
+    // TODO: gamelist.cache parsing is pretty ugly; since Dolphin is open source, a neater solution is probably available
     internal IList<GameList> ParseGameList(AbsolutePath userPath, IList<string> romPaths)
     {
         GameList game = new();
@@ -190,7 +190,7 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
         if (userPath == default)
             return gameList;
 
-        var path = userPath.CombineUnchecked("Cache").CombineUnchecked("gamelist.cache");
+        var path = userPath.Combine("Cache").Combine("gamelist.cache");
         if (!path.FileExists)
         {
             _logger?.LogError("File not found: {path}", path);
@@ -363,7 +363,7 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
         if (userPath == default)
             return romPaths;
 
-        using var stream = userPath.CombineUnchecked("Config").CombineUnchecked("Dolphin.ini").Read();
+        using var stream = userPath.Combine("Config").Combine("Dolphin.ini").Read();
         using var reader = new StreamReader(stream);
         var line = "";
         while ((line = reader.ReadLine()) != null)

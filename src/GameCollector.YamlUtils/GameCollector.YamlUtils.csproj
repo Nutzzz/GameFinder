@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="YamlDotNet" Version="13.*" />
+        <PackageReference Include="YamlDotNet" />
     </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.YamlUtils.Tests" />

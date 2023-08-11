@@ -17,7 +17,7 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace GameCollector.StoreHandlers.Riot;
 
 /// <summary>
-/// Handler for finding games installed with Riot Client.
+/// Handler for finding games installed with the Riot Client.
 /// Uses json file:
 ///   %ProgramData%\Riot Games\RiotClientInstalls.json
 /// and yaml files:
@@ -78,16 +78,16 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
             // or just use protocol "riotclient://"
 
             var clientFile = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-                .CombineUnchecked("Riot Games")
-                .CombineUnchecked("RiotClientInstalls.json");
+                .Combine("Riot Games")
+                .Combine("RiotClientInstalls.json");
 
             using var stream = clientFile.Read();
             var client = JsonSerializer.Deserialize<ClientInstallFile>(stream, JsonSerializerOptions);
-            if (client is not null && client.RcLive is not null)
+            if (client is not null && !string.IsNullOrEmpty(client.RcLive))
             {
-                var clientPath = SanitizeInputPath(client.RcLive);
+                var clientPath = client.RcLive;
                 if (Path.IsPathRooted(clientPath))
-                    return _fileSystem.FromFullPath(clientPath);
+                    return _fileSystem.FromUnsanitizedFullPath(clientPath);
             }
         }
         catch (Exception) { }
@@ -103,11 +103,11 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
     public override IEnumerable<OneOf<RiotGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
         var clientFile = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("Riot Games")
-            .CombineUnchecked("RiotClientInstalls.json");
+            .Combine("Riot Games")
+            .Combine("RiotClientInstalls.json");
         var metaDir = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("Riot Games")
-            .CombineUnchecked("Metadata");
+            .Combine("Riot Games")
+            .Combine("Metadata");
         if (!clientFile.FileExists)
         {
             yield return new ErrorMessage($"The client install file {clientFile.GetFullPath()} does not exist!");
@@ -189,20 +189,23 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
             AbsolutePath icon = new();
             if (settingsFile.Directory is not null)
             {
-                foreach (var iconFile in _fileSystem.EnumerateFiles(_fileSystem.FromFullPath(settingsFile.Directory), "*.ico", recursive: false))
+                foreach (var iconFile in _fileSystem.EnumerateFiles(
+                    _fileSystem.FromUnsanitizedFullPath(settingsFile.Directory),
+                    "*.ico",
+                    recursive: false))
                 {
                     icon = iconFile;
                     break;
                 }
             }
             if (string.IsNullOrEmpty(icon.GetFullPath()))
-                icon = _fileSystem.FromFullPath(SanitizeInputPath(launch));
+                icon = _fileSystem.FromUnsanitizedFullPath(launch);
 
             return new RiotGame(
                 ProductId: RiotGameId.From(id),
                 Name: Path.GetFileNameWithoutExtension(game.ShortcutName ?? ""),
-                ProductInstallPath: _fileSystem.FromFullPath(SanitizeInputPath(game.ProductInstallFullPath ?? "")),
-                ClientPath: _fileSystem.FromFullPath(SanitizeInputPath(launch)),
+                ProductInstallPath: Path.IsPathRooted(game.ProductInstallFullPath) ? _fileSystem.FromUnsanitizedFullPath(game.ProductInstallFullPath) : new(),
+                ClientPath: _fileSystem.FromUnsanitizedFullPath(launch),
                 LaunchArgs: launchArgs,
                 Icon: icon,
                 UninstallArgs: uninstallArgs);

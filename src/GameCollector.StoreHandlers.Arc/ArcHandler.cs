@@ -48,10 +48,10 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<ArcGameId>? IdEqualityComparer => null;
+    public override Func<ArcGame, ArcGameId> IdSelector => game => game.AppId;
 
     /// <inheritdoc/>
-    public override Func<ArcGame, ArcGameId> IdSelector => game => game.AppId;
+    public override IEqualityComparer<ArcGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -65,14 +65,14 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("launcher", out var launcher) && Path.IsPathRooted(launcher))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(launcher));
+                    return _fileSystem.FromUnsanitizedFullPath(launcher);
             }
 
             using var regKey2 = currentUser.OpenSubKey(Path.Combine(ArcRegKey2, "Arc"));
             if (regKey2 is not null)
             {
                 if (regKey2.TryGetString("launcher", out var launcher) && Path.IsPathRooted(launcher))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(launcher));
+                    return _fileSystem.FromUnsanitizedFullPath(launcher);
             }
         }
 
@@ -96,7 +96,7 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
                 {
                     var path = Path.GetDirectoryName(clientPath);
                     if (path is not null)
-                        arcPath = _fileSystem.FromFullPath(SanitizeInputPath(path));
+                        arcPath = _fileSystem.FromUnsanitizedFullPath(path);
                 }
             }
 
@@ -169,24 +169,22 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
 
             var launch = new AbsolutePath();
             if (subKey.TryGetString("LAUNCHER_PATH", out var launchStr) && Path.IsPathRooted(launchStr))
-                launch = fileSystem.FromFullPath(SanitizeInputPath(launchStr));
+                launch = fileSystem.FromUnsanitizedFullPath(launchStr);
 
             var found = false;
             var icon = new AbsolutePath();
             if (subKey.TryGetString("APP_ABBR", out var abbrev))
             {
-                icon = arcPath.CombineUnchecked("resources")
-                    .CombineUnchecked("login_pics")
-                    .CombineUnchecked(abbrev + ".jpg");
+                icon = arcPath.Combine("resources").Combine("login_pics").Combine(abbrev + ".jpg");
                 if (icon.FileExists)
                     found = true;
                 else
                 {
-                    icon = arcPath.CombineUnchecked("resources")
-                        .CombineUnchecked("passport")
-                        .CombineUnchecked("games")
-                        .CombineUnchecked(abbrev)
-                        .CombineUnchecked("img_game_logo.png");
+                    icon = arcPath.Combine("resources")
+                        .Combine("passport")
+                        .Combine("games")
+                        .Combine(abbrev)
+                        .Combine("img_game_logo.png");
                     if (icon.FileExists)
                         found = true;
                 }
@@ -194,7 +192,7 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
             if (!found)
             {
                 if (subKey.TryGetString("CLIENT_PATH", out var client) && Path.IsPathRooted(client))
-                    icon = fileSystem.FromFullPath(SanitizeInputPath(client));
+                    icon = fileSystem.FromUnsanitizedFullPath(client);
                 else
                     icon = launch;
             }
@@ -202,7 +200,7 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
             return new ArcGame(
                 AppId: ArcGameId.From(id),
                 Name: name,
-                InstallPath: Path.IsPathRooted(path) ? fileSystem.FromFullPath(SanitizeInputPath(path)) : new(),
+                InstallPath: Path.IsPathRooted(path) ? fileSystem.FromUnsanitizedFullPath(path) : new(),
                 LauncherPath: launch,
                 Icon: icon);
         }

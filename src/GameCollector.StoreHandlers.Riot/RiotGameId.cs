@@ -6,7 +6,7 @@ using Vogen;
 namespace GameCollector.StoreHandlers.Riot;
 
 /// <summary>
-/// Represents an id for games installed with Riot Client.
+/// Represents an id for games installed with the Riot Client.
 /// </summary>
 [ValueObject<string>]
 public readonly partial struct RiotGameId { }

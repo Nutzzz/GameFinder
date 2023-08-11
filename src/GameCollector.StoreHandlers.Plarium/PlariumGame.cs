@@ -27,8 +27,8 @@ public record PlariumGame(PlariumGameId ProductId,
                       string? GameName = null,
                       string? CompanyName = null) :
     GameData(GameId: ProductId.ToString(),
-             Name: ProductName,
-             Path: InstallationPath,
+             GameName: ProductName,
+             GamePath: InstallationPath,
              Launch: Launch,
              LaunchArgs: LaunchArgs,
              Metadata: new(StringComparer.OrdinalIgnoreCase)

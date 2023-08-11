@@ -67,7 +67,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("InstallLocation", out var app) && Path.IsPathRooted(app))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(app)).CombineUnchecked("Amazon Games.exe");
+                    return _fileSystem.FromUnsanitizedFullPath(app).Combine("Amazon Games.exe");
             }
         }
 
@@ -77,8 +77,8 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
     /// <inheritdoc/>
     public override IEnumerable<OneOf<AmazonGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
-        var prodDb = GetDatabasePath(_fileSystem).CombineUnchecked("GameProductInfo.sqlite");
-        var instDb = GetDatabasePath(_fileSystem).CombineUnchecked("GameInstallInfo.sqlite");
+        var prodDb = GetDatabasePath(_fileSystem).Combine("GameProductInfo.sqlite");
+        var instDb = GetDatabasePath(_fileSystem).Combine("GameInstallInfo.sqlite");
         if (!prodDb.FileExists)
         {
             yield return new ErrorMessage($"The database file {prodDb} does not exist!");
@@ -130,7 +130,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     var dir = install.InstallDirectory;
                     if (id.Equals(install.Id, StringComparison.Ordinal) && dir is not null && Path.IsPathRooted(dir))
                     {
-                        path =  _fileSystem.FromFullPath(SanitizeInputPath(dir));
+                        path =  _fileSystem.FromUnsanitizedFullPath(dir);
                         found = true;
                     }
                 }
@@ -268,7 +268,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
     {
         try
         {
-            var file = dir.CombineUnchecked("fuel.json");
+            var file = dir.Combine("fuel.json");
             if (file.FileExists)
             {
                 var strDocumentData = File.ReadAllText(file.GetFullPath());
@@ -281,7 +281,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     {
                         var exe = command.GetString();
                         if (!string.IsNullOrEmpty(exe))
-                            return dir.CombineUnchecked(exe);
+                            return dir.Combine(exe);
                     }
                 }
             }
@@ -326,9 +326,9 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
             return new AmazonGame(
                 ProductId: AmazonGameId.From(gameId),
                 ProductTitle: name,
-                InstallDirectory: Path.IsPathRooted(path) ? fileSystem.FromFullPath(SanitizeInputPath(path)) : new(),
-                Command: Path.IsPathRooted(launch) ? fileSystem.FromFullPath(SanitizeInputPath(launch)) : new(),
-                Uninstall: Path.IsPathRooted(uninst) ? fileSystem.FromFullPath(SanitizeInputPath(uninst)) : new()
+                InstallDirectory: Path.IsPathRooted(path) ? fileSystem.FromUnsanitizedFullPath(path) : new(),
+                Command: Path.IsPathRooted(launch) ? fileSystem.FromUnsanitizedFullPath(launch) : new(),
+                Uninstall: Path.IsPathRooted(uninst) ? fileSystem.FromUnsanitizedFullPath(uninst) : new()
             );
         }
         catch (Exception e)
@@ -340,9 +340,9 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
     internal static AbsolutePath GetDatabasePath(IFileSystem fileSystem)
     {
         return fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
-            .CombineUnchecked("Amazon Games")
-            .CombineUnchecked("Data")
-            .CombineUnchecked("Games")
-            .CombineUnchecked("Sql");
+            .Combine("Amazon Games")
+            .Combine("Data")
+            .Combine("Games")
+            .Combine("Sql");
     }
 }

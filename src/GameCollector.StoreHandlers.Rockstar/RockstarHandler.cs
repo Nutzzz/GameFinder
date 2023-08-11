@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
+using GameCollector.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
 namespace GameCollector.StoreHandlers.Rockstar;
 
-// TODO: Confirm this handler works
+// TODO: Confirm this handler works at all
 
 /// <summary>
 /// Handler for finding games installed with Rockstar Games Launcher.
@@ -61,7 +62,7 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("DisplayIcon", out var icon) && Path.IsPathRooted(icon))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(icon));
+                    return _fileSystem.FromUnsanitizedFullPath(icon);
             }
         }
 
@@ -115,7 +116,7 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
                 return new ErrorMessage($"{strPath} is not a valid path");
 
             var id = "";
-            var path = fileSystem.FromFullPath(SanitizeInputPath(strPath));
+            var path = fileSystem.FromUnsanitizedFullPath(strPath);
             AbsolutePath exe = new();
             AbsolutePath uninst = new();
             var uninstArgs = "";
@@ -126,10 +127,10 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
             {
                 if (strUninst.Contains("\" ", StringComparison.Ordinal))
                 {
-                    var uninstExe = SanitizeInputPath(strUninst[..strUninst.IndexOf("\" ", StringComparison.Ordinal)].Trim('\"'));
+                    var uninstExe = strUninst[..strUninst.IndexOf("\" ", StringComparison.Ordinal)].Trim('\"');
                     if (Path.IsPathRooted(uninstExe))
                     {
-                        uninst = fileSystem.FromFullPath(uninstExe);
+                        uninst = fileSystem.FromUnsanitizedFullPath(uninstExe);
                         uninstArgs = strUninst[(strUninst.IndexOf("\" ", StringComparison.Ordinal) + 2)..];
                     }
                     if (strUninst.Contains("-uninstall=", StringComparison.Ordinal))

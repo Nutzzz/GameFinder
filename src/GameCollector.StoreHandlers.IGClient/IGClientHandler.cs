@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
+using GameCollector.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
@@ -80,7 +81,7 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
                 if (icon.Contains(',', StringComparison.Ordinal))
                     icon = icon[..icon.LastIndexOf(',')];
                 if (Path.IsPathRooted(icon))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(icon));
+                    return _fileSystem.FromUnsanitizedFullPath(icon);
             }
         }
 
@@ -92,9 +93,9 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
     {
         List<OneOf<IGClientGame, ErrorMessage>> games = new();
         var installFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-            .CombineUnchecked("IGClient")
-            .CombineUnchecked("storage")
-            .CombineUnchecked("installed.json");
+            .Combine("IGClient")
+            .Combine("storage")
+            .Combine("installed.json");
         if (!installFile.FileExists)
         {
             return new OneOf<IGClientGame, ErrorMessage>[]
@@ -103,8 +104,8 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
             };
         }
         var configFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-            .CombineUnchecked("IGClient")
-            .CombineUnchecked("config.json");
+            .Combine("IGClient")
+            .Combine("config.json");
         if (!configFile.FileExists)
         {
             return new OneOf<IGClientGame, ErrorMessage>[]
@@ -165,7 +166,7 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
                 foreach (var gamePath in game.Path)
                 {
                     if (Path.IsPathRooted(gamePath))
-                        path = _fileSystem.FromFullPath(SanitizeInputPath(gamePath));
+                        path = _fileSystem.FromUnsanitizedFullPath(gamePath);
                 }
                 var target = game.Target;
                 if (target is null ||
@@ -178,12 +179,12 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
                 }
                 id = target.ItemData.IdKeyName ?? "";
                 slugged = target.ItemData.SluggedName ?? "";
-                path = path.CombineUnchecked(slugged);
+                path = path.Combine(slugged);
                 name = target.ItemData.Name ?? "";
 
                 if (!string.IsNullOrEmpty(target.GameData.ExePath))
                 {
-                    launch = path.CombineUnchecked(target.GameData.ExePath);
+                    launch = path.Combine(target.GameData.ExePath);
                     if (!string.IsNullOrEmpty(target.GameData.Args))
                         launchArgs = target.GameData.Args;
                 }

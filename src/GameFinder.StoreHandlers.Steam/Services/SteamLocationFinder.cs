@@ -214,6 +214,6 @@ public static class SteamLocationFinder
             yield break;
         }
 
-        throw new PlatformNotSupportedException("GameFinder doesn't support the current platform!");
+        throw new PlatformNotSupportedException("GameCollector doesn't support the current platform!");
     }
 }

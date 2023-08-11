@@ -79,7 +79,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("InstallDir", out var install) && Path.IsPathRooted(install))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(install)).CombineUnchecked("UbisoftConnect.exe");
+                    return _fileSystem.FromUnsanitizedFullPath(install).Combine("UbisoftConnect.exe");
             }
         }
 
@@ -125,7 +125,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
 
         // Get owned but not-installed games
 
-        var configFile = _fileSystem.FromFullPath(Path.Combine(launcherPath, "cache", "configuration", "configurations"));
+        var configFile = _fileSystem.FromUnsanitizedFullPath(Path.Combine(launcherPath, "cache", "configuration", "configurations"));
         if (configFile.FileExists)
         {
             // This file is mostly yaml text, but there is binary before each entry that I attempt to strip out
@@ -328,10 +328,10 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
                                     var value = regKey.GetValue(Path.GetFileName(sRegistry));
                                     if (value is not null)
                                     {
-                                        path = fileSystem.FromFullPath(value.ToString() ?? "");
+                                        path = fileSystem.FromUnsanitizedFullPath(value.ToString() ?? "");
                                         var configExe = configGame.Executables[0].Path;
                                         if (configExe is not null && configExe.Relative is not null)
-                                            launch = path.CombineUnchecked(configExe.Relative);
+                                            launch = path.Combine(configExe.Relative);
                                         if (fileSystem.FileExists(launch))
                                             isInstalled = true;
                                     }
@@ -474,10 +474,10 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             return new UbisoftGame(
                 GameCode: UbisoftGameId.From(sId),
                 DisplayName: name,
-                InstallPath: fileSystem.FromFullPath(SanitizeInputPath(path)),
+                InstallPath: fileSystem.FromUnsanitizedFullPath(path),
                 LaunchUrl: url,
-                Icon: fileSystem.FromFullPath(SanitizeInputPath(icon)),
-                Uninstall: string.IsNullOrEmpty(uninstall) ? new() : fileSystem.FromFullPath(SanitizeInputPath(uninstall)),
+                Icon: fileSystem.FromUnsanitizedFullPath(icon),
+                Uninstall: string.IsNullOrEmpty(uninstall) ? new() : fileSystem.FromUnsanitizedFullPath(uninstall),
                 UninstallArgs: uninstallArgs);
         }
         catch (Exception e)

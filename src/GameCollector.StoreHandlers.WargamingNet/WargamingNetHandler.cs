@@ -83,15 +83,15 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                     if (icon.Contains(',', StringComparison.Ordinal))
                         icon = icon[..icon.LastIndexOf(',')];
                     if (Path.IsPathRooted(icon))
-                        return _fileSystem.FromFullPath(SanitizeInputPath(icon));
+                        return _fileSystem.FromUnsanitizedFullPath(icon);
                 }
             }
         }
 
         return _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("Wargaming.net")
-            .CombineUnchecked("GameCenter")
-            .CombineUnchecked("wgc.exe");
+            .Combine("Wargaming.net")
+            .Combine("GameCenter")
+            .Combine("wgc.exe");
     }
 
     /// <inheritdoc/>
@@ -103,9 +103,9 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
         List<string> appPaths = new();
 
         var appData = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("Wargaming.net")
-            .CombineUnchecked("GameCenter")
-            .CombineUnchecked("apps");
+            .Combine("Wargaming.net")
+            .Combine("GameCenter")
+            .Combine("apps");
         var appFiles = appData.EnumerateFiles(Extension.None, recursive: true).ToArray();
         foreach (var appFile in appFiles)
         {
@@ -121,9 +121,9 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
             if (!Path.IsPathRooted(appPath))
                 continue;
 
-            var path = _fileSystem.FromFullPath(appPath);
+            var path = _fileSystem.FromUnsanitizedFullPath(appPath);
 
-            var infoFile = path.CombineUnchecked("game_info.xml");
+            var infoFile = path.Combine("game_info.xml");
             if (!infoFile.FileExists)
                 continue;
 
@@ -138,7 +138,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                 if (data is null || data.Game is null)
                     continue;
 
-                if (!float.TryParse(data.Version, out var gameinfoVersion))
+                if (!float.TryParse(data.Version, CultureInfo.InvariantCulture, out var gameinfoVersion))
                 {
                     yield return new ErrorMessage($"File {infoFile.GetFullPath()} does not have a version!");
                     yield break;
@@ -155,7 +155,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                     isInstalled = false;
             }
 
-            var metaFile = path.CombineUnchecked("game_metadata").CombineUnchecked("metadata.xml");
+            var metaFile = path.Combine("game_metadata").Combine("metadata.xml");
             if (!metaFile.FileExists)
                 continue;
 
@@ -170,7 +170,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                 if (data is null || data.PredefinedSection is null)
                     continue;
 
-                if (!float.TryParse(data.Version, out var metadataVersion))
+                if (!float.TryParse(data.Version, CultureInfo.InvariantCulture, out var metadataVersion))
                 {
                     yield return new ErrorMessage($"File {metaFile.GetFullPath()} does not have a version!");
                     yield break;
@@ -200,10 +200,10 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                                 break;
                             }
                         }
-                        strExe = SanitizeInputPath(exe.Exe ?? "");
+                        strExe = exe.Exe ?? "";
                     }
                     if (!string.IsNullOrEmpty(strExe))
-                        exeFile = path.CombineUnchecked(strExe);
+                        exeFile = path.Combine(strExe);
                 }
             }
 
@@ -215,10 +215,10 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                 if (strIcon.Contains(',', StringComparison.Ordinal))
                     strIcon = strIcon[..strIcon.LastIndexOf(',')];
                 if (Path.IsPathRooted(strIcon))
-                    icon = _fileSystem.FromFullPath(SanitizeInputPath(strIcon));
+                    icon = _fileSystem.FromUnsanitizedFullPath(strIcon);
             }
             else if (path != default)
-                icon = path.CombineUnchecked("game_metadata").CombineUnchecked("game.ico");
+                icon = path.Combine("game_metadata").Combine("game.ico");
             if (!icon.FileExists)
                 icon = exeFile;
 
@@ -235,7 +235,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                     strUninst = strUninst[..i].Trim('\"');
                 }
                 if (Path.IsPathRooted(strUninst))
-                    uninst = _fileSystem.FromFullPath(SanitizeInputPath(strUninst));
+                    uninst = _fileSystem.FromUnsanitizedFullPath(strUninst);
                 /*
                 if (uninst.FileExists &&
                     uninst.FileName is not null &&
@@ -279,9 +279,9 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                     using var subKey = currentUser.OpenSubKey(Path.Combine(UninstRegKey, subKeyName));
                     if (subKey is not null &&
                         subKey.TryGetString("InstallLocation", out var testPath) &&
-                        (strPath.Equals(SanitizeInputPath(testPath), StringComparison.OrdinalIgnoreCase)))
+                        strPath.Equals(testPath, StringComparison.OrdinalIgnoreCase))
 
-                        return (subKey.GetString("DisplayIcon") ?? "", subKey.GetString("UninstallString") ?? "");
+                        return (subKey?.GetString("DisplayIcon") ?? "", subKey?.GetString("UninstallString") ?? "");
                 }
             }
         }

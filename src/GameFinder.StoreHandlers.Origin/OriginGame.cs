@@ -13,5 +13,5 @@ namespace GameFinder.StoreHandlers.Origin;
 public record OriginGame(OriginGameId Id,
                          AbsolutePath InstallPath) :
     GameData(GameId: Id.ToString(),
-             Name: InstallPath.GetFileNameWithoutExtension(),
-             Path: InstallPath);
+             GameName: InstallPath.GetFileNameWithoutExtension(),
+             GamePath: InstallPath);
