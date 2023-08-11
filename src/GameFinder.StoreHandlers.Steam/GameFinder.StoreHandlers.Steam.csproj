@@ -6,8 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="SteamWebAPI2" />
         <PackageReference Include="ValveKeyValue" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SteamWebAPI2" />
     </ItemGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />

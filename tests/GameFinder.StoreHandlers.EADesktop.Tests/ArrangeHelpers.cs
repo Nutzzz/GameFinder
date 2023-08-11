@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text.Json;
-using AutoFixture.AutoMoq;
 using GameFinder.RegistryUtils;
 using GameFinder.StoreHandlers.EADesktop.Crypto;
 using NexusMods.Paths;
+using NSubstitute;
 
 namespace GameFinder.StoreHandlers.EADesktop.Tests;
 
@@ -12,9 +12,7 @@ public partial class EADesktopTests
 {
     private static IHardwareInfoProvider SetupHardwareInfoProvider()
     {
-        var fixture = new Fixture();
-        fixture.Customize(new AutoMoqCustomization());
-        return fixture.Create<IHardwareInfoProvider>();
+        return Substitute.For<IHardwareInfoProvider>();
     }
 
     private static (
