@@ -124,7 +124,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             }
             catch (Exception e)
             {
-                installedGames.Add(EGSGameId.From(""), new ErrorMessage(e, $"Exception adding {game.AsT0.GameName} [{game.AsT0.CatalogItemId}]"));
+                installedGames.Add(EGSGameId.From(""), new ErrorMessage(e, $"Exception adding \"{game.AsT0.GameName}\" [{game.AsT0.CatalogItemId}]"));
             }
         }
         if (installedOnly)
