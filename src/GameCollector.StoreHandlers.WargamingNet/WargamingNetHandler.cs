@@ -203,7 +203,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
                         strExe = exe.Exe ?? "";
                     }
                     if (!string.IsNullOrEmpty(strExe))
-                        exeFile = path.Combine(strExe);
+                        exeFile = path.Combine(RelativePath.FromUnsanitizedInput(strExe));
                 }
             }
 

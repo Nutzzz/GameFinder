@@ -198,6 +198,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
 
     private static OneOf<UbisoftGame, ErrorMessage> ParseConfigFile(string input, string launcherPath, IFileSystem fileSystem, IRegistry registry, List<string> ubiIds, bool baseOnly = false)
     {
+        ConfigFile config;
         var id = "";
         string name;
         AbsolutePath path = new();
@@ -212,8 +213,15 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .IgnoreUnmatchedProperties()
                 .Build();
-            var config = deserializer.Deserialize<ConfigFile>(input);
+            config = deserializer.Deserialize<ConfigFile>(input);
+        }
+        catch (Exception e)
+        {
+            return new ErrorMessage(e, $"Malformed YAML in configurations file entry\n{e.InnerException}");
+        }
 
+        try
+        {
             if (config is null || config.Root is null)
                 return new ErrorMessage("No \"root\" property in configurations file entry");
 
@@ -244,12 +252,8 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             if (string.IsNullOrEmpty(iconFile))
                 iconFile = config.Root.ThumbImage ?? "";
 
-            if (config.Localizations is not null)
+            if (config.Localizations is not null && config.Localizations.Default is not null)
             {
-                /*
-                if (config.Localizations.Default is null)
-                    return new ErrorMessage($"No \"localizations>default\" property found for {name} [{id}]");
-                */
                 name = Localize(name, config.Localizations.Default);
                 iconFile = Localize(iconFile, config.Localizations.Default);
             }

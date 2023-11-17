@@ -118,7 +118,14 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
         foreach (var itemFile in itemFiles)
         {
             var game = DeserializeGame(itemFile, FormatPolicy, baseOnly);
-            installedGames.Add(game.IsT0 ? game.AsT0.CatalogItemId : EGSGameId.From(""), game);
+            try
+            {
+                installedGames.Add(game.IsT0 ? game.AsT0.CatalogItemId : EGSGameId.From(""), game);
+            }
+            catch (Exception e)
+            {
+                installedGames.Add(EGSGameId.From(""), new ErrorMessage(e, $"Exception adding {game.AsT0.GameName} [{game.AsT0.CatalogItemId}]"));
+            }
         }
         if (installedOnly)
             return installedGames.Values;

@@ -294,7 +294,8 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                 var j = installCheck.IndexOf(']', StringComparison.Ordinal);
                 if (j > 1)
                     sRegKey = installCheck[1..j];
-                var install = fileSystem.FromUnsanitizedFullPath(baseInstallPath).Combine(installCheck[(j + 1)..]);
+                var install = fileSystem.FromUnsanitizedFullPath(baseInstallPath)
+                    .Combine(RelativePath.FromUnsanitizedInput(installCheck.AsSpan()[(j + 1)..]));
                 if (!install.FileExists)
                     isInstalled = false;
             }
