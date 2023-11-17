@@ -8,8 +8,6 @@
         <PackageReference Include="NLog.Extensions.Logging" />
     </ItemGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
-
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
     </ItemGroup>

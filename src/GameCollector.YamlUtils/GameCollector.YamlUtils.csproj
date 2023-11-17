@@ -4,8 +4,6 @@
         <PackageReference Include="YamlDotNet" />
     </ItemGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
-
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.YamlUtils.Tests" />
     </ItemGroup>

@@ -2,9 +2,8 @@
 
     <ItemGroup>
         <PackageReference Include="System.Data.SQLite.Core" />
+        <PackageReference Include="NexusMods.Paths" />
     </ItemGroup>
-
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.SQLiteUtils.Tests" />

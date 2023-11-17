@@ -4,8 +4,6 @@
         <PackageTags>robotcache robot-cache games</PackageTags>
     </PropertyGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
-
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
     </ItemGroup>
