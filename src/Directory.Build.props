@@ -6,11 +6,14 @@
         <Authors>Nutzzz, erri120</Authors>
 
         <PackageReadmeFile>docs\README.md</PackageReadmeFile>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
 
         <PackageProjectUrl>https://github.com/Nutzzz/GameCollector</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Nutzzz/GameCollector.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+
+        <!-- https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#packrelease -->
+        <PackRelease>true</PackRelease>
 
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>

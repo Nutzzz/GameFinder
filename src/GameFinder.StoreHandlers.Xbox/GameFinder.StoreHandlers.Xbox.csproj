@@ -5,8 +5,6 @@
         <AssemblyName>GameCollector.StoreHandlers.Xbox</AssemblyName>
     </PropertyGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
-
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
     </ItemGroup>
