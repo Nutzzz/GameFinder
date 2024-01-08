@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.WargamingNet;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.WargamingNet;
 /// Represents an id for games installed with Wargaming.net Game Center.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct WargamingNetGameId { }
+public readonly partial struct WargamingNetGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

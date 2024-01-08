@@ -15,6 +15,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.StoreHandlers.Itch.Tests" />
     </ItemGroup>
 </Project>

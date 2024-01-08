@@ -1,4 +1,4 @@
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Arc;
 
@@ -7,4 +7,3 @@ namespace GameCollector.StoreHandlers.Arc;
 /// </summary>
 [ValueObject<ulong>]
 public readonly partial struct ArcGameId { }
-

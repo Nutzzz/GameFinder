@@ -248,7 +248,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
             }
 
             yield return new WargamingNetGame(
-                AppId: WargamingNetGameId.From(id),
+                AppId: WargamingNetGameId.From(id ?? ""),
                 Name: name ?? "",
                 InstallLocation: path,
                 Executable: exeFile,

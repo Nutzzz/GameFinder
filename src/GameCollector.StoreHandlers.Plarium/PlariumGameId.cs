@@ -1,4 +1,4 @@
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Plarium;
 
@@ -7,4 +7,3 @@ namespace GameCollector.StoreHandlers.Plarium;
 /// </summary>
 [ValueObject<ulong>]
 public readonly partial struct PlariumGameId { }
-

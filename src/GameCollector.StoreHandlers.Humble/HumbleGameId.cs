@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Humble;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.Humble;
 /// Represents an id for games installed with Humble App.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct HumbleGameId { }
+public readonly partial struct HumbleGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

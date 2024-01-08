@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Itch;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.Itch;
 /// Represents an id for games installed with itch.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct ItchGameId { }
+public readonly partial struct ItchGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

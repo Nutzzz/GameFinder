@@ -53,7 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 # Upstream Changelog
 
-## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.0.0...HEAD)
+## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.1.0...HEAD)
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
 

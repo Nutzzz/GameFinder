@@ -180,7 +180,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
                 }
 
                 yield return new ParadoxGame(
-                    Id: ParadoxGameId.From(id),
+                    Id: ParadoxGameId.From(id ?? ""),
                     Name: name,
                     InstallationPath: path,
                     GameDataPath: dataPath,
