@@ -28,8 +28,7 @@ public sealed record AppManifest
     /// that was parsed to produce this <see cref="AppManifest"/>.
     /// </summary>
     /// <example><c>E:/SteamLibrary/steamapps/appmanifest_262060.acf</c></example>
-    /// <seealso cref="InstallationDirectoryName"/>
-    /// <seealso cref="GetInstallationDirectoryPath"/>
+    /// <seealso cref="InstallationDirectory"/>
     public required AbsolutePath ManifestPath { get; init; }
 
     #region Parsed Values
@@ -55,15 +54,9 @@ public sealed record AppManifest
     public required StateFlags StateFlags { get; init; }
 
     /// <summary>
-    /// Gets the name of the installation directory of the app.
+    /// Gets the <see cref="AbsolutePath"/> to the installation directory of the app.
     /// </summary>
-    /// <remarks>
-    /// This is the relative path to the installation directory.
-    /// Use <see cref="GetInstallationDirectoryPath"/> get the absolute path.
-    /// </remarks>
-    /// <example><c>DarkestDungeon</c></example>
-    /// <seealso cref="GetInstallationDirectoryPath"/>
-    public required RelativePath InstallationDirectoryName { get; init; }
+    public required AbsolutePath InstallationDirectory { get; init; }
 
     /// <summary>
     /// Gets the time when the app was last updated.
@@ -78,7 +71,7 @@ public sealed record AppManifest
     /// </summary>
     /// <remarks>
     /// This value is only set when installing or updating the app. If the
-    /// user adds or removes files from the <see cref="InstallationDirectoryName"/>, Steam
+    /// user adds or removes files from the <see cref="InstallationDirectory"/>, Steam
     /// won't update this value automatically. This value will be <see cref="Size.Zero"/>
     /// while the app is being staged.
     /// </remarks>
@@ -105,7 +98,7 @@ public sealed record AppManifest
     /// </remarks>
     /// <seealso cref="GetCurrentUpdateNotesUrl"/>
     /// <seealso cref="TargetBuildId"/>
-    public BuildId BuildId { get; init; } = BuildId.Empty;
+    public BuildId BuildId { get; init; } = BuildId.DefaultValue;
 
     /// <summary>
     /// Gets the last owner of this app.
@@ -160,7 +153,7 @@ public sealed record AppManifest
     /// </remarks>
     /// <seealso cref="GetNextUpdateNotesUrl"/>
     /// <seealso cref="BuildId"/>
-    public BuildId TargetBuildId { get; init; } = BuildId.Empty;
+    public BuildId TargetBuildId { get; init; } = BuildId.DefaultValue;
 
     /// <summary>
     /// Gets the automatic update behavior for this app.
@@ -245,16 +238,6 @@ public sealed record AppManifest
     }
 
     /// <summary>
-    /// Gets the <see cref="AbsolutePath"/> to the installation directory of the app.
-    /// </summary>
-    /// <remarks>This uses <see cref="ManifestPath"/> to get to the installation directory.</remarks>
-    /// <example><c>E:/SteamLibrary/steamapps/common/DarkestDungeon</c></example>
-    /// <seealso cref="InstallationDirectoryName"/>
-    public AbsolutePath GetInstallationDirectoryPath() => ManifestPath.Parent
-        .Combine(CommonDirectoryName)
-        .Combine(InstallationDirectoryName);
-
-    /// <summary>
     /// Gets the path to the <c>appworkshop_*.acf</c> file.
     /// </summary>
     /// <example><c>E:/SteamLibrary/steamapps/workshop/appworkshop_262060.acf</c></example>
@@ -266,7 +249,7 @@ public sealed record AppManifest
     /// Gets all locally installed DLCs.
     /// </summary>
     public IReadOnlyDictionary<AppId, InstalledDepot> GetInstalledDLCs() => InstalledDepots
-        .Where(kv => kv.Value.DLCAppId != AppId.Empty)
+        .Where(kv => kv.Value.DLCAppId != AppId.DefaultValue)
         .ToDictionary(kv => kv.Value.DLCAppId, kv => kv.Value);
 
     /// <summary>
@@ -278,9 +261,9 @@ public sealed record AppManifest
     /// Gets the URL to the Update Notes for the next update using <see cref="TargetBuildId"/> on SteamDB.
     /// </summary>
     /// <remarks>
-    /// This value will be <c>null</c>, if <see cref="TargetBuildId"/> is <see cref="ValueTypes.BuildId.Empty"/>.
+    /// This value will be <c>null</c>, if <see cref="TargetBuildId"/> is <see cref="ValueTypes.BuildId.DefaultValue"/>.
     /// </remarks>
-    public string? GetNextUpdateNotesUrl() => TargetBuildId == BuildId.Empty ? null : TargetBuildId.GetSteamDbUpdateNotesUrl();
+    public string? GetNextUpdateNotesUrl() => TargetBuildId == BuildId.DefaultValue ? null : TargetBuildId.GetSteamDbUpdateNotesUrl();
 
     /// <summary>
     /// Gets the user-data path for the current app using <see cref="LastOwner"/> and
@@ -326,7 +309,7 @@ public sealed record AppManifest
         if (Universe != other.Universe) return false;
         if (!string.Equals(Name, other.Name, StringComparison.Ordinal)) return false;
         if (StateFlags != other.StateFlags) return false;
-        if (InstallationDirectoryName != other.InstallationDirectoryName) return false;
+        if (InstallationDirectory != other.InstallationDirectory) return false;
         if (LastUpdated != other.LastUpdated) return false;
         if (SizeOnDisk != other.SizeOnDisk) return false;
         if (StagingSize != other.StagingSize) return false;
@@ -359,7 +342,7 @@ public sealed record AppManifest
         hashCode.Add((int)Universe);
         hashCode.Add(Name);
         hashCode.Add((int)StateFlags);
-        hashCode.Add(InstallationDirectoryName);
+        hashCode.Add(InstallationDirectory);
         hashCode.Add(LastUpdated);
         hashCode.Add(SizeOnDisk);
         hashCode.Add(StagingSize);
@@ -389,9 +372,9 @@ public sealed record AppManifest
         var sb = new StringBuilder();
 
         sb.Append("{ ");
-        sb.Append($"AppId = {AppId}, ");
-        sb.Append($"Name = {Name}, ");
-        sb.Append($"InstallationDirectoryName = {InstallationDirectoryName}");
+        sb.Append($"{nameof(AppId)} = {AppId}, ");
+        sb.Append($"{nameof(Name)} = {Name}, ");
+        sb.Append($"{nameof(InstallationDirectory)} = {InstallationDirectory}");
         sb.Append(" }");
 
         return sb.ToString();

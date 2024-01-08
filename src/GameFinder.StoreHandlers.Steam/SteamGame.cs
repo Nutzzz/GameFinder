@@ -30,7 +30,7 @@ public sealed record SteamGame(AbsolutePath SteamPath,
                 (OwnedGame is not null ? OwnedGame.AppId.ToString() : ""),
              GameName: AppManifest is not null ? AppManifest.Name :
                 (OwnedGame is not null ? OwnedGame.Name : ""),
-             GamePath: AppManifest is not null ? AppManifest.GetInstallationDirectoryPath() : new(),
+             GamePath: AppManifest is not null ? AppManifest.InstallationDirectory : new(),
              SavePath: (AppManifest is not null) ? AppManifest.GetUserDataDirectoryPath(SteamPath) : new(),
              LaunchUrl: AppManifest is not null ? RunGameProtocol + AppManifest.AppId.ToString() :
                 (OwnedGame is not null ? RunGameProtocol + OwnedGame.AppId.ToString() : ""),
@@ -68,7 +68,7 @@ public sealed record SteamGame(AbsolutePath SteamPath,
     /// <summary>
     /// Gets the absolute path to the game's installation directory.
     /// </summary>
-    public AbsolutePath Path => AppManifest is not null ? AppManifest.GetInstallationDirectoryPath() : new();
+    public AbsolutePath Path => AppManifest.InstallationDirectory;
 
     /// <summary>
     /// Gets the absolute path to the cloud saves directory.
