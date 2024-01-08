@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.EmuHandlers.MAME;
 
@@ -9,7 +9,11 @@ namespace GameCollector.EmuHandlers.MAME;
 /// Represents an id for ROMs for MAME.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct MAMEGameId { }
+public readonly partial struct MAMEGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

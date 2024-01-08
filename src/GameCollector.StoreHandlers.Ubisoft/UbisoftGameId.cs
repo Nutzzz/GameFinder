@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Ubisoft;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.Ubisoft;
 /// Represents an id for games installed with Ubisoft Connect.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct UbisoftGameId { }
+public readonly partial struct UbisoftGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

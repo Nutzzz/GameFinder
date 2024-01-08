@@ -1,4 +1,4 @@
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Arc;
 
@@ -6,5 +6,9 @@ namespace GameCollector.StoreHandlers.Arc;
 /// Represents an id for games installed with Arc.
 /// </summary>
 [ValueObject<ulong>]
-public readonly partial struct ArcGameId { }
+public readonly partial struct ArcGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 

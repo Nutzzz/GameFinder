@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.EmuHandlers.Dolphin;
 
@@ -9,7 +9,11 @@ namespace GameCollector.EmuHandlers.Dolphin;
 /// Represents an id for ROMs for Dolphin Emulator.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct DolphinGameId { }
+public readonly partial struct DolphinGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]
