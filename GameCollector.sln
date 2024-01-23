@@ -136,8 +136,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCollector.EmuHandlers.M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataHandlers", "DataHandlers", "{82816E34-196A-4304-8A28-BF22FA937DF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCollector.DataHandlers.TheGamesDb", "src\GameCollector.DataHandlers.TheGamesDb\GameCollector.DataHandlers.TheGamesDb.csproj", "{2C3F6179-889E-435B-823A-D7E6B5A1CBE9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

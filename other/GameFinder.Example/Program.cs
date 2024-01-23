@@ -247,6 +247,14 @@ public static class Program
         //if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI), cancelToken));
 
         Task.WaitAll(tasks.ToArray(), cancelToken);
+        
+        /*
+        Parallel.ForEach(tasks, task =>
+        {
+            task.Start();
+        });
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+        */
 
         logger.LogInformation($"{nameof(Program)} complete");
     }
