@@ -5,6 +5,9 @@ namespace GameCollector.StoreHandlers.Itch;
 
 internal record ButlerCaves
 {
+    [property: SqlColNameAttribute("id")]
+    public string? Id { get; init; }
+
     [property: SqlColNameAttribute("game_id")]
     public string? GameId { get; init; }
 
