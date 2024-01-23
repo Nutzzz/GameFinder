@@ -182,7 +182,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
                     Parent: parent,
                     Year: game.Machine.Year,
                     Manufacturer: game.Machine.Manufacturer,
-                    Categories: new() { gameCategory1 ?? "Unknown", gameCategory2 ?? "", gameCategory3 ?? "" },
+                    Categories: new List<string>() { gameCategory1 ?? "Unknown", gameCategory2 ?? "", gameCategory3 ?? "" },
                     IsMature: isMature,
                     Players: players,
                     DriverStatus: driverStatus,

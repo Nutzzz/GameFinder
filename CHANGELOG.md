@@ -38,9 +38,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
   - `ushort? MyRating`
   - `string? BaseGame`
   - `Dictionary<string, List<string>>? Metadata`
-- Metadata may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
+- Metadata Dictionary may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
 - The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
-- Added metadata provider:
+- Added experimental metadata provider:
   - TheGamesDb.net
 - Added emulators:
   - Dolphin, MAME
@@ -48,8 +48,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
   - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Robot Cache, Rockstar, Ubisoft, Wargaming.net
 - Add `FindClient` to get path to store client executable.
 - EADesktop handler now attempts to get a proper game title from the Registry.
-- EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to find installed games after a Windows system reset or reinstall.
-- Steam handler can now use [SteamWebAPI2](https://github.com/babelshift/SteamWebAPI2) library to collect information about owned, not-installed games. This feature requires an API key to be specified and the user profile set to public.
+- EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to continue to find installed games even after a Windows system reset or reinstall.
+- Steam handler can now optionally use [SteamWebAPI2](https://github.com/babelshift/SteamWebAPI2) library to collect information about owned, not-installed games. This feature requires an API key to be specified and the user profile must be set to public.
 
 # Upstream Changelog
 

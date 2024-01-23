@@ -35,7 +35,7 @@ public record OculusGame(OculusGameId HashKey,
              Icon: LaunchFile,
              IsInstalled: IsInstalled,
              HasProblem: HasProblem,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "", },
                  ["Genres"] = Genres ?? new(),

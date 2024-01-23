@@ -2,6 +2,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using System;
+using System.Collections.Generic;
 
 namespace GameCollector.StoreHandlers.Itch;
 
@@ -38,7 +39,7 @@ public record ItchGame(ItchGameId Id,
              InstallDate: InstalledAt,
              RunTime: TimeSpan.FromSeconds(SecondsRun ?? 0),
              IsInstalled: IsInstalled,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { ShortText ?? "", },
                  ["Genres"] = new() { Classification ?? "", },

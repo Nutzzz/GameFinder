@@ -41,7 +41,7 @@ public record GOGGame(GOGGameId Id,
                       DateTime? LastPlayedDate = null,
                       bool IsInstalled = true,
                       bool IsHidden = false,
-                      List<string>? Tags = null,
+                      IList<string>? Tags = null,
                       ushort? MyRating = null,
                       DateTime? ReleaseDate = null,
                       string BoxArtUrl = "",
@@ -61,7 +61,7 @@ public record GOGGame(GOGGameId Id,
              IsHidden: IsHidden,
              Tags: Tags,
              MyRating: MyRating,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { ReleaseDate is null ? "" : ((DateTime)ReleaseDate).ToString(CultureInfo.InvariantCulture) },
                  ["ImageUrl"] = new() { BoxArtUrl },

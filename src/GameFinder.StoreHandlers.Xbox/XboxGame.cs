@@ -2,6 +2,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using System;
+using System.Collections.Generic;
 
 namespace GameFinder.StoreHandlers.Xbox;
 
@@ -25,7 +26,7 @@ public record XboxGame(XboxGameId Id,
              GameName: DisplayName,
              GamePath: Path,
              Icon: Logo,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "" },
                  ["Publishers"] = new() { Publisher ?? "" },
