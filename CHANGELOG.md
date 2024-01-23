@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
   - `Dictionary<string, List<string>>? Metadata`
 - Metadata Dictionary may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
 - The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
+- Added experimental metadata provider:
+  - TheGamesDb.net
 - Added emulators:
   - Dolphin, MAME
 - Added additional store launchers:

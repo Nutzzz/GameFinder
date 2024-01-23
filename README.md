@@ -129,6 +129,12 @@ This is a new category of handler for GameCollector. They are Windows-only for n
 - Dolphin
 - MAME
 
+## Supported Metadata Providers
+
+This is a new category of handler for GameCollector which is designed to supplement data for previously collected games.
+
+- TheGamesDb.net
+
 ## New Supported Launchers
 
 The following handlers have been added for GameCollector. They are all Windows-only for now:
