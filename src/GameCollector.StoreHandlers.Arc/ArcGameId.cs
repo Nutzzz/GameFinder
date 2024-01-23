@@ -6,9 +6,4 @@ namespace GameCollector.StoreHandlers.Arc;
 /// Represents an id for games installed with Arc.
 /// </summary>
 [ValueObject<ulong>]
-public readonly partial struct ArcGameId : IAugmentWith<DefaultEqualityComparerAugment>
-{
-    /// <inheritdoc/>
-    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
-}
-
+public readonly partial struct ArcGameId { }

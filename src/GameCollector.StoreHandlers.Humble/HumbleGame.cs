@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -38,8 +39,8 @@ public record HumbleGame(HumbleGameId HumbleGameId,
                          string? IconPath = null,
                          string? ImagePath = null,
                          string? MachineName = null,
-                         List<string>? Developers = null,
-                         List<string>? Publishers = null) :
+                         IList<string>? Developers = null,
+                         IList<string>? Publishers = null) :
     GameData(GameId: HumbleGameId.ToString(),
              GameName: GameName,
              GamePath: FilePath,
@@ -50,12 +51,12 @@ public record HumbleGame(HumbleGameId HumbleGameId,
              LastRunDate: LastPlayed,
              IsInstalled: IsInstalled,
              HasProblem: IsExpired,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { DescriptionText ?? "", },
                  ["ImageUrl"] = new() { IconPath ?? "", },
                  ["ImageWideUrl"] = new() { ImagePath ?? "", },
                  ["MachineName"] = new() { MachineName ?? "", },
-                 ["Developers"] = Developers ?? new(),
-                 ["Publishers"] = Publishers ?? new(),
+                 ["Developers"] = Developers?.ToList<string>() ?? new List<string>(),
+                 ["Publishers"] = Publishers?.ToList<string>() ?? new List<string>(),
              });

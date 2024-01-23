@@ -36,7 +36,7 @@ public record LegacyGame(LegacyGameId InstallerUuid,
              Launch: ExePath,
              Icon: DisplayIcon == default ? ExePath : DisplayIcon,
              Uninstall: UninstallString,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "", },
                  ["Publishers"] = new() { Publisher ?? "", },

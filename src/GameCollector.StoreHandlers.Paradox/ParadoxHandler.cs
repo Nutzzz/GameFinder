@@ -124,7 +124,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
             foreach (var game in metadata.Data.Games)
             {
                 var id = game.Id;
-                var name = game.Name ?? (game.Id is null ? "" : game.Id.Replace('_', ' '));
+                var name = game.Name ?? (game.Id?.Replace('_', ' ')) ?? "";
                 var exe = Path.IsPathRooted(game.ExePath) ? _fileSystem.FromUnsanitizedFullPath(game.ExePath) : new();
                 var args = game.ExeArgs;
                 var strIcon = "";
@@ -180,7 +180,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
                 }
 
                 yield return new ParadoxGame(
-                    Id: ParadoxGameId.From(id),
+                    Id: ParadoxGameId.From(id ?? ""),
                     Name: name,
                     InstallationPath: path,
                     GameDataPath: dataPath,

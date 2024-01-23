@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -39,7 +40,7 @@ public record MAMEGame(MAMEGameId Name,
                        string? Parent = null,
                        string? Year = null,
                        string? Manufacturer = null,
-                       List<string>? Categories = null,
+                       IList<string>? Categories = null,
                        bool IsMature = false,
                        string? Players = null,
                        string? DriverStatus = null,
@@ -55,11 +56,11 @@ public record MAMEGame(MAMEGameId Name,
              IsInstalled: IsAvailable,
              HasProblem: HasProblem,
              BaseGame: Parent,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { Year ?? "", },
                  ["Manufacturer"] = new() { Manufacturer ?? "", },
-                 ["Genres"] = Categories is null ? new() : Categories,
+                 ["Genres"] = Categories?.ToList<string>() ?? new List<string>(),
                  ["AgeRating"] = new() { IsMature ? "adults_only" : "", },
                  ["Players"] = new() { Players ?? "", },
                  ["DriverStatus"] = new() { DriverStatus ?? "", },

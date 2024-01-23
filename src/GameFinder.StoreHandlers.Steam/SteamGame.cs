@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FluentResults;
 using GameFinder.Common;
 using GameFinder.StoreHandlers.Steam.Models;
@@ -38,7 +39,7 @@ public sealed record SteamGame(AbsolutePath SteamPath,
              UninstallUrl: AppManifest is not null ? UninstProtocol + AppManifest.AppId.ToString() : "",
              RunTime: OwnedGame?.PlaytimeForever,
              IsInstalled: IsInstalled,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["LibraryFolder"] = LibraryFolder is not null ? new() { LibraryFolder.Path.GetFullPath() } : new(),
                  ["Publisher"] = RegistryEntry is not null ? new() { RegistryEntry.Publisher } : new(),
@@ -68,7 +69,7 @@ public sealed record SteamGame(AbsolutePath SteamPath,
     /// <summary>
     /// Gets the absolute path to the game's installation directory.
     /// </summary>
-    public AbsolutePath Path => AppManifest.InstallationDirectory;
+    public AbsolutePath? Path => AppManifest?.InstallationDirectory;
 
     /// <summary>
     /// Gets the absolute path to the cloud saves directory.

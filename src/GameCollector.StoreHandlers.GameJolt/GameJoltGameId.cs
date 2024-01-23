@@ -6,9 +6,4 @@ namespace GameCollector.StoreHandlers.GameJolt;
 /// Represents an id for games installed with Game Jolt Client.
 /// </summary>
 [ValueObject<ulong>]
-public readonly partial struct GameJoltGameId : IAugmentWith<DefaultEqualityComparerAugment>
-{
-    /// <inheritdoc/>
-    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
-}
-
+public readonly partial struct GameJoltGameId { }

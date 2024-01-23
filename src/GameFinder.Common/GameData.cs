@@ -49,8 +49,8 @@ public record GameData(string GameId,
                        bool IsInstalled = true,
                        bool IsHidden = false,
                        bool HasProblem = false,
-                       List<string>? Tags = null,
+                       IList<string>? Tags = null,
                        ushort? MyRating = null,
                        string? BaseGame = null,
-                       Dictionary<string, List<string>>? Metadata = null) :
+                       IDictionary<string, List<string>>? Metadata = null) :
     IGame;

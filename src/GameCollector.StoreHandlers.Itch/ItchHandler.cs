@@ -22,7 +22,9 @@ namespace GameCollector.StoreHandlers.Itch;
 [PublicAPI]
 public class ItchHandler : AHandler<ItchGame, ItchGameId>
 {
-    internal const string ItchUrl = "itch://games/";
+    internal const string ItchLaunchUrl = "itch://games/";  // itch://games/<gameid>
+    internal const string ItchStartUrl = "itch://caves/";   // itch://caves/<caveid>/launch
+    internal const string ItchStartSuffix = "/launch";
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
     private readonly JsonSerializerOptions JsonSerializerOptions =
@@ -136,6 +138,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
 
             var path = "";
             var launch = "";
+            var url = "";
 
             if (caves is not null)
             {
@@ -150,19 +153,17 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
                     isInstalled = false;
                 }
                 else
-                {
-                    (path, launch, installDate, runTime, isInstalled) = result.AsT0;
-                    if (installedOnly && !isInstalled)
-                        continue;
-                }
+                    (path, launch, url, installDate, runTime, isInstalled) = result.AsT0;
             }
+            if (string.IsNullOrEmpty(url))
+                url = ItchLaunchUrl + id;
 
             yield return new ItchGame(
                 Id: ItchGameId.From(id),
                 Title: name,
                 Path: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(path) : new(),
                 LaunchPath: Path.IsPathRooted(launch) ? _fileSystem.FromUnsanitizedFullPath(launch) : new(),
-                OpenUrl: ItchUrl + id,
+                OpenUrl: url,
                 InstalledAt: installDate,
                 SecondsRun: runTime,
                 IsInstalled: isInstalled,
@@ -175,13 +176,14 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private OneOf<(string path, string launch, DateTime? installedAt, ulong secondsRun, bool isInstalled), ErrorMessage>
+    private OneOf<(string path, string launch, string url, DateTime? installedAt, ulong secondsRun, bool isInstalled), ErrorMessage>
         ParseCavesForId(List<ButlerCaves> caves, string id, string name)
     {
         try
         {
             var path = "";
             var launch = "";
+            var url = "";
             DateTime? installDate = null;
             ulong runTime = 0;
             var isInstalled = false;
@@ -205,6 +207,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
                                     if (candidate.Path is not null)
                                     {
                                         launch = @$"{path}\{candidate.Path}";
+                                        url = ItchStartUrl + install.Id + ItchStartSuffix;
                                         break;
                                     }
                                 }
@@ -215,7 +218,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
                         installDate = install.InstalledAt;
                     if (install.SecondsRun is not null)
                         runTime = (ulong)install.SecondsRun;
-                    return (path, launch, installDate, runTime, isInstalled);
+                    return (path, launch, url, installDate, runTime, isInstalled);
                 }
             }
         }

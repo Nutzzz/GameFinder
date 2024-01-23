@@ -43,7 +43,7 @@ public record BigFishGame(BigFishGameId ProductId,
              NumRuns: PlayCount ?? 0,
              IsInstalled: IsInstalled,
              HasProblem: IsExpired,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ImageUrl"] = new() { ImageUrl ?? "", },
              })

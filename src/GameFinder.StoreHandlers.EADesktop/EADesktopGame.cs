@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -36,7 +37,7 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
              UninstallArgs: UninstallParameters,
              IsInstalled: IsInstalled,
              BaseGame: IsDLC ? (!IsDLC).ToString() : null,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["BaseSlug"] = new() { BaseSlug }
              })

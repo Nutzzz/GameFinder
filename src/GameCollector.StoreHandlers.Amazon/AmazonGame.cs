@@ -54,7 +54,7 @@ public record AmazonGame(AmazonGameId ProductId,
              Icon: Icon == default ? Command : Icon,
              Uninstall: Uninstall,
              IsInstalled: IsInstalled,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { ReleaseDate is null ? "" : ((DateTime)ReleaseDate).ToString(CultureInfo.InvariantCulture), },
                  ["Description"] = new() { ProductDescription ?? "", },
