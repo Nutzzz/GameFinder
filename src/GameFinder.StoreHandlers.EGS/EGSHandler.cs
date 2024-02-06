@@ -181,7 +181,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             {
                 return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"InstallLocation\"");
             }
-            
+
             var isDLC = false;
             var exe = manifest.LaunchExecutable;
             AbsolutePath launch = new();

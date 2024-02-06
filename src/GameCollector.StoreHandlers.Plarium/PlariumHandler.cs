@@ -120,7 +120,9 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
             {
                 exe = GetPlariumPlayPath().Combine("PlariumPlay.exe");
                 args = $"-gameid={id} -tray-start";
-            } else {
+            }
+            else
+            {
                 path = Path.IsPathRooted(strPath) ? _fileSystem.FromUnsanitizedFullPath(strPath) : new();
                 if (!string.IsNullOrEmpty(gameName) && !string.IsNullOrEmpty(gameId))
                 {

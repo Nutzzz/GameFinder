@@ -253,7 +253,7 @@ public static class Program
         //if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI), cancelToken));
 
         Task.WaitAll(tasks.ToArray(), cancelToken);
-        
+
         /*
         Parallel.ForEach(tasks, task =>
         {

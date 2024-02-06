@@ -166,7 +166,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
                         */
                         break;
                     }
-                    
+
                     if (line.Contains('�', StringComparison.Ordinal) ||
                         line.Contains('', StringComparison.Ordinal) ||
                         //line.Contains('~', StringComparison.Ordinal) ||
@@ -360,7 +360,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
         catch (Exception e)
         {
             return new ErrorMessage(e, $"Exception while parsing configurations file entry\n{e.InnerException}");
-		}
+        }
     }
 
     internal static (string? message, bool isError) CreateSchemaVersionMessage(
@@ -465,7 +465,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             var uninstallArgs = "";
             if (!subKey.TryGetString("UninstallString", out var uninstall))
                 uninstall = "";
-            else 
+            else
             {
                 if (uninstall.Contains(".exe", StringComparison.OrdinalIgnoreCase))
                 {

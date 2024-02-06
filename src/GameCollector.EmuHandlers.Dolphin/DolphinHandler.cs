@@ -170,7 +170,7 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
         userPath = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory).Combine("Dolphin Emulator");
         if (userPath.DirectoryExists())
             return userPath;
-        
+
         if (dolphinDir != default && dolphinDir.DirectoryExists())
         {
             userPath = dolphinDir.Combine("User");
