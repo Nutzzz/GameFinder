@@ -180,7 +180,7 @@ public class XboxHandler : AHandler<XboxGame, XboxGameId>
             var game = new XboxGame(Id: XboxGameId.From(id),
                                     DisplayName: displayName,
                                     Path: manifestFilePath.Parent,
-                                    Logo: manifestFilePath.Parent.Combine(appManifest.Properties.Logo),
+                                    Logo: appManifest.Properties.Logo is null ? default : manifestFilePath.Parent.Combine(RelativePath.FromUnsanitizedInput(appManifest.Properties.Logo)),
                                     Description: appManifest.Properties.Description,
                                     Publisher: appManifest.Properties.PublisherDisplayName);
             return game;

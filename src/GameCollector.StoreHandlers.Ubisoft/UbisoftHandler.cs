@@ -288,12 +288,18 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             {
                 if (string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(id))
                     name = id;
-                id = Path.GetFileNameWithoutExtension(iconFile);
+                if (!string.IsNullOrEmpty(iconFile))
+                    id = Path.GetFileNameWithoutExtension(iconFile);
             }
             if (string.IsNullOrEmpty(id))
             {
                 if (baseOnly)
                     return new ErrorMessage($"\"{name}\" does not have an ID!");
+
+                if (string.IsNullOrEmpty(name))
+                    return new ErrorMessage("Entry does not have a name or ID!");
+                else
+                    id = new string(name.Where(char.IsLetterOrDigit).ToArray());
             }
             else
             {
