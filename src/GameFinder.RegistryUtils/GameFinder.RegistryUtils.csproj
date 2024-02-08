@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AssemblyName>GameCollector.RegistryUtils</AssemblyName>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Win32.Registry" />

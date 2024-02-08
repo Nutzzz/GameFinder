@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AssemblyName>GameCollector</AssemblyName>
+    </PropertyGroup>
 
     <PropertyGroup>
         <!-- NuGet will doesn't allow the upload of snupkg files that don't contain any symbols -->
