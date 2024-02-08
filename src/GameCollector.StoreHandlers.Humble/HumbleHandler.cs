@@ -22,7 +22,7 @@ namespace GameCollector.StoreHandlers.Humble;
 ///   HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall
 /// </summary>
 [PublicAPI]
-public class HumbleHandler : AHandler<HumbleGame, string>
+public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
 {
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
@@ -59,10 +59,10 @@ public class HumbleHandler : AHandler<HumbleGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<HumbleGameId>? IdEqualityComparer => HumbleGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<HumbleGame, string> IdSelector => game => game.GameId;
+    public override Func<HumbleGame, HumbleGameId> IdSelector => game => game.HumbleGameId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -79,7 +79,7 @@ public class HumbleHandler : AHandler<HumbleGame, string>
                     if (icon.Contains(',', StringComparison.Ordinal))
                         icon = icon[..icon.LastIndexOf(',')];
                     if (Path.IsPathRooted(icon))
-                        return _fileSystem.FromFullPath(SanitizeInputPath(icon));
+                        return _fileSystem.FromUnsanitizedFullPath(icon);
                 }
             }
         }
@@ -95,8 +95,8 @@ public class HumbleHandler : AHandler<HumbleGame, string>
     public override IEnumerable<OneOf<HumbleGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
         var configFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-            .CombineUnchecked("Humble App")
-            .CombineUnchecked("config.json");
+            .Combine("Humble App")
+            .Combine("config.json");
         if (!configFile.FileExists)
         {
             yield return new ErrorMessage($"The configuration file {configFile.GetFullPath()} does not exist!");
@@ -116,7 +116,7 @@ public class HumbleHandler : AHandler<HumbleGame, string>
         {
             if (config.User.OwnsActiveContent is not null &&
                 (bool)config.User.OwnsActiveContent)
-                hasChoice = true; // TODO: Confirm this is right vs. checking .HasPerks
+                hasChoice = true; // TODO: Confirm this is right (vs. checking .HasPerks)
             if (config.User.IsPaused is not null &&
                 (bool)config.User.IsPaused)
                 isPaused = true;
@@ -153,9 +153,9 @@ public class HumbleHandler : AHandler<HumbleGame, string>
                 AbsolutePath path = new();
                 if (Path.IsPathRooted(game.FilePath))
                 {
-                    path = _fileSystem.FromFullPath(SanitizeInputPath(game.FilePath));
+                    path = _fileSystem.FromUnsanitizedFullPath(game.FilePath);
                     if (!string.IsNullOrEmpty(game.ExecutablePath))
-                        launch = path.CombineUnchecked(SanitizeInputPath(game.ExecutablePath));
+                        launch = path.Combine(game.ExecutablePath);
                 }
 
                 var lastRunDate = DateTime.MinValue;

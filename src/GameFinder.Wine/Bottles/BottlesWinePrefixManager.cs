@@ -34,7 +34,13 @@ public class BottlesWinePrefixManager : IWinePrefixManager<BottlesWinePrefix>
             yield break;
         }
 
-        var bottles = defaultLocation.CombineUnchecked("bottles");
+        var bottles = defaultLocation.Combine("bottles");
+        if (!bottles.DirectoryExists())
+        {
+            yield return new ErrorMessage($"Bottles directory {bottles.GetFullPath()} does not exist");
+            yield break;
+        }
+
         foreach (var bottle in _fileSystem.EnumerateDirectories(bottles, recursive: false))
         {
             var res = IsValidBottlesPrefix(_fileSystem, bottle);
@@ -55,7 +61,7 @@ public class BottlesWinePrefixManager : IWinePrefixManager<BottlesWinePrefix>
             return defaultWinePrefixRes.AsError();
         }
 
-        var bottlesConfigFile = directory.CombineUnchecked("bottle.yml");
+        var bottlesConfigFile = directory.Combine("bottle.yml");
         if (!fs.FileExists(bottlesConfigFile))
         {
             return new ErrorMessage($"Bottles configuration file is missing at {bottlesConfigFile}");
@@ -68,11 +74,11 @@ public class BottlesWinePrefixManager : IWinePrefixManager<BottlesWinePrefix>
     {
         // $XDG_DATA_HOME/bottles aka ~/.local/share/bottles
         yield return fs.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
-            .CombineUnchecked("bottles");
+            .Combine("bottles");
 
         // ~/.var/app/com.usebottles.bottles/data/bottles (flatpak installation)
         // https://github.com/flatpak/flatpak/wiki/Filesystem
         yield return fs.GetKnownPath(KnownPath.HomeDirectory)
-            .CombineUnchecked(".var/app/com.usebottles.bottles/data/bottles");
+            .Combine(".var/app/com.usebottles.bottles/data/bottles");
     }
 }

@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Riot;
 
 /// <summary>
-/// Represents an id for games installed with Riot Client.
+/// Represents an id for games installed with the Riot Client.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct RiotGameId { }
+public readonly partial struct RiotGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

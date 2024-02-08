@@ -91,7 +91,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             if (regKey is null) return default;
 
             if (regKey.TryGetString("LauncherAppPath", out var path) && Path.IsPathRooted(path))
-                return _fileSystem.FromFullPath(SanitizeInputPath(path));
+                return _fileSystem.FromUnsanitizedFullPath(path);
         }
 
         return default;
@@ -132,14 +132,14 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     {
         return fileSystem
             .GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("EA Desktop");
+            .Combine("EA Desktop");
     }
 
     internal static AbsolutePath GetInstallInfoFile(AbsolutePath dataFolder)
     {
         return dataFolder
-            .CombineUnchecked(AllUsersFolderName)
-            .CombineUnchecked(InstallInfoFileName);
+            .Combine(AllUsersFolderName)
+            .Combine(InstallInfoFileName);
     }
 
     internal static OneOf<string, ErrorMessage> DecryptInstallInfoFile(IFileSystem fileSystem, AbsolutePath installInfoFile, IHardwareInfoProvider hardwareInfoProvider)
@@ -294,7 +294,8 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                 var j = installCheck.IndexOf(']', StringComparison.Ordinal);
                 if (j > 1)
                     sRegKey = installCheck[1..j];
-                var install = fileSystem.FromFullPath(SanitizeInputPath(baseInstallPath)).CombineUnchecked(installCheck[(j + 1)..]);
+                var install = fileSystem.FromUnsanitizedFullPath(baseInstallPath)
+                    .Combine(RelativePath.FromUnsanitizedInput(installCheck.AsSpan()[(j + 1)..]));
                 if (!install.FileExists)
                     isInstalled = false;
             }
@@ -316,7 +317,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                     }
                     else if (j > 1)
                         sRegKey = executableCheck[1..j];
-                    executable = fileSystem.FromFullPath(SanitizeInputPath(baseInstallPath)).CombineUnchecked(executableCheck[(j + 1)..]);
+                    executable = fileSystem.FromUnsanitizedFullPath(baseInstallPath).Combine(executableCheck[(j + 1)..]);
                     if (!executable.FileExists)
                         isInstalled = false;
                 }
@@ -352,10 +353,10 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
 
         var game = new EADesktopGame(
             EADesktopGameId: EADesktopGameId.From(softwareId),
-            Name: string.IsNullOrEmpty(name) ? baseSlug : name,
-            BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromFullPath(SanitizeInputPath(baseInstallPath)) : new(),
+            Name: string.IsNullOrEmpty(name) ? (string.IsNullOrEmpty(baseSlug) ? Path.GetFileName(baseInstallPath.TrimEnd('\\', '/')) : baseSlug) : name,
+            BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromUnsanitizedFullPath(baseInstallPath) : new(),
             Executable: executable,
-            UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromFullPath(SanitizeInputPath(uninstall)) : new(),
+            UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromUnsanitizedFullPath(uninstall) : new(),
             UninstallParameters: uninstallArgs,
             IsInstalled: isInstalled,
             IsDLC: isDLC,

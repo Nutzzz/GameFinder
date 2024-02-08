@@ -3,7 +3,7 @@
 
 [![CI](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml/badge.svg)](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/Nutzzz/GameCollector/branch/master/graph/badge.svg?token=10PVRFWH39)](https://codecov.io/gh/Nutzzz/GameCollector)
 
-.NET library for finding games. GameCollector expands on upstream GameFinder by adding additional supported store launchers, emulators, and additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). The following launchers and emulators are supported:
+.NET library for finding games. GameCollector expands on upstream GameFinder (which is primarily designed to support modding tools), by adding additional supported store launchers, emulators, and data sources, and includes additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). The following launchers and emulators are supported:
 
 - Amazon Games
 - Arc
@@ -25,6 +25,7 @@
 - Paradox Launcher
 - Plarium Play
 - Riot Client
+- Robot Cache Client
 - Rockstar Games Launcher
 - [Steam](#steam) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
 - Ubisoft Connect
@@ -130,7 +131,7 @@ This is a new category of handler for GameCollector. They are Windows-only for n
 
 ## New Supported Launchers
 
-The following handlers have been added by GameCollector. They are all Windows-only for now:
+The following handlers have been added for GameCollector. They are all Windows-only for now:
 
 - Amazon Games
 - Arc
@@ -145,6 +146,7 @@ The following handlers have been added by GameCollector. They are all Windows-on
 - Paradox Launcher
 - Plarium Play
 - Riot Client
+- Robot Cache Client
 - Rockstar Games Launcher
 - Ubisoft Connect
 - Wargaming.net Game Center

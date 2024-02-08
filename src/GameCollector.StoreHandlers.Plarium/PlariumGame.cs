@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -27,11 +28,11 @@ public record PlariumGame(PlariumGameId ProductId,
                       string? GameName = null,
                       string? CompanyName = null) :
     GameData(GameId: ProductId.ToString(),
-             Name: ProductName,
-             Path: InstallationPath,
+             GameName: ProductName,
+             GamePath: InstallationPath,
              Launch: Launch,
              LaunchArgs: LaunchArgs,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["GameId"] = new() { GameId ?? "", },
                  ["ShortName"] = new() { GameName ?? "", },

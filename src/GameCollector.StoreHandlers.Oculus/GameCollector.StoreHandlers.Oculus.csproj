@@ -5,15 +5,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.*" />
-        <PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.*" />
+        <PackageReference Include="System.Data.SQLite.Core" />
+        <PackageReference Include="System.ServiceProcess.ServiceController" />
     </ItemGroup>
-
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
         <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>

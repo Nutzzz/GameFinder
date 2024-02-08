@@ -106,7 +106,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                         // File seems to be encoded to Base64 improperly, so we need to remove Unicode replacement character
                         DisplayName: (game.Title ?? "").Replace("?", "", StringComparison.Ordinal),
                         InstallLocation: new(),
-                        CloudSaveFolder: Path.IsPathRooted(savePath) ? fileSystem.FromFullPath(savePath) : new(),
+                        CloudSaveFolder: Path.IsPathRooted(savePath) ? fileSystem.FromUnsanitizedFullPath(savePath) : new(),
                         MainGame: baseGame,
                         ImageTallUrl: imageUrl,
                         ImageUrl: wideImageUrl,

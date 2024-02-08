@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -32,14 +33,14 @@ public record ParadoxGame(ParadoxGameId Id,
                       AbsolutePath Background = new(),
                       AbsolutePath Logo = new()) :
     GameData(GameId: Id.ToString(),
-             Name: Name,
-             Path: InstallationPath,
+             GameName: Name,
+             GamePath: InstallationPath,
              SavePath: GameDataPath,
              Launch: ExePath,
              LaunchArgs: ExeArgs ?? "",
              Icon: AppIcon,
              LastRunDate: LastLaunch is null ? null : DateTimeOffset.FromUnixTimeMilliseconds((long)LastLaunch).UtcDateTime,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["TaskbarIcon"] = new() { AppTaskbarIcon == default ? "" : AppTaskbarIcon.GetFullPath(), },
                  ["Background"] = new() { Background == default ? "" : Background.GetFullPath(), },

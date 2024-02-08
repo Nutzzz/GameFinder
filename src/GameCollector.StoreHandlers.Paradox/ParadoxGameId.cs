@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Paradox;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.Paradox;
 /// Represents an id for games installed with Paradox Launcher.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct ParadoxGameId { }
+public readonly partial struct ParadoxGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

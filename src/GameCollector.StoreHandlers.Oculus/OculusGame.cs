@@ -29,13 +29,13 @@ public record OculusGame(OculusGameId HashKey,
                       List<string>? Genres = null,
                       string? CanonicalName = null) :
     GameData(GameId: HashKey.ToString(),
-             Name: DisplayName,
-             Path: InstallPath,
+             GameName: DisplayName,
+             GamePath: InstallPath,
              Launch: LaunchFile,
              Icon: LaunchFile,
              IsInstalled: IsInstalled,
              HasProblem: HasProblem,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "", },
                  ["Genres"] = Genres ?? new(),

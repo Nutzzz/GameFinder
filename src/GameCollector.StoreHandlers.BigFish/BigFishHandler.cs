@@ -19,7 +19,7 @@ namespace GameCollector.StoreHandlers.BigFish;
 ///   HKLM32\SOFTWARE\Big Fish Games\Persistence
 /// </summary>
 [PublicAPI]
-public class BigFishHandler : AHandler<BigFishGame, string>
+public class BigFishHandler : AHandler<BigFishGame, BigFishGameId>
 {
     internal const string BigFishUrl = "https://www.bigfishgames.com/games/";
     internal const string BigFishRegKey = @"SOFTWARE\Big Fish Games";
@@ -49,10 +49,10 @@ public class BigFishHandler : AHandler<BigFishGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<BigFishGameId>? IdEqualityComparer => BigFishGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<BigFishGame, string> IdSelector => game => game.GameId;
+    public override Func<BigFishGame, BigFishGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -65,7 +65,7 @@ public class BigFishHandler : AHandler<BigFishGame, string>
             if (regKey is null) return default;
 
             if (regKey.TryGetString("InstallationPath", out var installPath) && Path.IsPathRooted(installPath))
-                return _fileSystem.FromFullPath(SanitizeInputPath(installPath)).CombineUnchecked("bfgclient.exe");
+                return _fileSystem.FromUnsanitizedFullPath(installPath).Combine("bfgclient.exe");
         }
 
         return default;
@@ -116,13 +116,13 @@ public class BigFishHandler : AHandler<BigFishGame, string>
                 {
                     if (subInst.TryGetString("", out var exe) && Path.IsPathRooted(exe))
                     {
-                        launch = _fileSystem.FromFullPath(SanitizeInputPath(exe));
+                        launch = _fileSystem.FromUnsanitizedFullPath(exe);
                         if (launch.FileExists)
                         {
                             found = true;
                             isInstalled = true;
                         }
-                        path = _fileSystem.FromFullPath(launch.Directory);
+                        path = _fileSystem.FromUnsanitizedFullPath(launch.Directory);
                         name = path.GetFileNameWithoutExtension();
                     }
                 }
@@ -147,15 +147,15 @@ public class BigFishHandler : AHandler<BigFishGame, string>
 
                     if (!found && subDb.TryGetString("ExecutablePath", out var exe) && Path.IsPathRooted(exe))
                     {
-                        launch = _fileSystem.FromFullPath(SanitizeInputPath(exe));
-                        path = _fileSystem.FromFullPath(launch.Directory);
+                        launch = _fileSystem.FromUnsanitizedFullPath(exe);
+                        path = _fileSystem.FromUnsanitizedFullPath(launch.Directory);
                     }
                     if (subDb.TryGetString("feature", out var iconPath) && Path.IsPathRooted(iconPath))     // 175x150
-                        icon = _fileSystem.FromFullPath(SanitizeInputPath(iconPath));
+                        icon = _fileSystem.FromUnsanitizedFullPath(iconPath);
                     else if (subDb.TryGetString("Thumbnail", out iconPath) && Path.IsPathRooted(iconPath))  // 80x80
-                        icon = _fileSystem.FromFullPath(SanitizeInputPath(iconPath));
+                        icon = _fileSystem.FromUnsanitizedFullPath(iconPath);
                     else if (subDb.TryGetString("Icon", out iconPath) && Path.IsPathRooted(iconPath))       // 60x40
-                        icon = _fileSystem.FromFullPath(SanitizeInputPath(iconPath));
+                        icon = _fileSystem.FromUnsanitizedFullPath(iconPath);
 
                     if (subDb.TryGetValue("LastActionTime", out tmp))
                         lastAction = RegToDateTime((byte[])tmp);
@@ -182,19 +182,19 @@ public class BigFishHandler : AHandler<BigFishGame, string>
                 if (icon == default)
                 {
                     if (subUnKey.TryGetString("DisplayIcon", out var iconPath) && Path.IsPathRooted(iconPath))
-                        icon = _fileSystem.FromFullPath(SanitizeInputPath(iconPath));
+                        icon = _fileSystem.FromUnsanitizedFullPath(iconPath);
                 }
                 if (path == default)
                 {
                     if (subUnKey.TryGetString("InstallLocation", out var pathStr) && Path.IsPathRooted(pathStr))
-                        path = _fileSystem.FromFullPath(SanitizeInputPath(pathStr));
+                        path = _fileSystem.FromUnsanitizedFullPath(pathStr);
                 }
                 if (subUnKey.TryGetString("UninstallString", out var uninstPath) && Path.IsPathRooted(uninstPath))
-                    uninstall = _fileSystem.FromFullPath(SanitizeInputPath(uninstPath.Trim('\"')));
+                    uninstall = _fileSystem.FromUnsanitizedFullPath(uninstPath.Trim('\"'));
             }
 
             if (icon == default && path != default && path.DirectoryExists())
-                icon = _fileSystem.FromFullPath(SanitizeInputPath(GetIconFromXml(path)));
+                icon = _fileSystem.FromUnsanitizedFullPath(GetIconFromXml(path));
 
             yield return new BigFishGame(
                 ProductId: BigFishGameId.From(subKeyName),

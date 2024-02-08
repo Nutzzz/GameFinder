@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -26,11 +27,11 @@ public record GameJoltGame(GameJoltGameId Id,
                       string? HeaderUrl = null,
                       ulong? PackageId = null) :
     GameData(GameId: Id.ToString(),
-             Name: Title,
-             Path: InstallDir,
+             GameName: Title,
+             GamePath: InstallDir,
              Launch: ExecutablePath,
              Icon: ExecutablePath,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Developers"] = new() { Developer ?? "", },
                  ["ImageUrl"] = new() { ImageUrl ?? "", },

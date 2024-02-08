@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.BigFish;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.BigFish;
 /// Represents an id for games installed with Big Fish Game Manager.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct BigFishGameId { }
+public readonly partial struct BigFishGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

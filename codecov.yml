@@ -111,6 +111,10 @@ component_management:
       name: Riot Client
       paths:
         - "src/GameCollector.StoreHandlers.Riot/**"
+    - component_id: store_handler_robotcache
+      name: RobotCache
+      paths:
+        - "src/GameCollector.StoreHandlers.RobotCache/**"
     - component_id: store_handler_rockstar
       name: Rockstar Games Launcher
       paths:

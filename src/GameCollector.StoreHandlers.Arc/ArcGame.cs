@@ -19,7 +19,7 @@ public record ArcGame(ArcGameId AppId,
                       AbsolutePath LauncherPath = new(),
                       AbsolutePath Icon = new()) :
     GameData(GameId: AppId.ToString(),
-             Name: Name,
-             Path: InstallPath,
+             GameName: Name,
+             GamePath: InstallPath,
              Launch: LauncherPath,
              Icon: Icon);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -28,15 +29,15 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
                             bool IsDLC = false,
                             string BaseSlug = "") :
     GameData(GameId: EADesktopGameId.ToString() ?? "",
-             Name: Name,
-             Path: BaseInstallPath,
+             GameName: Name,
+             GamePath: BaseInstallPath,
              Launch: Executable,
              Icon: Executable,
              Uninstall: UninstallCommand,
              UninstallArgs: UninstallParameters,
              IsInstalled: IsInstalled,
              BaseGame: IsDLC ? (!IsDLC).ToString() : null,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["BaseSlug"] = new() { BaseSlug }
              })
@@ -49,7 +50,7 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
     public AbsolutePath GetInstallerDataFile()
     {
         return BaseInstallPath
-            .CombineUnchecked("__Installer")
-            .CombineUnchecked("installerdata.xml");
+            .Combine("__Installer")
+            .Combine("installerdata.xml");
     }
 }

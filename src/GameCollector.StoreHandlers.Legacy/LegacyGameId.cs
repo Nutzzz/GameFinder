@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Legacy;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.Legacy;
 /// Represents an id for games installed with Legacy Games Launcher.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct LegacyGameId { }
+public readonly partial struct LegacyGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

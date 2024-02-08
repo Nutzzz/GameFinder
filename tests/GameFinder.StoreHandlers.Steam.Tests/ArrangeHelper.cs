@@ -1,4 +1,3 @@
-using System.Globalization;
 using GameFinder.StoreHandlers.Steam.Models;
 using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
 using NexusMods.Paths;
@@ -8,26 +7,40 @@ namespace GameFinder.StoreHandlers.Steam.Tests;
 
 public static class ArrangeHelper
 {
-    private static readonly RelativePath SteamAppsDirectoryName = "steamapps".ToRelativePath();
-
-    public static AbsolutePath GetSteamLibraryPath(IFileSystem fileSystem)
+    private static AbsolutePath CreateOrReturnPath(IFileSystem fileSystem, AbsolutePath path, bool createDirectory)
     {
-        var path = fileSystem
-            .GetKnownPath(KnownPath.TempDirectory)
-            .CombineUnchecked("SteamLibrary-" + Guid.NewGuid().ToString("N"));
-
+        if (!createDirectory) return path;
         fileSystem.CreateDirectory(path);
         return path;
     }
 
-    public static AbsolutePath GetAppManifestFilePath(AbsolutePath steamLibraryPath, AppId appId)
+    public static AbsolutePath CreateSteamPath(IFileSystem fileSystem, bool createDirectory = false)
     {
-        return steamLibraryPath
-            .CombineUnchecked(SteamAppsDirectoryName)
-            .CombineUnchecked($"appmanifest_{appId.Value.ToString(CultureInfo.InvariantCulture)}.acf");
+        var steamPath = fileSystem
+            .GetKnownPath(KnownPath.TempDirectory)
+            .Combine($"Steam-{Guid.NewGuid():N}");
+
+        return CreateOrReturnPath(fileSystem, steamPath, createDirectory);
     }
 
-    public static AppManifest CreateAppManifest(AbsolutePath manifestPath)
+    public static AbsolutePath CreateSteamLibraryPath(IFileSystem fileSystem, bool createDirectory = false)
+    {
+        var libraryPath = fileSystem
+            .GetKnownPath(KnownPath.TempDirectory)
+            .Combine($"SteamLibrary-{Guid.NewGuid():N}");
+
+        return CreateOrReturnPath(fileSystem, libraryPath, createDirectory);
+    }
+
+    public static AbsolutePath CreateAppManifestPath(IFileSystem fileSystem, AbsolutePath libraryPath = default)
+    {
+        if (libraryPath == default) libraryPath = CreateSteamLibraryPath(fileSystem);
+        return libraryPath.Combine("steamapps").Combine($"appmanifest_{Guid.NewGuid():N}.acf");
+    }
+
+    public static SteamId CreateSteamId() => SteamId.From(76561198110222274);
+
+    private static Fixture SetupFixture()
     {
         var fixture = new Fixture();
         fixture.Customize<Size>(composer => composer.FromFactory<ulong>(Size.From));
@@ -35,9 +48,18 @@ public static class ArrangeHelper
         fixture.Customize<SteamId>(composer => composer.FromFactory<ulong>(SteamId.From));
         fixture.Customize<DepotId>(composer => composer.FromFactory<uint>(DepotId.From));
         fixture.Customize<AppId>(composer => composer.FromFactory<uint>(AppId.From));
+        fixture.Customize<WorkshopItemId>(composer => composer.FromFactory<ulong>(WorkshopItemId.From));
+        fixture.Customize<WorkshopManifestId>(composer => composer.FromFactory<ulong>(WorkshopManifestId.From));
         fixture.Customize<ManifestId>(composer => composer.FromFactory<ulong>(ManifestId.From));
         fixture.Customize<DateTimeOffset>(composer => composer.FromFactory(() => DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds())));
+        fixture.Customize<TimeSpan>(composer => composer.FromFactory<ushort>(x => TimeSpan.FromMinutes(x)));
 
+        return fixture;
+    }
+
+    public static AppManifest CreateAppManifest(AbsolutePath manifestPath)
+    {
+        var fixture = SetupFixture();
         return new AppManifest
         {
             ManifestPath = manifestPath,
@@ -45,7 +67,7 @@ public static class ArrangeHelper
             Universe = SteamUniverse.Public,
             Name = fixture.Create<string>(),
             StateFlags = StateFlags.FullyInstalled,
-            InstallationDirectoryName = fixture.Create<string>().ToRelativePath(),
+            InstallationDirectory = manifestPath.Parent.Combine("common").Combine(fixture.Create<string>()),
             LastUpdated = fixture.Create<DateTimeOffset>(),
             SizeOnDisk = fixture.Create<Size>(),
             StagingSize = fixture.Create<Size>(),
@@ -91,12 +113,7 @@ public static class ArrangeHelper
 
     public static WorkshopManifest CreateWorkshopManifest(AbsolutePath manifestPath)
     {
-        var fixture = new Fixture();
-        fixture.Customize<Size>(composer => composer.FromFactory<ulong>(Size.From));
-        fixture.Customize<AppId>(composer => composer.FromFactory<uint>(AppId.From));
-        fixture.Customize<WorkshopItemId>(composer => composer.FromFactory<ulong>(WorkshopItemId.From));
-        fixture.Customize<WorkshopManifestId>(composer => composer.FromFactory<ulong>(WorkshopManifestId.From));
-        fixture.Customize<DateTimeOffset>(composer => composer.FromFactory(() => DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds())));
+        var fixture = SetupFixture();
 
         return new WorkshopManifest
         {
@@ -119,6 +136,55 @@ public static class ArrangeHelper
                     SubscribedBy = SteamId.FromAccountId(fixture.Create<uint>()),
                 })
                 .ToDictionary(x => x.ItemId, x => x),
+        };
+    }
+
+    public static LibraryFoldersManifest CreateLibraryFoldersManifest(AbsolutePath manifestPath)
+    {
+        var fixture = SetupFixture();
+
+        return new LibraryFoldersManifest
+        {
+            ManifestPath = manifestPath,
+            LibraryFolders = fixture.CreateMany<string>()
+                .Select(folderNames =>
+                {
+                    return new LibraryFolder
+                    {
+                        Path = manifestPath.FileSystem
+                            .GetKnownPath(KnownPath.TempDirectory)
+                            .Combine(folderNames),
+                        Label = fixture.Create<string>(),
+                        TotalDiskSize = fixture.Create<Size>(),
+                        AppSizes = fixture.CreateMany<AppId>()
+                            .Select(id => (id, fixture.Create<Size>()))
+                            .ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2),
+                    };
+                })
+                .ToList(),
+        };
+    }
+
+    public static LocalUserConfig CreateLocalUserConfig(AbsolutePath configPath)
+    {
+        var fixture = SetupFixture();
+
+        return new LocalUserConfig
+        {
+            ConfigPath = configPath,
+            User = fixture.Create<SteamId>(),
+            LocalAppData = fixture.CreateMany<AppId>()
+                .Select(id => new LocalAppData
+                {
+                    AppId = id,
+                    LastPlayed = fixture.Create<DateTimeOffset>(),
+                    Playtime = fixture.Create<TimeSpan>(),
+                    LaunchOptions = fixture.Create<string>(),
+                })
+                .ToDictionary(x => x.AppId, x => x),
+            InGameOverlayScreenshotSaveUncompressedPath = configPath.FileSystem
+            .GetKnownPath(KnownPath.TempDirectory)
+            .Combine(fixture.Create<string>()),
         };
     }
 }

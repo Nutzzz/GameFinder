@@ -17,7 +17,7 @@ namespace GameCollector.StoreHandlers.GameJolt;
 /// Handler for finding games installed with Game Jolt Client.
 /// </summary>
 [PublicAPI]
-public class GameJoltHandler : AHandler<GameJoltGame, string>
+public class GameJoltHandler : AHandler<GameJoltGame, GameJoltGameId>
 {
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
@@ -74,10 +74,10 @@ public class GameJoltHandler : AHandler<GameJoltGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override Func<GameJoltGame, GameJoltGameId> IdSelector => game => game.Id;
 
     /// <inheritdoc/>
-    public override Func<GameJoltGame, string> IdSelector => game => game.GameId;
+    public override IEqualityComparer<GameJoltGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -90,7 +90,7 @@ public class GameJoltHandler : AHandler<GameJoltGame, string>
             if (regKey is null) return default;
 
             if (regKey.TryGetString("InstallLocation", out var installDir) && Path.IsPathRooted(installDir))
-                return _fileSystem.FromFullPath(SanitizeInputPath(installDir)).CombineUnchecked("GameJoltClient.exe");
+                return _fileSystem.FromUnsanitizedFullPath(installDir).Combine("GameJoltClient.exe");
         }
 
         return default;
@@ -104,17 +104,17 @@ public class GameJoltHandler : AHandler<GameJoltGame, string>
     {
         List<OneOf<GameJoltGame, ErrorMessage>> games = new();
         var filePath = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
-            .CombineUnchecked("game-jolt-client")
-            .CombineUnchecked("User Data")
-            .CombineUnchecked("Default");
+            .Combine("game-jolt-client")
+            .Combine("User Data")
+            .Combine("Default");
         if (!filePath.DirectoryExists())
         {
             games.Add(new ErrorMessage($"{filePath.GetFullPath()} does not exist"));
             return games;
         }
 
-        var packagesFile = filePath.CombineUnchecked("packages.wttf");
-        var gamesFile = filePath.CombineUnchecked("games.wttf");
+        var packagesFile = filePath.Combine("packages.wttf");
+        var gamesFile = filePath.Combine("games.wttf");
         try
         {
             using var stream = packagesFile.Read();
@@ -188,10 +188,10 @@ public class GameJoltHandler : AHandler<GameJoltGame, string>
 
                     if (Path.IsPathRooted(path))
                     {
-                        instDir = _fileSystem.FromFullPath(SanitizeInputPath(path));
+                        instDir = _fileSystem.FromUnsanitizedFullPath(path);
 
                         var exe = "";
-                        var manifestFile = instDir.CombineUnchecked(".manifest");
+                        var manifestFile = instDir.Combine(".manifest");
                         if (manifestFile.FileExists)
                         {
                             using var stream3 = manifestFile.Read();
@@ -212,11 +212,11 @@ public class GameJoltHandler : AHandler<GameJoltGame, string>
                                 if (isVersionError) continue;
                             }
                             if (manifest.GameInfo is not null && manifest.GameInfo.Dir is not null)
-                                exePath = instDir.CombineUnchecked(SanitizeInputPath(manifest.GameInfo.Dir));
+                                exePath = instDir.Combine(manifest.GameInfo.Dir);
                             if (manifest.LaunchOptions is not null)
                                 exe = manifest.LaunchOptions.Executable;
                             if (!string.IsNullOrEmpty(exe))
-                                exePath = exePath.CombineUnchecked(exe);
+                                exePath = exePath.Combine(exe);
                         }
 
                         if (string.IsNullOrEmpty(exe))
@@ -230,7 +230,7 @@ public class GameJoltHandler : AHandler<GameJoltGame, string>
                                 }
                             }
                             if (!string.IsNullOrEmpty(exe))
-                                exePath = instDir.CombineUnchecked(exe);
+                                exePath = instDir.Combine(exe);
                         }
                     }
 

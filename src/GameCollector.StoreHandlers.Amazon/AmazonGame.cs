@@ -47,19 +47,19 @@ public record AmazonGame(AmazonGameId ProductId,
                          string? GameModes = "",
                          string? Genres = "") :
     GameData(GameId: ProductId.ToString(),
-             Name: ProductTitle ?? "",
-             Path: InstallDirectory,
+             GameName: ProductTitle ?? "",
+             GamePath: InstallDirectory,
              Launch: Command,
              LaunchUrl: LaunchUrl,
              Icon: Icon == default ? Command : Icon,
              Uninstall: Uninstall,
              IsInstalled: IsInstalled,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { ReleaseDate is null ? "" : ((DateTime)ReleaseDate).ToString(CultureInfo.InvariantCulture), },
                  ["Description"] = new() { ProductDescription ?? "", },
                  ["ImageUrl"] = new() { ProductIconUrl ?? "", },
-                 ["LogoUrl"]  = new() { ProductLogoUrl ?? "", },
+                 ["LogoUrl"] = new() { ProductLogoUrl ?? "", },
                  ["Developers"] = GetJsonArray(@Developers ?? ""),
                  ["Publishers"] = new() { ProductPublisher ?? "", },
                  ["AgeRating"] = new() { EsrbRating == (EsrbRating)(-1) ? "" : EsrbRating.ToString(), },

@@ -1,4 +1,4 @@
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Oculus;
 
@@ -7,4 +7,3 @@ namespace GameCollector.StoreHandlers.Oculus;
 /// </summary>
 [ValueObject<ulong>]
 public readonly partial struct OculusGameId { }
-

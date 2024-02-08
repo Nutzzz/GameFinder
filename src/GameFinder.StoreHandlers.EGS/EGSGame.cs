@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -34,13 +35,13 @@ public record EGSGame(EGSGameId CatalogItemId,
                       string Namespace = "",
                       string AppId = "") :
     GameData(GameId: CatalogItemId.ToString(),
-             Name: DisplayName,
-             Path: InstallLocation,
+             GameName: DisplayName,
+             GamePath: InstallLocation,
              SavePath: CloudSaveFolder,
              Launch: InstallLaunch,
              IsInstalled: IsInstalled,
              BaseGame: MainGame,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ImageUrl"] = new() { ImageTallUrl },
                  ["ImageWideUrl"] = new() { ImageUrl },

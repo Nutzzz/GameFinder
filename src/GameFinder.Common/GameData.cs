@@ -9,8 +9,8 @@ namespace GameFinder.Common;
 /// Generic representation of a game.
 /// </summary>
 /// <param name="GameId"></param>
-/// <param name="Name"></param>
-/// <param name="Path"></param>
+/// <param name="GameName"></param>
+/// <param name="GamePath"></param>
 /// <param name="SavePath"></param>
 /// <param name="Launch"></param>
 /// <param name="LaunchArgs"></param>
@@ -32,8 +32,8 @@ namespace GameFinder.Common;
 /// <param name="Metadata"></param>
 [PublicAPI]
 public record GameData(string GameId,
-                       string Name,
-                       AbsolutePath Path,
+                       string GameName,
+                       AbsolutePath GamePath,
                        AbsolutePath? SavePath = null,
                        AbsolutePath Launch = new(),
                        string LaunchArgs = "",
@@ -49,8 +49,8 @@ public record GameData(string GameId,
                        bool IsInstalled = true,
                        bool IsHidden = false,
                        bool HasProblem = false,
-                       List<string>? Tags = null,
+                       IList<string>? Tags = null,
                        ushort? MyRating = null,
                        string? BaseGame = null,
-                       Dictionary<string, List<string>>? Metadata = null) :
+                       IDictionary<string, List<string>>? Metadata = null) :
     IGame;

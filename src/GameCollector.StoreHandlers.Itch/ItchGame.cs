@@ -2,6 +2,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using System;
+using System.Collections.Generic;
 
 namespace GameCollector.StoreHandlers.Itch;
 
@@ -30,15 +31,15 @@ public record ItchGame(ItchGameId Id,
                       string? ShortText = null,
                       string? Classification = null) :
     GameData(GameId: Id.ToString(),
-             Name: Title,
-             Path: Path,
+             GameName: Title,
+             GamePath: Path,
              Launch: LaunchPath,
              LaunchUrl: OpenUrl,
              Icon: LaunchPath,
              InstallDate: InstalledAt,
              RunTime: TimeSpan.FromSeconds(SecondsRun ?? 0),
              IsInstalled: IsInstalled,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { ShortText ?? "", },
                  ["Genres"] = new() { Classification ?? "", },

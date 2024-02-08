@@ -2,6 +2,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using System;
+using System.Collections.Generic;
 
 namespace GameCollector.StoreHandlers.BattleNet;
 
@@ -26,14 +27,14 @@ public record BattleNetGame(BattleNetGameId ProductId,
                       DateTime? LastPlayed = null,
                       string? AppDescription = "") :
     GameData(GameId: ProductId.ToString(),
-             Name: DirName,
-             Path: InstallPath,
+             GameName: DirName,
+             GamePath: InstallPath,
              Launch: BinaryPath,
              Icon: BinaryPath,
              Uninstall: Uninstaller,
              UninstallArgs: UninstallArgs,
              LastRunDate: LastPlayed,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { AppDescription ?? "", },
              });

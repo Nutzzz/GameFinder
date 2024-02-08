@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.Rockstar;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.Rockstar;
 /// Represents an id for games installed with Rockstar Games Launcher.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct RockstarGameId { }
+public readonly partial struct RockstarGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

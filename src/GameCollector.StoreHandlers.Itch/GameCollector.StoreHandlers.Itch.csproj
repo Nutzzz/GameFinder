@@ -1,19 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with itch.</Description>
+        <Description>Library for finding games owned and installed with itch.</Description>
         <PackageTags>itch games</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.*" />
+        <PackageReference Include="System.Data.SQLite.Core" />
     </ItemGroup>
-
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
         <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
         <ProjectReference Include="..\GameCollector.SQLiteUtils\GameCollector.SQLiteUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>

@@ -31,12 +31,12 @@ public record LegacyGame(LegacyGameId InstallerUuid,
                        Genre? Genre = (Genre)(-1),
                        string? CoverArtUrl = "") :
     GameData(GameId: InstallerUuid.ToString(),
-             Name: ProductName,
-             Path: InstDir,
+             GameName: ProductName,
+             GamePath: InstDir,
              Launch: ExePath,
              Icon: DisplayIcon == default ? ExePath : DisplayIcon,
              Uninstall: UninstallString,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "", },
                  ["Publishers"] = new() { Publisher ?? "", },

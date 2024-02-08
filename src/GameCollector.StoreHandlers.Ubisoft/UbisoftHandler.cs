@@ -22,7 +22,7 @@ namespace GameCollector.StoreHandlers.Ubisoft;
 ///   .\cache\configuration\configurations
 /// </summary>
 [PublicAPI]
-public class UbisoftHandler : AHandler<UbisoftGame, string>
+public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
 {
     internal const string ConnectRegKey = @"SOFTWARE\Ubisoft\Launcher";
     internal const string UninstallRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -63,10 +63,10 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<UbisoftGameId>? IdEqualityComparer => UbisoftGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<UbisoftGame, string> IdSelector => game => game.GameId;
+    public override Func<UbisoftGame, UbisoftGameId> IdSelector => game => game.GameCode;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -79,7 +79,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("InstallDir", out var install) && Path.IsPathRooted(install))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(install)).CombineUnchecked("UbisoftConnect.exe");
+                    return _fileSystem.FromUnsanitizedFullPath(install).Combine("UbisoftConnect.exe");
             }
         }
 
@@ -125,7 +125,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
 
         // Get owned but not-installed games
 
-        var configFile = _fileSystem.FromFullPath(Path.Combine(launcherPath, "cache", "configuration", "configurations"));
+        var configFile = _fileSystem.FromUnsanitizedFullPath(Path.Combine(launcherPath, "cache", "configuration", "configurations"));
         if (configFile.FileExists)
         {
             // This file is mostly yaml text, but there is binary before each entry that I attempt to strip out
@@ -166,7 +166,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
                         */
                         break;
                     }
-                    
+
                     if (line.Contains('�', StringComparison.Ordinal) ||
                         line.Contains('', StringComparison.Ordinal) ||
                         //line.Contains('~', StringComparison.Ordinal) ||
@@ -198,6 +198,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
 
     private static OneOf<UbisoftGame, ErrorMessage> ParseConfigFile(string input, string launcherPath, IFileSystem fileSystem, IRegistry registry, List<string> ubiIds, bool baseOnly = false)
     {
+        ConfigFile config;
         var id = "";
         string name;
         AbsolutePath path = new();
@@ -212,8 +213,15 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .IgnoreUnmatchedProperties()
                 .Build();
-            var config = deserializer.Deserialize<ConfigFile>(input);
+            config = deserializer.Deserialize<ConfigFile>(input);
+        }
+        catch (Exception e)
+        {
+            return new ErrorMessage(e, $"Malformed YAML in configurations file entry\n{e.InnerException}");
+        }
 
+        try
+        {
             if (config is null || config.Root is null)
                 return new ErrorMessage("No \"root\" property in configurations file entry");
 
@@ -244,12 +252,8 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
             if (string.IsNullOrEmpty(iconFile))
                 iconFile = config.Root.ThumbImage ?? "";
 
-            if (config.Localizations is not null)
+            if (config.Localizations is not null && config.Localizations.Default is not null)
             {
-                /*
-                if (config.Localizations.Default is null)
-                    return new ErrorMessage($"No \"localizations>default\" property found for {name} [{id}]");
-                */
                 name = Localize(name, config.Localizations.Default);
                 iconFile = Localize(iconFile, config.Localizations.Default);
             }
@@ -284,12 +288,18 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
             {
                 if (string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(id))
                     name = id;
-                id = Path.GetFileNameWithoutExtension(iconFile);
+                if (!string.IsNullOrEmpty(iconFile))
+                    id = Path.GetFileNameWithoutExtension(iconFile);
             }
             if (string.IsNullOrEmpty(id))
             {
                 if (baseOnly)
                     return new ErrorMessage($"\"{name}\" does not have an ID!");
+
+                if (string.IsNullOrEmpty(name))
+                    return new ErrorMessage("Entry does not have a name or ID!");
+                else
+                    id = new string(name.Where(char.IsLetterOrDigit).ToArray());
             }
             else
             {
@@ -328,10 +338,10 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
                                     var value = regKey.GetValue(Path.GetFileName(sRegistry));
                                     if (value is not null)
                                     {
-                                        path = fileSystem.FromFullPath(value.ToString() ?? "");
+                                        path = fileSystem.FromUnsanitizedFullPath(value.ToString() ?? "");
                                         var configExe = configGame.Executables[0].Path;
                                         if (configExe is not null && configExe.Relative is not null)
-                                            launch = path.CombineUnchecked(configExe.Relative);
+                                            launch = path.Combine(configExe.Relative);
                                         if (fileSystem.FileExists(launch))
                                             isInstalled = true;
                                     }
@@ -356,7 +366,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
         catch (Exception e)
         {
             return new ErrorMessage(e, $"Exception while parsing configurations file entry\n{e.InnerException}");
-		}
+        }
     }
 
     internal static (string? message, bool isError) CreateSchemaVersionMessage(
@@ -461,7 +471,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
             var uninstallArgs = "";
             if (!subKey.TryGetString("UninstallString", out var uninstall))
                 uninstall = "";
-            else 
+            else
             {
                 if (uninstall.Contains(".exe", StringComparison.OrdinalIgnoreCase))
                 {
@@ -474,10 +484,10 @@ public class UbisoftHandler : AHandler<UbisoftGame, string>
             return new UbisoftGame(
                 GameCode: UbisoftGameId.From(sId),
                 DisplayName: name,
-                InstallPath: fileSystem.FromFullPath(SanitizeInputPath(path)),
+                InstallPath: fileSystem.FromUnsanitizedFullPath(path),
                 LaunchUrl: url,
-                Icon: fileSystem.FromFullPath(SanitizeInputPath(icon)),
-                Uninstall: string.IsNullOrEmpty(uninstall) ? new() : fileSystem.FromFullPath(SanitizeInputPath(uninstall)),
+                Icon: fileSystem.FromUnsanitizedFullPath(icon),
+                Uninstall: string.IsNullOrEmpty(uninstall) ? new() : fileSystem.FromUnsanitizedFullPath(uninstall),
                 UninstallArgs: uninstallArgs);
         }
         catch (Exception e)

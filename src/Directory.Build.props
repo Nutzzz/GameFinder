@@ -2,14 +2,18 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <PropertyGroup>
+        <PackageVersion>3.1.0-alpha</PackageVersion>
         <Authors>Nutzzz, erri120</Authors>
 
         <PackageReadmeFile>docs\README.md</PackageReadmeFile>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
 
         <PackageProjectUrl>https://github.com/Nutzzz/GameCollector</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Nutzzz/GameCollector.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+
+        <!-- https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#packrelease -->
+        <PackRelease>true</PackRelease>
 
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -32,7 +36,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="all" />
+        <PackageReference Include="JetBrains.Annotations" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
     </ItemGroup>
 </Project>

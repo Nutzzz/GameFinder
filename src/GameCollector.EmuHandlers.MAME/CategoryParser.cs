@@ -56,7 +56,7 @@ public partial class CategoryParser
 
     private static void LoadCatFile(AbsolutePath exePath, IFileSystem fileSystem)
     {
-        var mamePath = fileSystem.FromFullPath(exePath.Directory);
+        var mamePath = fileSystem.FromUnsanitizedFullPath(exePath.Directory);
         if (string.IsNullOrEmpty(mamePath.GetFullPath()))
             return;
 
@@ -65,10 +65,10 @@ public partial class CategoryParser
         var catText = "";
         var catVersionIncluded = GetCatVersion(Resources.catver);
         Version? catVersionUser = new();
-        var catPathUser = fileSystem.GetKnownPath(KnownPath.CurrentDirectory).CombineUnchecked("catver.ini");
+        var catPathUser = fileSystem.GetKnownPath(KnownPath.CurrentDirectory).Combine("catver.ini");
         if (!fileSystem.FileExists(catPathUser))
         {
-            catPathUser = mamePath.CombineUnchecked("catver.ini");
+            catPathUser = mamePath.Combine("catver.ini");
             if (!fileSystem.FileExists(catPathUser))
                 catPathUser = new();
         }
@@ -105,7 +105,7 @@ public partial class CategoryParser
         var mature = false;
         if (line.EndsWith("* Mature *", StringComparison.Ordinal))
             line = line[..line.LastIndexOf("* Mature *", StringComparison.Ordinal)];
-            
+
         var match = DetailRegex().Match(line);
         var detail = match.Groups[2].Value.Split('/');
 

@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="System.Data.SQLite.Core" Version="1.0.*" />
+        <PackageReference Include="System.Data.SQLite.Core" />
+        <PackageReference Include="NexusMods.Paths" />
     </ItemGroup>
 
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
+    <ItemGroup>
+        <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="GameCollector.SQLiteUtils.Tests" />

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using GameFinder.Common;
 using JetBrains.Annotations;
@@ -31,12 +32,12 @@ public record DolphinGame(DolphinGameId DolphinGameId,
                          DolphinSystem? System = (DolphinSystem)(-1),
                          DolphinRegion? Region = (DolphinRegion)(-1)) :
     GameData(GameId: DolphinGameId.ToString(),
-             Name: Title,
-             Path: Path,
+             GameName: Title,
+             GamePath: Path,
              Launch: DolphinExecutable,
              LaunchArgs: ROMFile,
              Icon: Cover,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { AppLoaderDate is null ? "" : ((DateTime)AppLoaderDate).ToString(CultureInfo.InvariantCulture), },
                  ["Publishers"] = new() { Publisher ?? "", },

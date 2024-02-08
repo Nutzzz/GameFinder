@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Vogen;
+using TransparentValueObjects;
 
 namespace GameCollector.StoreHandlers.BattleNet;
 
@@ -9,7 +9,11 @@ namespace GameCollector.StoreHandlers.BattleNet;
 /// Represents an id for games installed with Blizzard Battle.net.
 /// </summary>
 [ValueObject<string>]
-public readonly partial struct BattleNetGameId { }
+public readonly partial struct BattleNetGameId : IAugmentWith<DefaultEqualityComparerAugment>
+{
+    /// <inheritdoc/>
+    public static IEqualityComparer<string> InnerValueDefaultEqualityComparer { get; } = StringComparer.OrdinalIgnoreCase;
+}
 
 /// <inheritdoc/>
 [PublicAPI]

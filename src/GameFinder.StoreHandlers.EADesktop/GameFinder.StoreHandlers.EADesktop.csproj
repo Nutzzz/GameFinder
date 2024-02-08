@@ -2,6 +2,7 @@
     <PropertyGroup>
         <Description>Library for finding games installed with EA Desktop.</Description>
         <PackageTags>ea ea-desktop ea-app games</PackageTags>
+        <AssemblyName>GameCollector.StoreHandlers.EADesktop</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -9,11 +10,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="SHA3.Net" Version="2.0.0" />
-        <PackageReference Include="System.Management" Version="7.0.*" />
+        <PackageReference Include="SHA3.Net" />
+        <PackageReference Include="System.Management" />
+        <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
-
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />

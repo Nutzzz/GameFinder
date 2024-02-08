@@ -4,19 +4,20 @@ using System.IO;
 using System.Linq;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
+using GameCollector.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
 namespace GameCollector.StoreHandlers.Rockstar;
 
-// TODO: Confirm this handler works
+// TODO: Confirm this handler works at all
 
 /// <summary>
 /// Handler for finding games installed with Rockstar Games Launcher.
 /// </summary>
 [PublicAPI]
-public class RockstarHandler : AHandler<RockstarGame, string>
+public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
 {
     internal const string RockstarKey = @"SOFTWARE\Rockstar Games";
     internal const string UninstallRegKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -45,10 +46,10 @@ public class RockstarHandler : AHandler<RockstarGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<RockstarGameId>? IdEqualityComparer => RockstarGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<RockstarGame, string> IdSelector => game => game.GameId;
+    public override Func<RockstarGame, RockstarGameId> IdSelector => game => game.Id;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -61,7 +62,7 @@ public class RockstarHandler : AHandler<RockstarGame, string>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("DisplayIcon", out var icon) && Path.IsPathRooted(icon))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(icon));
+                    return _fileSystem.FromUnsanitizedFullPath(icon);
             }
         }
 
@@ -115,7 +116,7 @@ public class RockstarHandler : AHandler<RockstarGame, string>
                 return new ErrorMessage($"{strPath} is not a valid path");
 
             var id = "";
-            var path = fileSystem.FromFullPath(SanitizeInputPath(strPath));
+            var path = fileSystem.FromUnsanitizedFullPath(strPath);
             AbsolutePath exe = new();
             AbsolutePath uninst = new();
             var uninstArgs = "";
@@ -126,10 +127,10 @@ public class RockstarHandler : AHandler<RockstarGame, string>
             {
                 if (strUninst.Contains("\" ", StringComparison.Ordinal))
                 {
-                    var uninstExe = SanitizeInputPath(strUninst[..strUninst.IndexOf("\" ", StringComparison.Ordinal)].Trim('\"'));
+                    var uninstExe = strUninst[..strUninst.IndexOf("\" ", StringComparison.Ordinal)].Trim('\"');
                     if (Path.IsPathRooted(uninstExe))
                     {
-                        uninst = fileSystem.FromFullPath(uninstExe);
+                        uninst = fileSystem.FromUnsanitizedFullPath(uninstExe);
                         uninstArgs = strUninst[(strUninst.IndexOf("\" ", StringComparison.Ordinal) + 2)..];
                     }
                     if (strUninst.Contains("-uninstall=", StringComparison.Ordinal))
@@ -143,7 +144,7 @@ public class RockstarHandler : AHandler<RockstarGame, string>
                 name = subKeyName;
             if (string.IsNullOrEmpty(strExe))
                 exe = Utils.FindExe(path, fileSystem, name);
-            
+
             return new RockstarGame(
                 Id: RockstarGameId.From(id),
                 Name: subKeyName,

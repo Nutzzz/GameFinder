@@ -1,18 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding games installed with GOG Galaxy.</Description>
+        <Description>Library for finding games owned and installed with GOG Galaxy.</Description>
         <PackageTags>gog gog-galaxy games</PackageTags>
+        <AssemblyName>GameCollector.StoreHandlers.GOG</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="System.Data.SQLite" Version="1.0.*" />
+        <PackageReference Include="System.Data.SQLite" />
     </ItemGroup>
-
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
         <ProjectReference Include="..\GameFinder.RegistryUtils\GameFinder.RegistryUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>

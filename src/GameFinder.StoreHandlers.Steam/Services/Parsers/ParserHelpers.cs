@@ -9,6 +9,7 @@ using FluentResults;
 using GameFinder.StoreHandlers.Steam.Models;
 using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
 using NexusMods.Paths;
+using NexusMods.Paths.Utilities;
 using ValveKeyValue;
 
 namespace GameFinder.StoreHandlers.Steam.Services;
@@ -76,8 +77,10 @@ internal static class ParserHelpers
         );
     }
 
-    internal static KVObject? FindOptionalChildObject(KVObject parentObject, string childObjectName)
+    internal static KVObject? FindOptionalChildObject(KVObject? parentObject, string childObjectName)
     {
+        if (parentObject is null) return null;
+
         var childObject = parentObject
             .Children
             .FirstOrDefault(child => child.Name.Equals(childObjectName, StringComparison.OrdinalIgnoreCase));
@@ -94,8 +97,7 @@ internal static class ParserHelpers
         KVObject parentObject,
         string childObjectName,
         Func<KVValue, T> parser,
-        T defaultValue = default)
-        where T : struct
+        T defaultValue)
     {
         var childObject = FindOptionalChildObject(parentObject, childObjectName);
         return childObject is null
@@ -176,9 +178,11 @@ internal static class ParserHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static Size ParseSize(KVValue value) => Size.From(ParseUInt64(value));
 
-    // TODO: sanitize the path (requires https://github.com/Nexus-Mods/NexusMods.App/pull/345)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static RelativePath ParseRelativePath(KVValue value) => new(ParseString(value));
+    internal static RelativePath ParseRelativePath(KVValue value, IFileSystem fileSystem) => new(PathHelpers.Sanitize(ParseString(value), fileSystem.OS));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static AbsolutePath ParseAbsolutePath(KVValue value, IFileSystem fileSystem) => fileSystem.FromUnsanitizedFullPath(ParseString(value));
 
     #endregion
 }

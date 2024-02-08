@@ -17,8 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 - Added a generic `record GameData` to collect data for all handlers:
   - `string GameId`
-  - `string Name`
-  - `AbsolutePath Path`
+  - `string GameName`
+  - `AbsolutePath GamePath`
   - `AbsolutePath? SavePath`
   - `AbsolutePath Launch`
   - `string LaunchArgs`
@@ -38,25 +38,70 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
   - `ushort? MyRating`
   - `string? BaseGame`
   - `Dictionary<string, List<string>>? Metadata`
-- Metadata may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
+- Metadata Dictionary may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
 - The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
 - Added emulators:
   - Dolphin, MAME
 - Added additional store launchers:
-  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Rockstar, Ubisoft, Wargaming.net
-- Re-added Bethesda.net for posterity.
+  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Robot Cache, Rockstar, Ubisoft, Wargaming.net
 - Add `FindClient` to get path to store client executable.
 - EADesktop handler now attempts to get a proper game title from the Registry.
-- EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to find installed games after a Windows system reset or reinstall.
-- Steam handler can now use [SteamWebAPI2](https://github.com/babelshift/SteamWebAPI2) library to collect information about owned, not-installed games. This feature requires an API key to be specified and the user profile set to public.
+- EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to continue to find installed games even after a Windows system reset or reinstall.
+- Steam handler can now optionally use [SteamWebAPI2](https://github.com/babelshift/SteamWebAPI2) library to collect information about owned, not-installed games. This feature requires an API key to be specified and the user profile must be set to public.
 
 # Upstream Changelog
 
-## [Unreleased](https://github.com/erri120/GameFinder/compare/v3.1.0...HEAD)
+## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.0...HEAD)
+
+- Upgrade deps
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
 
-## [3.1.0](https://github.com/erri120/GameFinder/compare/v3.0.2...v3.1.0) - TBD
+## [4.2.0](https://github.com/erri120/GameFinder/compare/v4.1.0...v4.2.0) - 2024-01-28
+
+- Added support for OSX version of Steam ([#122](https://github.com/erri120/GameFinder/pull/122))
+
+## [4.1.0](https://github.com/erri120/GameFinder/compare/v4.0.0...v4.1.0) - 2024-01-08
+
+- Upgraded to .NET 8.
+- Upgraded all dependencies.
+- Replaced Vogen with [TransparentValueObjects](https://github.com/erri120/TransparentValueObjects).
+- Steam: fixed `AppManifestParser` breaking when encountering an absolute path instead of a relative path in the `installdir` field ([#118](https://github.com/erri120/GameFinder/issues/118)).
+- Bottles: fixed a `DirectoryNotFoundException` when trying to enumerate a directory that doesn't exist ([#119](https://github.com/erri120/GameFinder/issues/119)).
+
+## [4.0.0](https://github.com/erri120/GameFinder/compare/v3.2.2...v4.0.0) - 2023-09-03
+
+This is a major release because I've had to change the license from MIT to GPLv3. See https://github.com/erri120/GameFinder/commit/53130f2d39fcb061366f4da9fcc695b8e0d8dd61 for details.
+
+Additionally, all builds will now be packaged in release mode and dependencies have been upgraded.
+
+## [3.2.2](https://github.com/erri120/GameFinder/compare/v3.2.1...v3.2.2) - 2023-08-11
+
+- Steam: fixed `StateFlag` parser throwing an exception ([#93](https://github.com/erri120/GameFinder/issues/93)).
+- Updated dependencies.
+- Replaced Moq with NSubstitute ([#92](https://github.com/erri120/GameFinder/issues/92)).
+
+## [3.2.1](https://github.com/erri120/GameFinder/compare/v3.2.0...v3.2.1) - 2023-07-25
+
+- Xbox: parsed relative path is now sanitized
+
+## [3.2.0](https://github.com/erri120/GameFinder/compare/v3.1.0...v3.2.0) - 2023-07-25
+
+This is the first in a series of major updates that rework one of the store handlers. In this update, I focused on Steam and completely reworked the handler and data models. The `SteamGame` record now contains a reference to the parsed `AppManifest`, which itself is now fully fleshed out and has everything you need. Furthermore, you can now also parse the workshop manifest file, if it exists, to get a list of all installed Steam workshop items:
+
+- `AppManifest`: for `appmanifest_*.acf` files.
+- `LibraryFoldersManifest`: for the single `libraryfolders.vdf` file inside the `Steam/config` folder.
+- `WorkshopManifest`: for `appworkshop_*.acf` files.
+- `LocalUserConfig` for the single `localconfig.vdf` file inside the `userdata/{steamId}/config` folder.
+
+Finally, I've been thinking a lot about result types. Over the years, I've updated GameFinder to use various different approaches for dealing with errors. This update is the beginning of me phasing out my hacky `OneOf<TResult, ErrorMessage>` solution, and replacing it with [FluentResults](https://altmann/FluentResults).
+
+**Changes**:
+
+- Steam: complete rework
+- Updated `NexusMods.Paths` to `0.1.1`
+
+## [3.1.0](https://github.com/erri120/GameFinder/compare/v3.0.2...v3.1.0) - 2023-05-23
 
 **Changes**:
 

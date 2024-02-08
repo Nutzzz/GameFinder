@@ -21,7 +21,7 @@ namespace GameCollector.StoreHandlers.Legacy;
 ///   HKCU\Software\Legacy Games
 /// </summary>
 [PublicAPI]
-public class LegacyHandler : AHandler<LegacyGame, string>
+public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
 {
     internal const string LegacyRegKey = @"Software\Legacy Games";
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
@@ -60,10 +60,10 @@ public class LegacyHandler : AHandler<LegacyGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<LegacyGameId>? IdEqualityComparer => LegacyGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<LegacyGame, string> IdSelector => game => game.GameId;
+    public override Func<LegacyGame, LegacyGameId> IdSelector => game => game.InstallerUuid;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -77,7 +77,7 @@ public class LegacyHandler : AHandler<LegacyGame, string>
             {
                 if (regKey.TryGetString("DisplayIcon", out var icon) && Path.IsPathRooted(icon))
                 {
-                    return _fileSystem.FromFullPath(_fileSystem.FromFullPath(SanitizeInputPath(icon)).Directory);
+                    return _fileSystem.FromUnsanitizedFullPath(icon).Parent;
                 }
             }
         }
@@ -206,10 +206,10 @@ public class LegacyHandler : AHandler<LegacyGame, string>
             AbsolutePath exePath = new();
             if (Path.IsPathRooted(path))
             {
-                instDir = _fileSystem.FromFullPath(SanitizeInputPath(path));
+                instDir = _fileSystem.FromUnsanitizedFullPath(path);
                 if (subKey.TryGetString("GameExe", out var exe))
                 {
-                    exePath = instDir.CombineUnchecked(SanitizeInputPath(exe));
+                    exePath = instDir.Combine(exe);
                 }
             }
 
@@ -221,8 +221,8 @@ public class LegacyHandler : AHandler<LegacyGame, string>
                 ProductName: name,
                 InstDir: instDir,
                 ExePath: exePath,
-                DisplayIcon: Path.IsPathRooted(icon) ? _fileSystem.FromFullPath(SanitizeInputPath(icon)) : exePath,
-                UninstallString: Path.IsPathRooted(uninstall) ? _fileSystem.FromFullPath(SanitizeInputPath(uninstall)) : new(),
+                DisplayIcon: Path.IsPathRooted(icon) ? _fileSystem.FromUnsanitizedFullPath(icon) : exePath,
+                UninstallString: Path.IsPathRooted(uninstall) ? _fileSystem.FromUnsanitizedFullPath(uninstall) : new(),
                 Description: description,
                 Publisher: publisher,
                 Genre: genre,
@@ -276,7 +276,7 @@ public class LegacyHandler : AHandler<LegacyGame, string>
     public AbsolutePath GetLegacyJsonFile()
     {
         return _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-            .CombineUnchecked("legacy-games-launcher")
-            .CombineUnchecked("app-state.json");
+            .Combine("legacy-games-launcher")
+            .Combine("app-state.json");
     }
 }

@@ -10,7 +10,7 @@ public partial class EADesktopTests
     public void Test_InstallInfoToGame(InMemoryFileSystem fileSystem, InMemoryRegistry registry, string baseSlug, string installCheck, string baseInstallPathName, string softwareId)
     {
         var baseInstallPath = fileSystem.GetKnownPath(KnownPath.TempDirectory)
-            .CombineUnchecked(baseInstallPathName);
+            .Combine(baseInstallPathName);
 
         var installInfo = new InstallInfo(
             baseInstallPath.GetFullPath(),

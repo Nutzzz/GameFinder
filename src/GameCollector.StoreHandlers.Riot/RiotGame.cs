@@ -5,7 +5,7 @@ using NexusMods.Paths;
 namespace GameCollector.StoreHandlers.Riot;
 
 /// <summary>
-/// Represents a game installed with Riot Client.
+/// Represents a game installed with the Riot Client.
 /// </summary>
 /// <param name="ProductId"></param>
 /// <param name="Name"></param>
@@ -23,8 +23,8 @@ public record RiotGame(RiotGameId ProductId,
                        AbsolutePath Icon,
                        string UninstallArgs) :
     GameData(GameId: ProductId.ToString(),
-             Name: Name,
-             Path: ProductInstallPath,
+             GameName: Name,
+             GamePath: ProductInstallPath,
              Launch: ClientPath,
              LaunchArgs: LaunchArgs,
              Icon: Icon,

@@ -38,28 +38,28 @@ public record IGClientGame(IGClientGameId IdKeyName,
                          string? DevImage = null,
                          string? DevCover = null,
                          string? SluggedName = null,
-                         List<string>? Specs = null,
-                         List<string>? Categories = null,
-                         List<string>? Tags = null,
+                         IList<string>? Specs = null,
+                         IList<string>? Categories = null,
+                         IList<string>? Tags = null,
                          decimal AvgRating = 0m) :
     GameData(GameId: IdKeyName.ToString(),
-             Name: ItemName,
-             Path: Path,
+             GameName: ItemName,
+             GamePath: Path,
              Launch: ExePath,
              LaunchArgs: ExeArgs,
              Icon: ExePath,
              IsInstalled: IsInstalled,
-             Metadata: new(StringComparer.OrdinalIgnoreCase)
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { DescriptionShort ?? "", },
                  ["DescriptionLong"] = new() { DescriptionLong ?? "", },
                  ["ImageUrl"] = new() { DevImage ?? "", },
                  ["ImageWideUrl"] = new() { DevCover ?? "", },
                  ["SluggedName"] = new() { SluggedName ?? "", },
-                 ["Players"] = new() { SpecsToNumPlayers(Specs).ToString(CultureInfo.InvariantCulture) ?? "", },
-                 ["Genres"] = Categories ?? new(),
-                 ["Tags"] = Tags ?? new(),
-                 ["Rating"] = new () { AvgRating.ToString(CultureInfo.InvariantCulture) ?? "", },
+                 ["Players"] = new() { SpecsToNumPlayers(Specs?.ToList<string>()).ToString(CultureInfo.InvariantCulture) ?? "", },
+                 ["Genres"] = Categories?.ToList<string>() ?? new List<string>(),
+                 ["Tags"] = Tags?.ToList<string>() ?? new List<string>(),
+                 ["Rating"] = new() { AvgRating.ToString(CultureInfo.InvariantCulture) ?? "", },
              })
 {
     internal static int SpecsToNumPlayers(List<string>? specs)

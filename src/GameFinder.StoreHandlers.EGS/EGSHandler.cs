@@ -87,7 +87,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             if (regKey is null) return default;
 
             if (regKey.TryGetString("ModSdkCommand", out var command) && Path.IsPathRooted(command))
-                return _fileSystem.FromFullPath(SanitizeInputPath(command));
+                return _fileSystem.FromUnsanitizedFullPath(command);
         }
 
         return default;
@@ -118,7 +118,14 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
         foreach (var itemFile in itemFiles)
         {
             var game = DeserializeGame(itemFile, FormatPolicy, baseOnly);
-            installedGames.Add(game.IsT0 ? game.AsT0.CatalogItemId : EGSGameId.From(""), game);
+            try
+            {
+                installedGames.Add(game.IsT0 ? game.AsT0.CatalogItemId : EGSGameId.From(""), game);
+            }
+            catch (Exception e)
+            {
+                installedGames.Add(EGSGameId.From(""), new ErrorMessage(e, $"Exception adding \"{game.AsT0.GameName}\" [{game.AsT0.CatalogItemId}]"));
+            }
         }
         if (installedOnly)
             return installedGames.Values;
@@ -169,28 +176,28 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                 return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"DisplayName\"");
             }
 
-            var loc = SanitizeInputPath(manifest.InstallLocation ?? "");
-            if (string.IsNullOrEmpty(loc) || !Path.IsPathRooted(manifest.InstallLocation))
+            var loc = manifest.InstallLocation ?? "";
+            if (string.IsNullOrEmpty(loc) || !Path.IsPathRooted(loc))
             {
                 return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"InstallLocation\"");
             }
-            
+
             var isDLC = false;
             var exe = manifest.LaunchExecutable;
             AbsolutePath launch = new();
             if (string.IsNullOrEmpty(exe))
             {
                 if (baseOnly)
-                    return new ErrorMessage($"Manifest {itemFile.GetFullPath()} is a DLC");
+                    return new ErrorMessage($"Manifest {itemFile.GetFullPath()} is a DLC or has no LaunchExecutable");
                 isDLC = true;
             }
             else
-                launch = _fileSystem.FromFullPath(loc).CombineUnchecked(exe);
+                launch = _fileSystem.FromUnsanitizedFullPath(loc).Combine(exe);
 
             var game = new EGSGame(
                 CatalogItemId: EGSGameId.From(manifest.CatalogItemId),
                 DisplayName: manifest.DisplayName,
-                InstallLocation: _fileSystem.FromFullPath(loc),
+                InstallLocation: _fileSystem.FromUnsanitizedFullPath(loc),
                 CloudSaveFolder: new(),
                 InstallLaunch: launch,
                 MainGame: isDLC ? (!isDLC).ToString() : null);
@@ -238,7 +245,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
     {
         return fileSystem
             .GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("Epic/EpicGamesLauncher/Data/Manifests");
+            .Combine("Epic/EpicGamesLauncher/Data/Manifests");
     }
 
     private bool TryGetManifestDirFromRegistry(out AbsolutePath manifestDir)
@@ -253,7 +260,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             if (regKey is null || !regKey.TryGetString("ModSdkMetadataDir",
                     out var registryMetadataDir)) return false;
 
-            manifestDir = _fileSystem.FromFullPath(SanitizeInputPath(registryMetadataDir));
+            manifestDir = _fileSystem.FromUnsanitizedFullPath(registryMetadataDir);
             return true;
 
         }

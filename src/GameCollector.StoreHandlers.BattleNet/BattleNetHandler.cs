@@ -24,7 +24,7 @@ namespace GameCollector.StoreHandlers.BattleNet;
 ///   %AppData%\Battle.net\Battle.net.config
 /// </summary>
 [PublicAPI]
-public class BattleNetHandler : AHandler<BattleNetGame, string>
+public class BattleNetHandler : AHandler<BattleNetGame, BattleNetGameId>
 {
     internal const string BattleNetRegKey = @"SOFTWARE\Blizzard Entertainment\Battle.net\Capabilities";
 
@@ -62,10 +62,10 @@ public class BattleNetHandler : AHandler<BattleNetGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<BattleNetGameId>? IdEqualityComparer => BattleNetGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<BattleNetGame, string> IdSelector => game => game.GameId;
+    public override Func<BattleNetGame, BattleNetGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -82,7 +82,7 @@ public class BattleNetHandler : AHandler<BattleNetGame, string>
                     if (appIcon.Contains(',', StringComparison.Ordinal))
                         appIcon = appIcon[..appIcon.LastIndexOf(',')];
                     if (Path.IsPathRooted(appIcon))
-                        return _fileSystem.FromFullPath(SanitizeInputPath(appIcon));
+                        return _fileSystem.FromUnsanitizedFullPath(appIcon);
                 }
             }
         }
@@ -93,28 +93,24 @@ public class BattleNetHandler : AHandler<BattleNetGame, string>
     public override IEnumerable<OneOf<BattleNetGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
         var dataPath = GetBattleNetPath()
-            .CombineUnchecked("Agent")
-            .CombineUnchecked("data")
-            .CombineUnchecked("cache");
+            .Combine("Agent").Combine("data").Combine("cache");
         if (!dataPath.DirectoryExists())
         {
             yield return new ErrorMessage($"The data directory {dataPath.GetFullPath()} does not exist!");
             yield break;
         }
-        var dbFile = GetBattleNetPath()
-            .CombineUnchecked("Agent")
-            .CombineUnchecked("product.db");
+        var dbFile = GetBattleNetPath().Combine("Agent").Combine("product.db");
         if (!dbFile.FileExists)
         {
             yield return new ErrorMessage($"The database file {dbFile.GetFullPath()} does not exist!");
             yield break;
         }
         var cfgFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-            .CombineUnchecked("Battle.net")
-            .CombineUnchecked("Battle.net.config");
+            .Combine("Battle.net")
+            .Combine("Battle.net.config");
         var uninstallExe = GetBattleNetPath()
-            .CombineUnchecked("Agent")
-            .CombineUnchecked("Blizzard Uninstaller.exe");
+            .Combine("Agent")
+            .Combine("Blizzard Uninstaller.exe");
 
         var dataFiles = dataPath
             .EnumerateFiles(Extension.None, recursive: true)
@@ -166,9 +162,9 @@ public class BattleNetHandler : AHandler<BattleNetGame, string>
             return new BattleNetGame(
                 ProductId: BattleNetGameId.From(id),
                 DirName: name,
-                InstallPath: Path.IsPathRooted(installPath) ? _fileSystem.FromFullPath(SanitizeInputPath(installPath)) : new(),
-                BinaryPath: Path.IsPathRooted(launch) ? _fileSystem.FromFullPath(SanitizeInputPath(launch)) : new(),
-                Uninstaller: Path.IsPathRooted(uninstall) ? _fileSystem.FromFullPath(SanitizeInputPath(uninstall)) : new(),
+                InstallPath: Path.IsPathRooted(installPath) ? _fileSystem.FromUnsanitizedFullPath(installPath) : new(),
+                BinaryPath: Path.IsPathRooted(launch) ? _fileSystem.FromUnsanitizedFullPath(launch) : new(),
+                Uninstaller: Path.IsPathRooted(uninstall) ? _fileSystem.FromUnsanitizedFullPath(uninstall) : new(),
                 UninstallArgs: $"--lang={lang} --uid={id} --displayname=\"{name}\"",
                 LastPlayed: lastRunDate,
                 AppDescription: description
@@ -364,6 +360,6 @@ public class BattleNetHandler : AHandler<BattleNetGame, string>
 
     public AbsolutePath GetBattleNetPath()
     {
-        return _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory).CombineUnchecked("Battle.net");
+        return _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory).Combine("Battle.net");
     }
 }

@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using FluentResults;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
+using GameFinder.StoreHandlers.Steam.Models;
+using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameFinder.StoreHandlers.Steam.Services;
 using NexusMods.Paths;
 using OneOf;
 using Steam.Models.SteamCommunity;
@@ -14,10 +18,8 @@ using ValveKeyValue;
 
 namespace GameFinder.StoreHandlers.Steam;
 
-public partial class SteamHandler : AHandler<SteamGame, SteamGameId>
+public partial class SteamHandler : AHandler<SteamGame, Models.ValueTypes.AppId>
 {
-    internal const string SteamMediaUrl = "http://media.steampowered.com/steamcommunity/public/images/apps/";
-
     private readonly string? _apiKey;
 
     /// <summary>
@@ -43,54 +45,101 @@ public partial class SteamHandler : AHandler<SteamGame, SteamGameId>
     }
 
     internal IEnumerable<OneOf<SteamGame, ErrorMessage>> FindOwnedGamesFromAPI(
-        Dictionary<SteamGameId, OneOf<SteamGame, ErrorMessage>> installedGames,
+        Dictionary<Models.ValueTypes.AppId, OneOf<SteamGame, ErrorMessage>> installed,
         ulong userId = 0)
     {
-        List<OneOf<SteamGame, ErrorMessage>> allGames = new();
-        List<OneOf<SteamGame, ErrorMessage>> ownedGames = new();
-        foreach (var game in GetOwnedGames(userId))
+        if (string.IsNullOrEmpty(_apiKey))
         {
-            ownedGames.Add(game);
-        }
-        foreach (var game in ownedGames)
-        {
-            if (game.IsT1)
+            yield return new ErrorMessage("Can't get Steam not-installed owned games. An API key must be provided. \n" +
+                "To get a key, go to <https://steamcommunity.com/dev/apikey>.");
+            foreach (var installedGame in installed)
             {
-                allGames.Add(game);
-                continue;
+                if (installedGame.Value.IsT0)
+                    yield return installedGame.Value.AsT0;
             }
+            yield break;
+        }
 
-            var id = game.AsT0.AppId;
-            if (!installedGames.ContainsKey(id))
+        if (userId < 1)
+        {
+            var userList = ParseLoginUsersFile();
+            if (userList is not null)
             {
-                allGames.Add(game);
-                continue;
+                userId = userList.Find(auto => auto.autoLogin).userId; // Get auto-login user
+                if (userId < 1)
+                    userId = userList.MaxBy(time => time.timeStamp).userId; // Get most recent user
             }
-            allGames.Add(new SteamGame(
-                game.AsT0.AppId,
-                game.AsT0.Name,
-                installedGames[id].AsT0.Path,
-                installedGames[id].AsT0.CloudSavesDirectory,
-                installedGames[id].AsT0.DisplayIcon,
-                installedGames[id].AsT0.IsInstalled,
-                installedGames[id].AsT0.PlaytimeForever,
-                game.AsT0.IconUrl));
         }
-        return allGames;
+
+        if (userId < 1)
+        {
+            yield return new ErrorMessage("Can't get Steam not-installed owned games. A Steam ID was not found. \n" +
+                "To find your ID, go to <https://store.steampowered.com/account>.");
+            foreach (var installedGame in installed)
+            {
+                if (installedGame.Value.IsT0)
+                    yield return installedGame.Value.AsT0;
+            }
+            yield break;
+        }
+
+        var t = ParseAPIGames(userId);
+        t.Wait();
+        if (t.Result.IsError())
+        {
+            yield return t.Result.AsError();
+            foreach (var installedGame in installed)
+            {
+                if (installedGame.Value.IsT0)
+                    yield return installedGame.Value.AsT0;
+            }
+            yield break;
+        }
+
+        foreach (var owned in t.Result.AsT0.OwnedGames)
+        {
+            if (owned is null)
+                continue;
+
+            installed.TryGetValue((Models.ValueTypes.AppId)owned.AppId, out var installedGame);
+
+            if (installedGame.IsT0 && installedGame.AsT0 is not null)
+            {
+                yield return new SteamGame(
+                    installedGame.AsT0.SteamPath,
+                    installedGame.AsT0.AppManifest,
+                    installedGame.AsT0.RegistryEntry,
+                    installedGame.AsT0.LibraryFolder,
+                    OwnedGame: owned,
+                    IsInstalled: true
+                );
+            }
+            else
+            {
+                yield return new SteamGame(
+                    SteamPath: default,
+                    AppManifest: default,
+                    RegistryEntry: default,
+                    LibraryFolder: default,
+                    OwnedGame: owned,
+                    IsInstalled: false
+                );
+            }
+        }
     }
 
     private static AbsolutePath GetAppDataFile(AbsolutePath steamDirectory)
     {
         return steamDirectory
-            .CombineUnchecked("config")
-            .CombineUnchecked("SteamAppData.vdf");
+            .Combine("config")
+            .Combine("SteamAppData.vdf");
     }
 
     private static AbsolutePath GetLoginUsersFile(AbsolutePath steamDirectory)
     {
         return steamDirectory
-            .CombineUnchecked("config")
-            .CombineUnchecked("loginusers.vdf");
+            .Combine("config")
+            .Combine("loginusers.vdf");
     }
 
     private List<(ulong userId, uint timeStamp, bool autoLogin)>? ParseLoginUsersFile()
@@ -100,20 +149,37 @@ public partial class SteamHandler : AHandler<SteamGame, SteamGameId>
         {
             KVValue autoUser = "";
 
-            var defaultSteamDirs = GetDefaultSteamDirectories(_fileSystem)
+            var steamPathResult = SteamLocationFinder.FindSteam(_fileSystem, _registry);
+            if (steamPathResult.IsFailed)
+            {
+                return userList;
+            }
+
+            var steamPath = steamPathResult.Value;
+            var libraryFoldersFilePath = SteamLocationFinder.GetLibraryFoldersFilePath(steamPath);
+
+            var libraryFoldersResult = LibraryFoldersManifestParser.ParseManifestFile(libraryFoldersFilePath);
+            if (libraryFoldersResult.IsFailed)
+            {
+                return userList;
+            }
+
+            var libraryFolders = libraryFoldersResult.Value;
+
+            var defaultSteamDirs = SteamLocationFinder.GetDefaultSteamInstallationPaths(_fileSystem)
                 .ToArray();
 
             var appDataFile = defaultSteamDirs.Select(GetAppDataFile).FirstOrDefault(_fileSystem.FileExists);
             var loginUsersFile = defaultSteamDirs.Select(GetLoginUsersFile).FirstOrDefault(_fileSystem.FileExists);
             if (_registry is not null)
             {
-                var steamDir = FindSteamInRegistry(_registry);
+                var steamDir = SteamLocationFinder.GetSteamPathFromRegistry(_fileSystem, _registry);
                 if (steamDir != default)
                 {
                     if (appDataFile == default)
-                        appDataFile = GetAppDataFile(steamDir);
+                        appDataFile = GetAppDataFile(steamDir.ValueOrDefault);
                     if (loginUsersFile == default)
-                        loginUsersFile = GetLoginUsersFile(steamDir);
+                        loginUsersFile = GetLoginUsersFile(steamDir.ValueOrDefault);
                 }
             }
 
@@ -162,85 +228,38 @@ public partial class SteamHandler : AHandler<SteamGame, SteamGameId>
         return userList;
     }
 
-    private async Task<OneOf<OwnedGamesResultModel, ErrorMessage>> ParseAPIGames(ulong userId, bool continueOnCapturedContext = false)
+    private async Task<OneOf<OwnedGamesResultModel, ErrorMessage>> ParseAPIGames(ulong userId)
     {
-        if (userId < 1)
+        try
         {
-            return new ErrorMessage("Can't get Steam not-installed owned games. A Steam ID was not found. \n" +
-                "To find your ID, go to <https://store.steampowered.com/account>.");
-        }
+            SteamWebInterfaceFactory apiFactory = new(_apiKey);
 
-        if (string.IsNullOrEmpty(_apiKey))
-        {
-            return new ErrorMessage("Can't get Steam not-installed owned games. An API key must be provided. \n" +
-                "To get a key, go to <https://steamcommunity.com/dev/apikey>.");
-        }
+            var userInterface = apiFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
+            var playerSummaryTask = userInterface.GetPlayerSummaryAsync(userId);
+            playerSummaryTask.Wait();
+            var userResponse = playerSummaryTask.Result;
+            //DateTimeOffset? userLastModified = userResponse.LastModified;
+            var userData = userResponse.Data;
+            var visibility = userData.ProfileVisibility;
+            //var profile = userData.ProfileUrl;
 
-        SteamWebInterfaceFactory apiFactory = new(_apiKey);
-
-        var userInterface = apiFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
-        var userResponse = await userInterface.GetPlayerSummaryAsync(userId)
-            .ConfigureAwait(continueOnCapturedContext);
-        //DateTimeOffset? userLastModified = userResponse.LastModified;
-        var userData = userResponse.Data;
-        var visibility = userData.ProfileVisibility;
-        //var profile = userData.ProfileUrl;
-
-        if (visibility != ProfileVisibility.Public)
-        {
-            return new ErrorMessage("Can't get Steam not-installed owned games. Profile must be public. \n" +
-                "To change this, go to <https://steamcommunity.com/my/edit/settings>.");
-        }
-
-        var playerInterface = apiFactory.CreateSteamWebInterface<PlayerService>();
-        var ownedGames = await playerInterface.GetOwnedGamesAsync(
-            userId,
-            includeAppInfo: true,
-            includeFreeGames: true)
-            .ConfigureAwait(continueOnCapturedContext);
-        return ownedGames.Data;
-    }
-
-    private List<OneOf<SteamGame, ErrorMessage>> GetOwnedGames(ulong userId)
-    {
-        List<OneOf<SteamGame, ErrorMessage>> games = new();
-
-        if (userId < 1)
-        {
-            var userList = ParseLoginUsersFile();
-            if (userList is not null)
+            if (visibility != ProfileVisibility.Public)
             {
-                userId = userList.Find(auto => auto.autoLogin).userId; // Get auto-login user
-                if (userId < 1)
-                    userId = userList.MaxBy(time => time.timeStamp).userId; // Get most recent user
-            }
-        }
-
-        if (userId > 0)
-        {
-            var t = ParseAPIGames(userId);
-            t.Wait();
-            if (t.Result.IsError())
-            {
-                games.Add(t.Result.AsError());
-                return games;
+                return new ErrorMessage("Can't get Steam not-installed owned games. Profile must be public. \n" +
+                    "To change this, go to <https://steamcommunity.com/my/edit/settings>.");
             }
 
-            foreach (var owned in t.Result.AsT0.OwnedGames)
-            {
-                if (owned is null)
-                    continue;
-
-                games.Add(new SteamGame(
-                    AppId: SteamGameId.From((int)owned.AppId),
-                    Name: owned.Name,
-                    Path: new(),
-                    CloudSavesDirectory: null,
-                    IsInstalled: false,
-                    PlaytimeForever: owned.PlaytimeForever,
-                    IconUrl: $"{SteamMediaUrl}{owned.AppId}/{owned.ImgIconUrl}.jpg"));
-            }
+            var playerInterface = apiFactory.CreateSteamWebInterface<PlayerService>();
+            var ownedGameTask = playerInterface.GetOwnedGamesAsync(
+                userId,
+                includeAppInfo: true,
+                includeFreeGames: true);
+            ownedGameTask.Wait();
+            return ownedGameTask.Result.Data;
         }
-        return games;
+        catch (Exception e)
+        {
+            return new ErrorMessage(e, "Exception looking for Steam owned games");
+        }
     }
 }

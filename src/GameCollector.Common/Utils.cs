@@ -1,18 +1,19 @@
-using NexusMods.Paths;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using NexusMods.Paths;
 
-namespace GameFinder.Common;
+namespace GameCollector.Common;
 
 /// <summary>
 /// Utilities.
 /// </summary>
 public static class Utils
 {
+    /*
     /// <summary>
     /// Sanitizes the given path.
     /// </summary>
@@ -84,6 +85,7 @@ public static class Utils
         // source: https://github.com/dotnet/runtime/blob/d9f453924f7c3cca9f02d920a57e1477293f216e/src/libraries/Common/src/System/IO/PathInternal.Windows.cs#L69-L75
         return (uint)((value | 0x20) - 'a') <= 'z' - 'a';
     }
+    */
 
     /// <summary>
     /// Returns the path to the best-guess of a game executable found recursively in a given path.
@@ -156,7 +158,7 @@ public static class Utils
             return exe;
         }
         catch (Exception) { }
-        
+
         return default;
     }
 }

@@ -8,6 +8,7 @@ using GameFinder.StoreHandlers.Steam.Models;
 using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
 using JetBrains.Annotations;
 using NexusMods.Paths;
+using NexusMods.Paths.Utilities;
 using ValveKeyValue;
 using static GameFinder.StoreHandlers.Steam.Services.ParserHelpers;
 
@@ -68,32 +69,32 @@ public static class AppManifestParser
             // Until those issues are resolved or I find another library, parsing is going to be broken.
 
             var appIdResult = ParseRequiredChildObject(appState, "appid", ParseAppId);
-            var universeResult = ParseOptionalChildObject(appState, "Universe", ParseUInt32).Map(x => (SteamUniverse)x);
+            var universeResult = ParseOptionalChildObject(appState, "Universe", ParseUInt32, default).Map(x => (SteamUniverse)x);
             var nameResult = ParseRequiredChildObject(appState, "name", ParseString);
-            var stateFlagsResult = ParseRequiredChildObject(appState, "StateFlags", ParseByte).Map(x => (StateFlags)x);
-            var installationDirectoryNameResult = ParseRequiredChildObject(appState, "installdir", ParseRelativePath);
+            var stateFlagsResult = ParseRequiredChildObject(appState, "StateFlags", ParseUInt32).Map(x => (StateFlags)x);
+            var installationDirectoryNameResult = ParseInstallationDirectory(appState, manifestPath.FileSystem, manifestPath);
             var lastUpdatedResult = ParseOptionalChildObject(appState, "LastUpdated", ParseDateTimeOffset, DateTimeOffset.UnixEpoch);
             var sizeOnDiskResult = ParseOptionalChildObject(appState, "SizeOnDisk", ParseSize, Size.Zero);
             var stagingSizeResult = ParseOptionalChildObject(appState, "StagingSize", ParseSize, Size.Zero);
-            var buildIdResult = ParseOptionalChildObject(appState, "buildid", ParseBuildId, BuildId.Empty);
+            var buildIdResult = ParseOptionalChildObject(appState, "buildid", ParseBuildId, BuildId.DefaultValue);
             var lastOwnerResult = ParseOptionalChildObject(appState, "LastOwner", ParseSteamId, SteamId.Empty);
-            var updateResult = ParseOptionalChildObject(appState, "UpdateResult", ParseUInt32);
+            var updateResult = ParseOptionalChildObject(appState, "UpdateResult", ParseUInt32, default);
             var bytesToDownloadResult = ParseOptionalChildObject(appState, "BytesToDownload", ParseSize, Size.Zero);
             var bytesDownloadedResult = ParseOptionalChildObject(appState, "BytesDownloaded", ParseSize, Size.Zero);
             var bytesToStageResult = ParseOptionalChildObject(appState, "BytesToStage", ParseSize, Size.Zero);
             var bytesStagedResult = ParseOptionalChildObject(appState, "BytesStaged", ParseSize, Size.Zero);
-            var targetBuildIdResult = ParseOptionalChildObject(appState, "TargetBuildID", ParseBuildId, BuildId.Empty);
-            var autoUpdateBehaviorResult = ParseOptionalChildObject(appState, "AutoUpdateBehavior", ParseByte).Map(x => (AutoUpdateBehavior)x);
-            var backgroundDownloadBehaviorResult = ParseOptionalChildObject(appState, "AllowOtherDownloadsWhileRunning", ParseByte).Map(x => (BackgroundDownloadBehavior)x);
+            var targetBuildIdResult = ParseOptionalChildObject(appState, "TargetBuildID", ParseBuildId, BuildId.DefaultValue);
+            var autoUpdateBehaviorResult = ParseOptionalChildObject(appState, "AutoUpdateBehavior", ParseByte, default).Map(x => (AutoUpdateBehavior)x);
+            var backgroundDownloadBehaviorResult = ParseOptionalChildObject(appState, "AllowOtherDownloadsWhileRunning", ParseByte, default).Map(x => (BackgroundDownloadBehavior)x);
             var scheduledAutoUpdateResult = ParseOptionalChildObject(appState, "ScheduledAutoUpdate", ParseDateTimeOffset, DateTimeOffset.UnixEpoch);
-            var fullValidateAfterNextUpdateResult = ParseOptionalChildObject(appState, "FullValidateAfterNextUpdate", ParseBool);
+            var fullValidateAfterNextUpdateResult = ParseOptionalChildObject(appState, "FullValidateAfterNextUpdate", ParseBool, default);
 
             var installedDepotsResult = ParseInstalledDepots(appState);
             var installScriptsResult = ParseBasicDictionary(
                 appState,
                 "InstallScripts",
                 key => DepotId.From(uint.Parse(key)),
-                ParseRelativePath);
+                x => ParseRelativePath(x, manifestPath.FileSystem));
 
             var sharedDepotsResult = ParseBasicDictionary(
                 appState,
@@ -153,7 +154,7 @@ public static class AppManifestParser
                     Universe = universeResult.Value,
                     Name = nameResult.Value,
                     StateFlags = stateFlagsResult.Value,
-                    InstallationDirectoryName = installationDirectoryNameResult.Value,
+                    InstallationDirectory = installationDirectoryNameResult.Value,
 
                     LastUpdated = lastUpdatedResult.Value,
                     SizeOnDisk = sizeOnDiskResult.Value,
@@ -186,6 +187,28 @@ public static class AppManifestParser
                     .WithMetadata("Path", manifestPath.GetFullPath())
             );
         }
+    }
+
+    private static Result<AbsolutePath> ParseInstallationDirectory(KVObject appState, IFileSystem fileSystem, AbsolutePath manifestPath)
+    {
+        var installDirectoryResult = FindRequiredChildObject(appState, "installdir");
+        if (installDirectoryResult.IsFailed) return installDirectoryResult.ToResult();
+
+        var parseResult = ParseChildObjectValue(installDirectoryResult.Value, appState, ParseString);
+        if (parseResult.IsFailed) return parseResult.ToResult();
+
+        var rawPath = parseResult.Value;
+        var sanitizedPath = PathHelpers.Sanitize(rawPath, fileSystem.OS);
+        var isRelative = PathHelpers.GetRootLength(sanitizedPath, fileSystem.OS) == -1;
+
+        if (isRelative)
+        {
+            var relativePath = new RelativePath(sanitizedPath);
+            return Result.Ok(manifestPath.Parent.Combine("common").Combine(relativePath));
+        }
+
+        var absolutePath = fileSystem.FromUnsanitizedFullPath(rawPath);
+        return absolutePath;
     }
 
     private static Result<IReadOnlyDictionary<DepotId, InstalledDepot>> ParseInstalledDepots(KVObject appState)
@@ -225,7 +248,7 @@ public static class AppManifestParser
 
         var manifestIdResult = ParseRequiredChildObject(depotObject, "manifest", ParseManifestId);
         var sizeOnDiskResult = ParseRequiredChildObject(depotObject, "size", ParseSize);
-        var dlcAppIdResult = ParseOptionalChildObject(depotObject, "dlcappid", ParseAppId, AppId.Empty);
+        var dlcAppIdResult = ParseOptionalChildObject(depotObject, "dlcappid", ParseAppId, AppId.DefaultValue);
 
         var mergedResults = Result.Merge(
             manifestIdResult,

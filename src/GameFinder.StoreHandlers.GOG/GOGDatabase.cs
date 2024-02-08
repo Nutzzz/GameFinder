@@ -217,14 +217,14 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                                     AbsolutePath exePath = new();
                                     AbsolutePath installPath = new();
                                     if (Path.IsPathRooted(launch))
-                                        launchPath = _fileSystem.FromFullPath(SanitizeInputPath(launch));
+                                        launchPath = _fileSystem.FromUnsanitizedFullPath(launch);
                                     if (Path.IsPathRooted(path))
-                                        installPath = _fileSystem.FromFullPath(SanitizeInputPath(path));
+                                        installPath = _fileSystem.FromUnsanitizedFullPath(path);
                                     if (Path.IsPathRooted(exe))
                                     {
-                                        exePath = _fileSystem.FromFullPath(SanitizeInputPath(exe));
+                                        exePath = _fileSystem.FromUnsanitizedFullPath(exe);
                                         if (installPath == default && !string.IsNullOrEmpty(exePath.Directory))
-                                            installPath = _fileSystem.FromFullPath(exePath.Directory);
+                                            installPath = _fileSystem.FromUnsanitizedFullPath(exePath.Directory);
                                     }
 
                                     games.Add(new GOGGame(
@@ -277,6 +277,9 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
     internal static AbsolutePath GetDatabaseFile(IFileSystem fileSystem)
     {
         return fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .CombineUnchecked("GOG.com").CombineUnchecked("Galaxy").CombineUnchecked("storage").CombineUnchecked("galaxy-2.0.db");
+            .Combine("GOG.com")
+            .Combine("Galaxy")
+            .Combine("storage")
+            .Combine("galaxy-2.0.db");
     }
 }

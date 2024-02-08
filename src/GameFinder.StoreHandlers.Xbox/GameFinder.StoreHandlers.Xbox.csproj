@@ -2,12 +2,15 @@
     <PropertyGroup>
         <Description>Library for finding games installed with Xbox Game Pass.</Description>
         <PackageTags>xbox game pass games</PackageTags>
+        <AssemblyName>GameCollector.StoreHandlers.Xbox</AssemblyName>
     </PropertyGroup>
-
-    <Import Project="$([MSBuild]::GetPathOfFileAbove('NexusMods.Paths.props', '$(MSBuildThisFileDirectory)../'))" />
 
     <ItemGroup>
         <ProjectReference Include="..\GameFinder.Common\GameFinder.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <ItemGroup>

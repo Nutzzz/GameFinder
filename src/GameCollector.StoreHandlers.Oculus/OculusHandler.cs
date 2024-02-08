@@ -21,7 +21,7 @@ namespace GameCollector.StoreHandlers.Oculus;
 /// Handler for finding games installed with Oculus.
 /// </summary>
 [PublicAPI]
-public class OculusHandler : AHandler<OculusGame, string>
+public class OculusHandler : AHandler<OculusGame, OculusGameId>
 {
     internal const string OculusRegKey = @"SOFTWARE\Oculus VR, LLC\Oculus";
 
@@ -49,10 +49,10 @@ public class OculusHandler : AHandler<OculusGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override Func<OculusGame, OculusGameId> IdSelector => game => game.HashKey;
 
     /// <inheritdoc/>
-    public override Func<OculusGame, string> IdSelector => game => game.GameId;
+    public override IEqualityComparer<OculusGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -65,10 +65,10 @@ public class OculusHandler : AHandler<OculusGame, string>
             if (regKey is not null)
             {
                 if (regKey.TryGetString("Base", out var basePath) && Path.IsPathRooted(basePath))
-                    return _fileSystem.FromFullPath(SanitizeInputPath(basePath))
-                        .CombineUnchecked("Support")
-                        .CombineUnchecked("oculus-client")
-                        .CombineUnchecked("OculusClient.exe");
+                    return _fileSystem.FromUnsanitizedFullPath(basePath)
+                        .Combine("Support")
+                        .Combine("oculus-client")
+                        .Combine("OculusClient.exe");
             }
         }
 
@@ -87,13 +87,13 @@ public class OculusHandler : AHandler<OculusGame, string>
             restartSvc = StopService();
 
         List<string> libPaths = new();
-        Dictionary<string, string> exePaths = new();
+        Dictionary<string, string> exePaths = new(StringComparer.OrdinalIgnoreCase);
 
         var database = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
-            .CombineUnchecked("Oculus")
-            .CombineUnchecked("sessions")
-            .CombineUnchecked("_oaf")
-            .CombineUnchecked("data.sqlite");
+            .Combine("Oculus")
+            .Combine("sessions")
+            .Combine("_oaf")
+            .Combine("data.sqlite");
 
         if (!database.FileExists)
             return new OneOf<OculusGame, ErrorMessage>[] { new ErrorMessage("Oclus database not found") };
@@ -278,13 +278,13 @@ public class OculusHandler : AHandler<OculusGame, string>
                 if (exePaths.ContainsKey(id.ToString()))
                 {
                     AbsolutePath launch = new();
-                    strLaunch = SanitizeInputPath(exePaths[id.ToString()]);
+                    strLaunch = exePaths[id.ToString()];
                     if (Path.IsPathRooted(strLaunch))
-                        launch = _fileSystem.FromFullPath(strLaunch);
+                        launch = _fileSystem.FromUnsanitizedFullPath(strLaunch);
                     games.Add(new OculusGame(
                         HashKey: OculusGameId.From(id),
                         DisplayName: displayName,
-                        InstallPath: Path.IsPathRooted(launch.Directory) ? _fileSystem.FromFullPath(launch.Directory) : default,
+                        InstallPath: Path.IsPathRooted(launch.Directory) ? _fileSystem.FromUnsanitizedFullPath(launch.Directory) : new(),
                         LaunchFile: launch,
                         IsInstalled: true,
                         HasProblem: hasProblem,

@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using GameFinder.Common;
@@ -25,7 +27,7 @@ namespace GameCollector.EmuHandlers.MAME;
 /// Handler for finding MAME ROMs.
 /// </summary>
 [PublicAPI]
-public partial class MAMEHandler : AHandler<MAMEGame, string>
+public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
 {
     /// <summary>
     ///     Number of ROMs to process per batch. ROM files are batched when passing as arguments to MAME both 
@@ -59,10 +61,10 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override IEqualityComparer<MAMEGameId>? IdEqualityComparer => MAMEGameIdComparer.Default;
 
     /// <inheritdoc/>
-    public override Func<MAMEGame, string> IdSelector => game => game.GameId;
+    public override Func<MAMEGame, MAMEGameId> IdSelector => game => game.Name;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -169,18 +171,18 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
                 }
 
                 yield return new MAMEGame(
-                    GameName: MAMEGameId.From(game.Name),
+                    Name: MAMEGameId.From(game.Name),
                     Description: game.Machine.Description,
-                    Path: Path.IsPathRooted(game.Path) ? _fileSystem.FromFullPath(SanitizeInputPath(game.Path)) : new(),
+                    Path: Path.IsPathRooted(game.Path) ? _fileSystem.FromUnsanitizedFullPath(game.Path) : new(),
                     MAMEExecutable: _mamePath,
                     CommandLineArgs: commandLineArgs,
-                    Icon: _fileSystem.FromFullPath(_mamePath.Directory).CombineUnchecked("icons").CombineUnchecked($"{game.Name}.ico"),
+                    Icon: _fileSystem.FromUnsanitizedFullPath(_mamePath.Directory).Combine("icons").Combine($"{game.Name}.ico"),
                     IsAvailable: isInstalled,
                     HasProblem: hasProblem,
                     Parent: parent,
                     Year: game.Machine.Year,
                     Manufacturer: game.Machine.Manufacturer,
-                    Categories: new() { gameCategory1 ?? "Unknown", gameCategory2 ?? "", gameCategory3 ?? "" },
+                    Categories: new List<string>() { gameCategory1 ?? "Unknown", gameCategory2 ?? "", gameCategory3 ?? "" },
                     IsMature: isMature,
                     Players: players,
                     DriverStatus: driverStatus,
@@ -208,6 +210,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code")]
     private List<ROMData> GetGameList(Action<int> progressCallback, bool availableOnly, bool parentsOnly, bool doVerify, MachineStatus minimumStatus)
     {
+        CancellationToken cancelToken = new();
         var gameList = new List<ROMData>();
 
         XmlSerializer serializer = new(typeof(GameList));
@@ -230,7 +233,9 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
             return new();
         }
 
-        var verifiedGames = GetVerifiedSets(progressCallback, romFiles, availableOnly, doVerify).Keys;
+        var verifiedTask = GetVerifiedSets(progressCallback, romFiles, availableOnly, doVerify);
+        verifiedTask.Wait(cancelToken);
+        var verifiedGames = verifiedTask.Result.Keys;
 
         foreach (var game in allGames.Machines)
         {
@@ -346,7 +351,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
     ///     verified to work. Only the ones marked as good are returned. The clone names
     ///     are returned in the value of the dictionary while the name is used as the key.
     /// </summary>
-    private Dictionary<string, string> GetVerifiedSets(Action<int> progressCallback, List<(string, string)> romFiles, bool availableOnly, bool doVerify)
+    private async Task<Dictionary<string, string>> GetVerifiedSets(Action<int> progressCallback, List<(string, string)> romFiles, bool availableOnly, bool doVerify)
     {
         var verifiedROMs = new Dictionary<string, string>(StringComparer.Ordinal);
         if (!doVerify)
@@ -377,7 +382,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
 
             var percentage = Callback(progressCallback, filesProcessed, romFiles.Count);
             if (percentage < 100)
-                _logger?.LogDebug("{progress}%", percentage.ToString(CultureInfo.InvariantCulture));
+                _logger?.LogDebug("MAME verify ROMs: {progress}%", percentage.ToString(CultureInfo.InvariantCulture));
         }
 
         return verifiedROMs;
@@ -392,7 +397,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
     private int Callback(Action<int> callback, float processed, int romCount)
     {
         var percentage = (int)Math.Round(processed / romCount * 100);
-        
+
         callback(percentage);
         return percentage;
     }
@@ -411,7 +416,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, string>
         {
             _logger?.LogDebug("rompath: {path}", path);
             List<string> romFiles = new();
-            if (Path.IsPathRooted(path) && _fileSystem.FromFullPath(path).DirectoryExists())
+            if (Path.IsPathRooted(path) && _fileSystem.FromUnsanitizedFullPath(path).DirectoryExists())
             {
                 romFiles = Directory.GetFiles(path, "*.zip").ToList();
                 _logger?.LogDebug("{romcount} ROMs found", romFiles.Count);

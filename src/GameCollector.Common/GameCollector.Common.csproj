@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="GameCollector.Common.Tests" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NexusMods.Paths" />
+  </ItemGroup>
+</Project>

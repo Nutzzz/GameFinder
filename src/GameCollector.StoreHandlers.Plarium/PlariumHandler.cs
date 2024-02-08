@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
+using GameCollector.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
@@ -17,7 +18,7 @@ namespace GameCollector.StoreHandlers.Plarium;
 /// Handler for finding games installed with Plarium Play.
 /// </summary>
 [PublicAPI]
-public class PlariumHandler : AHandler<PlariumGame, string>
+public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
 {
     internal const string PlariumRegKey = @"Software\PlariumPlayInstaller";
 
@@ -54,10 +55,10 @@ public class PlariumHandler : AHandler<PlariumGame, string>
     }
 
     /// <inheritdoc/>
-    public override IEqualityComparer<string>? IdEqualityComparer => null;
+    public override Func<PlariumGame, PlariumGameId> IdSelector => game => game.ProductId;
 
     /// <inheritdoc/>
-    public override Func<PlariumGame, string> IdSelector => game => game.GameId;
+    public override IEqualityComparer<PlariumGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
@@ -71,13 +72,13 @@ public class PlariumHandler : AHandler<PlariumGame, string>
             {
                 if (regKey.TryGetString("InstallFolder", out var folder) && Path.IsPathRooted(folder))
                 {
-                    var play = _fileSystem.FromFullPath(SanitizeInputPath(folder)).CombineUnchecked("PlariumPlay.exe");
+                    var play = _fileSystem.FromUnsanitizedFullPath(folder).Combine("PlariumPlay.exe");
                     if (play.FileExists) return play;  // NB: The registry isn't always right
                 }
             }
         }
 
-        return GetPlariumPlayPath().CombineUnchecked("PlariumPlay.exe");
+        return GetPlariumPlayPath().Combine("PlariumPlay.exe");
     }
 
     /// <inheritdoc/>
@@ -87,7 +88,7 @@ public class PlariumHandler : AHandler<PlariumGame, string>
     Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
     public override IEnumerable<OneOf<PlariumGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
-        var jsonFile = GetPlariumPlayPath().CombineUnchecked("gamestorage.gsfn");
+        var jsonFile = GetPlariumPlayPath().Combine("gamestorage.gsfn");
         using var stream = jsonFile.Read();
         var gameStorage = JsonSerializer.Deserialize<GameStorage>(stream, JsonSerializerOptions);
         if (gameStorage is null)
@@ -114,21 +115,23 @@ public class PlariumHandler : AHandler<PlariumGame, string>
                 gameName = games.Keys.ToArray()[0];
                 gameId = games.Values.ToArray()[0];
             }
-            strPath = SanitizeInputPath(game.Value.InstallationPath ?? "");
+            strPath = game.Value.InstallationPath ?? "";
             if (string.IsNullOrEmpty(strPath) || strPath.Equals("null", StringComparison.OrdinalIgnoreCase))
             {
-                exe = GetPlariumPlayPath().CombineUnchecked("PlariumPlay.exe");
+                exe = GetPlariumPlayPath().Combine("PlariumPlay.exe");
                 args = $"-gameid={id} -tray-start";
-            } else {
-                path = Path.IsPathRooted(strPath) ? _fileSystem.FromFullPath(strPath) : default;
+            }
+            else
+            {
+                path = Path.IsPathRooted(strPath) ? _fileSystem.FromUnsanitizedFullPath(strPath) : new();
                 if (!string.IsNullOrEmpty(gameName) && !string.IsNullOrEmpty(gameId))
                 {
-                    gamePath = path.CombineUnchecked(gameName).CombineUnchecked(gameId);
+                    gamePath = path.Combine(gameName).Combine(gameId);
                     if (gamePath.DirectoryExists())
                     {
                         exe = Utils.FindExe(gamePath, _fileSystem, gameName);
-                        var settingsFile = gamePath.CombineUnchecked("settings.json");
-                        var appInfoFile = gamePath.CombineUnchecked($"{gameName}_Data").CombineUnchecked("app.info");
+                        var settingsFile = gamePath.Combine("settings.json");
+                        var appInfoFile = gamePath.Combine($"{gameName}_Data").Combine("app.info");
                         if (settingsFile.FileExists)
                         {
                             using var settingsStream = settingsFile.Read();
@@ -171,11 +174,11 @@ public class PlariumHandler : AHandler<PlariumGame, string>
     {
         // The path changed slightly between versions, and the registry isn't always right, so we'll look in both places
         var jsonFile = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
-            .CombineUnchecked("PlariumPlay");
+            .Combine("PlariumPlay");
         if (!jsonFile.DirectoryExists())
             jsonFile = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
-            .CombineUnchecked("Plarium")
-            .CombineUnchecked("PlariumPlay");
+            .Combine("Plarium")
+            .Combine("PlariumPlay");
         return jsonFile;
     }
 }

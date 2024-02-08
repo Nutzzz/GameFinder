@@ -2,6 +2,7 @@
     <PropertyGroup>
         <!-- Enabling trimming disables COM, which is required for WMI -->
         <PublishTrimmed>false</PublishTrimmed>
+        <UserSecretsId>2f3f5c05-f8b8-4435-901e-1caec9ff8715</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,10 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.BethNet\GameFinder.StoreHandlers.BethNet.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Amazon\GameCollector.StoreHandlers.Amazon.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Arc\GameCollector.StoreHandlers.Arc.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.BattleNet\GameCollector.StoreHandlers.BattleNet.csproj" />
@@ -37,6 +34,7 @@
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Paradox\GameCollector.StoreHandlers.Paradox.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Plarium\GameCollector.StoreHandlers.Plarium.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Riot\GameCollector.StoreHandlers.Riot.csproj" />
+        <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.RobotCache\GameCollector.StoreHandlers.RobotCache.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Rockstar\GameCollector.StoreHandlers.Rockstar.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.Ubisoft\GameCollector.StoreHandlers.Ubisoft.csproj" />
         <ProjectReference Include="..\..\src\GameCollector.StoreHandlers.WargamingNet\GameCollector.StoreHandlers.WargamingNet.csproj" />
@@ -48,14 +46,23 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.9.*" />
+        <!--<ProjectReference Include="..\..\src\GameCollector.DataHandlers.TheGamesDb\GameCollector.DataHandlers.TheGamesDb.csproj" />-->
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" />
         <TrimmerRootAssembly Include="CommandLine" />
 
-        <PackageReference Include="NLog" Version="5.*" />
+        <PackageReference Include="NLog" />
         <TrimmerRootAssembly Include="NLog" />
 
-        <PackageReference Include="NLog.Extensions.Logging" Version="5.*" />
+        <PackageReference Include="NLog.Extensions.Logging" />
         <TrimmerRootAssembly Include="NLog.Extensions.Logging" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+        <TrimmerRootAssembly Include="Microsoft.Extensions.Configuration.UserSecrets" />
     </ItemGroup>
 
     <ItemGroup>
