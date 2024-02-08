@@ -136,8 +136,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCollector.EmuHandlers.M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataHandlers", "DataHandlers", "{82816E34-196A-4304-8A28-BF22FA937DF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameCollector.DataHandlers.TheGamesDb", "src\GameCollector.DataHandlers.TheGamesDb\GameCollector.DataHandlers.TheGamesDb.csproj", "{2C3F6179-889E-435B-823A-D7E6B5A1CBE9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -320,10 +318,6 @@ Global
 		{EA0A79A3-639B-4983-A28F-1D07EC1113C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA0A79A3-639B-4983-A28F-1D07EC1113C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA0A79A3-639B-4983-A28F-1D07EC1113C7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2C3F6179-889E-435B-823A-D7E6B5A1CBE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2C3F6179-889E-435B-823A-D7E6B5A1CBE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2C3F6179-889E-435B-823A-D7E6B5A1CBE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2C3F6179-889E-435B-823A-D7E6B5A1CBE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -378,7 +372,6 @@ Global
 		{6173D1F4-48C2-4B14-B907-C7A746CF081D} = {1F5F230D-146C-4794-A2E6-F9C13279D721}
 		{EA0A79A3-639B-4983-A28F-1D07EC1113C7} = {1F5F230D-146C-4794-A2E6-F9C13279D721}
 		{82816E34-196A-4304-8A28-BF22FA937DF0} = {EFB4E7DB-DE24-4BDE-B660-DAF1394ECC21}
-		{2C3F6179-889E-435B-823A-D7E6B5A1CBE9} = {82816E34-196A-4304-8A28-BF22FA937DF0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44B3FB99-03EC-4CEA-B043-4B5D8C9DA9FF}

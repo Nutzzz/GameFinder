@@ -166,7 +166,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
                         */
                         break;
                     }
-                    
+
                     if (line.Contains('�', StringComparison.Ordinal) ||
                         line.Contains('', StringComparison.Ordinal) ||
                         //line.Contains('~', StringComparison.Ordinal) ||
@@ -288,12 +288,18 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             {
                 if (string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(id))
                     name = id;
-                id = Path.GetFileNameWithoutExtension(iconFile);
+                if (!string.IsNullOrEmpty(iconFile))
+                    id = Path.GetFileNameWithoutExtension(iconFile);
             }
             if (string.IsNullOrEmpty(id))
             {
                 if (baseOnly)
                     return new ErrorMessage($"\"{name}\" does not have an ID!");
+
+                if (string.IsNullOrEmpty(name))
+                    return new ErrorMessage("Entry does not have a name or ID!");
+                else
+                    id = new string(name.Where(char.IsLetterOrDigit).ToArray());
             }
             else
             {
@@ -360,7 +366,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
         catch (Exception e)
         {
             return new ErrorMessage(e, $"Exception while parsing configurations file entry\n{e.InnerException}");
-		}
+        }
     }
 
     internal static (string? message, bool isError) CreateSchemaVersionMessage(
@@ -465,7 +471,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             var uninstallArgs = "";
             if (!subKey.TryGetString("UninstallString", out var uninstall))
                 uninstall = "";
-            else 
+            else
             {
                 if (uninstall.Contains(".exe", StringComparison.OrdinalIgnoreCase))
                 {

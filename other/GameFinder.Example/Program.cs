@@ -244,10 +244,24 @@ public static class Program
             }, cancelToken));
         }
 
+        if (OperatingSystem.IsMacOS())
+        {
+            if (options.Steam)
+                RunSteamHandler(realFileSystem, null, options.SteamAPI);
+        }
+
         if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI), cancelToken));
 
         Task.WaitAll(tasks.ToArray(), cancelToken);
         
+        /*
+        Parallel.ForEach(tasks, task =>
+        {
+            task.Start();
+        });
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+        */
+
         /*
         Parallel.ForEach(tasks, task =>
         {

@@ -45,7 +45,7 @@ public sealed record SteamGame(AbsolutePath SteamPath,
                  ["Publisher"] = RegistryEntry is not null ? new() { RegistryEntry.Publisher } : new(),
                  ["Website"] = RegistryEntry is not null ? new() { RegistryEntry.URLInfoAbout } : new(),
                  ["IconUrl"] = (OwnedGame is not null && !string.IsNullOrEmpty(OwnedGame.ImgIconUrl)) ? new() { $"{SteamMediaUrl}{OwnedGame.AppId}/{OwnedGame.ImgIconUrl}.jpg" } : new(),
-                 ["ImageUrl"] = AppManifest is not null ? new () { $"{SteamStaticUrl}{AppManifest.AppId}/library_600x900.jpg" } :
+                 ["ImageUrl"] = AppManifest is not null ? new() { $"{SteamStaticUrl}{AppManifest.AppId}/library_600x900.jpg" } :
                     (OwnedGame is not null ? new() { $"{SteamStaticUrl}{OwnedGame.AppId}/library_600x900.jpg" } : new()),
                  ["ImageWideUrl"] = AppManifest is not null ? new() { $"{SteamStaticUrl}{AppManifest.AppId}/header.jpg" } :
                     (OwnedGame is not null ? new() { $"{SteamStaticUrl}{OwnedGame.AppId}/header.jpg" } : new()),

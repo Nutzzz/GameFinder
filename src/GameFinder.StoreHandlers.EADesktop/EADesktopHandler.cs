@@ -353,7 +353,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
 
         var game = new EADesktopGame(
             EADesktopGameId: EADesktopGameId.From(softwareId),
-            Name: string.IsNullOrEmpty(name) ? baseSlug : name,
+            Name: string.IsNullOrEmpty(name) ? (string.IsNullOrEmpty(baseSlug) ? Path.GetFileName(baseInstallPath.TrimEnd('\\', '/')) : baseSlug) : name,
             BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromUnsanitizedFullPath(baseInstallPath) : new(),
             Executable: executable,
             UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromUnsanitizedFullPath(uninstall) : new(),

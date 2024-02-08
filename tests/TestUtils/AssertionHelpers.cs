@@ -17,6 +17,26 @@ public static class AssertionHelpers
         return results.Select(result => result.AsGame());
     }
 
+    public static IEnumerable<TGame> ShouldOnlyBeErrors<TGame>(this ICollection<OneOf<TGame, ErrorMessage>> results)
+        where TGame : class, IGame
+    {
+        results.Should().AllSatisfy(result =>
+        {
+            result.IsGame().Should().BeFalse();
+            result.IsError().Should().BeTrue(result.IsError() ? result.AsError().Message : string.Empty);
+        });
+
+        return results.Select(result => result.AsGame());
+    }
+
+    public static IEnumerable<TGame> ShouldOnlyBeErrors<TGame, TId>(this AHandler<TGame, TId> handler)
+        where TGame : class, IGame
+        where TId : notnull
+    {
+        var results = handler.FindAllGames().ToArray();
+        return results.ShouldOnlyBeErrors();
+    }
+
     private static ErrorMessage ShouldOnlyBeOneError<TGame>(
         this ICollection<OneOf<TGame, ErrorMessage>> results)
         where TGame : class, IGame

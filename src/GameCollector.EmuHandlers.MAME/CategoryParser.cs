@@ -105,7 +105,7 @@ public partial class CategoryParser
         var mature = false;
         if (line.EndsWith("* Mature *", StringComparison.Ordinal))
             line = line[..line.LastIndexOf("* Mature *", StringComparison.Ordinal)];
-            
+
         var match = DetailRegex().Match(line);
         var detail = match.Groups[2].Value.Split('/');
 

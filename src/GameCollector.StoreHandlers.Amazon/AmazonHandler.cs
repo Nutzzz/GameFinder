@@ -130,7 +130,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     var dir = install.InstallDirectory;
                     if (id.Equals(install.Id, StringComparison.Ordinal) && dir is not null && Path.IsPathRooted(dir))
                     {
-                        path =  _fileSystem.FromUnsanitizedFullPath(dir);
+                        path = _fileSystem.FromUnsanitizedFullPath(dir);
                         found = true;
                     }
                 }

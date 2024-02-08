@@ -2,6 +2,7 @@
     <PropertyGroup>
         <Description>Library for finding Wine prefixes.</Description>
         <PackageTags>wine games linux</PackageTags>
+        <AssemblyName>GameCollector.Wine</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

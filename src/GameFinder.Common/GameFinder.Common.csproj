@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <AssemblyName>GameCollector.GameFinderCommon</AssemblyName>
+    </PropertyGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="GameFinder.Common.Tests" />

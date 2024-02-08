@@ -44,12 +44,7 @@ public class SteamHandlerTests
             var appManifest = ArrangeHelper.CreateAppManifest(appManifestPath);
             AppManifestWriter.Write(appManifest, appManifestPath).Should().BeSuccess();
 
-            var steamGame = new SteamGame
-            {
-                AppManifest = appManifest,
-                LibraryFolder = libraryFolder,
-                SteamPath = steamPath,
-            };
+            var steamGame = new SteamGame(steamPath, appManifest, null, libraryFolder, null, true);
 
             expectedSteamGames.Add(steamGame);
         }

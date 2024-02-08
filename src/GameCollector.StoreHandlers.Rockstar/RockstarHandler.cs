@@ -144,7 +144,7 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
                 name = subKeyName;
             if (string.IsNullOrEmpty(strExe))
                 exe = Utils.FindExe(path, fileSystem, name);
-            
+
             return new RockstarGame(
                 Id: RockstarGameId.From(id),
                 Name: subKeyName,

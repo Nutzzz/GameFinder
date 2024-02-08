@@ -397,7 +397,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     private int Callback(Action<int> callback, float processed, int romCount)
     {
         var percentage = (int)Math.Round(processed / romCount * 100);
-        
+
         callback(percentage);
         return percentage;
     }

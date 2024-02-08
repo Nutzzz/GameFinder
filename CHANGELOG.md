@@ -6,12 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 # Changelog
 
-## Unreleased
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...HEAD)
 
 **TODO**:
 
-- Add unit tests
+- Fix/add unit tests
 - Update documentation
+
+**WIP**:
+
+- Add DataHandlers to download metadata and images from online sources
+
+## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+## [4.2.0.2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
 
 **Changes**:
 
@@ -40,8 +48,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
   - `Dictionary<string, List<string>>? Metadata`
 - Metadata Dictionary may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
 - The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
-- Added experimental metadata provider:
-  - TheGamesDb.net
 - Added emulators:
   - Dolphin, MAME
 - Added additional store launchers:
@@ -53,9 +59,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 # Upstream Changelog
 
-## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.1.0...HEAD)
+## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.0...HEAD)
+
+- Upgrade deps
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
+
+## [4.2.0](https://github.com/erri120/GameFinder/compare/v4.1.0...v4.2.0) - 2024-01-28
+
+- Added support for OSX version of Steam ([#122](https://github.com/erri120/GameFinder/pull/122))
 
 ## [4.1.0](https://github.com/erri120/GameFinder/compare/v4.0.0...v4.1.0) - 2024-01-08
 

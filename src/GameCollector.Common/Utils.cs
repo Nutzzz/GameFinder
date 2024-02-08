@@ -158,7 +158,7 @@ public static class Utils
             return exe;
         }
         catch (Exception) { }
-        
+
         return default;
     }
 }
