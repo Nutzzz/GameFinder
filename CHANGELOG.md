@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 # Changelog
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...HEAD)
 
 **TODO**:
 
@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 - Add DataHandlers to download metadata and images from online sources
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+## [4.2.0.3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...Nutzzz:GameCollector:v4.2.0.3) - 2024-02-14
+
+- EADesktop handler now checks installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
 
 ## [4.2.0.2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
 

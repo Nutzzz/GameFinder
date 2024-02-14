@@ -19,6 +19,7 @@ internal record InstallInfo(
     [property: JsonPropertyName("softwareId")]
     string? SoftwareId,
     string? ExecutableCheck,
+    string? ExecutablePath,
     LocalUninstallProperties? LocalUninstallProperties
 );
 
