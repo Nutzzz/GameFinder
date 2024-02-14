@@ -55,7 +55,7 @@ public class BattleNetHandler : AHandler<BattleNetGame, BattleNetGameId>
     /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
     /// of the interface.
     /// </param>
-    public BattleNetHandler(IFileSystem fileSystem, IRegistry? registry)
+    public BattleNetHandler(IFileSystem fileSystem, IRegistry? registry = null)
     {
         _fileSystem = fileSystem;
         _registry = registry;

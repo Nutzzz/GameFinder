@@ -55,7 +55,7 @@ public static class SteamLocationFinder
     /// This uses <see cref="GetDefaultSteamInstallationPaths"/>, <see cref="GetSteamPathFromRegistry"/>
     /// and <see cref="IsValidSteamInstallation"/> to find a valid installation.
     /// </remarks>
-    public static Result<AbsolutePath> FindSteam(IFileSystem fileSystem, IRegistry? registry)
+    public static Result<AbsolutePath> FindSteam(IFileSystem fileSystem, IRegistry? registry = null)
     {
         // 1) try the default installation paths
         var defaultSteamInstallationPath = GetDefaultSteamInstallationPaths(fileSystem)

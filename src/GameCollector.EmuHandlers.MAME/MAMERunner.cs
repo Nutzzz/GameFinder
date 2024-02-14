@@ -70,7 +70,7 @@ public class MAMERunner
 
         if (!fileSystem.FileExists(exePath))
         {
-            logger.LogError("MAME path not found", exePath);
+            logger.LogError("MAME path not found: {path}", exePath);
             return new();
         }
 

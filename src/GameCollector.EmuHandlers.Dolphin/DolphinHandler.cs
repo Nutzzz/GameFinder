@@ -43,7 +43,7 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
     /// a custom implementation or just a mock of the interface.
     /// </param>
     /// <param name="dolphinPath"></param>
-    public DolphinHandler(IRegistry registry, IFileSystem fileSystem, AbsolutePath dolphinPath) //, ILogger? logger)
+    public DolphinHandler(IRegistry registry, IFileSystem fileSystem, AbsolutePath dolphinPath) //, ILogger? logger = null)
     {
         _registry = registry;
         _fileSystem = fileSystem;

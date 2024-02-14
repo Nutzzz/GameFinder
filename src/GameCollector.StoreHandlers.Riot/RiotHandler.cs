@@ -53,7 +53,7 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
     /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
     /// of the interface.
     /// </param>
-    public RiotHandler(IFileSystem fileSystem, IRegistry? registry)
+    public RiotHandler(IFileSystem fileSystem, IRegistry? registry = null)
     {
         _fileSystem = fileSystem;
         _registry = registry;

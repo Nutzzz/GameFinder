@@ -61,7 +61,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
     /// of the interface.
     /// </param>
-    public MAMEHandler(IFileSystem fileSystem, AbsolutePath mamePath, IRegistry? registry) //, ILogger? logger)
+    public MAMEHandler(IFileSystem fileSystem, AbsolutePath mamePath, IRegistry? registry = null) //, ILogger? logger = null)
     {
         _fileSystem = fileSystem;
         _mamePath = mamePath;

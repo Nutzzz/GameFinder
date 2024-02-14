@@ -307,7 +307,7 @@ public static class Program
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
-    private static void RunSteamHandler(IFileSystem fileSystem, IRegistry? registry, string? steamAPI)
+    private static void RunSteamHandler(IFileSystem fileSystem, IRegistry? registry = null, string? steamAPI = null)
     {
         var logger = _provider.CreateLogger(nameof(SteamHandler));
         var handler = new SteamHandler(fileSystem, registry, steamAPI);
@@ -457,8 +457,8 @@ public static class Program
     private static async void RunTheGamesDbHandler(IFileSystem fileSystem, string? tgdbApi)
     {
         var logger = _provider.CreateLogger(nameof(TheGamesDbHandler));
-        //var handler = new TheGamesDbHandler(fileSystem, tgdbApi, logger);
-        var handler = new TheGamesDbHandler(fileSystem, logger);
+        //var handler = new TheGamesDbHandler(fileSystem, tgdbApi, registry: null, logger);
+        var handler = new TheGamesDbHandler(fileSystem, registry: null, logger);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
     */

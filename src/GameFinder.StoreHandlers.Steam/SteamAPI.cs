@@ -37,7 +37,7 @@ public partial class SteamHandler : AHandler<SteamGame, Models.ValueTypes.AppId>
     /// of the interface.
     /// </param>
     /// <param name="apiKey"></param>
-    public SteamHandler(IFileSystem fileSystem, IRegistry? registry, string? apiKey)
+    public SteamHandler(IFileSystem fileSystem, IRegistry? registry = null, string? apiKey = null)
     {
         _fileSystem = fileSystem;
         _registry = registry;

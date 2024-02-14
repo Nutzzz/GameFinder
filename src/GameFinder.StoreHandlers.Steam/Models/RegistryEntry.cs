@@ -87,7 +87,7 @@ public sealed record RegistryEntry
     [Pure]
     [System.Diagnostics.Contracts.Pure]
     [MustUseReturnValue]
-    public Result<RegistryEntry> Reload(IFileSystem fileSystem, IRegistry? registry)
+    public Result<RegistryEntry> Reload(IFileSystem fileSystem, IRegistry? registry = null)
     {
         return RegistryEntryParser.ParseRegistryEntry(AppId, fileSystem, registry);
     }

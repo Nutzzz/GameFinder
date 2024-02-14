@@ -21,7 +21,7 @@ public static class RegistryEntryParser
     /// <summary>
     /// Parses the registry entry for the given Steam app ID.
     /// </summary>
-    public static Result<RegistryEntry> ParseRegistryEntry(AppId appId, IFileSystem fileSystem, IRegistry? registry)
+    public static Result<RegistryEntry> ParseRegistryEntry(AppId appId, IFileSystem fileSystem, IRegistry? registry = null)
     {
         RegistryEntry regEntry;
 
