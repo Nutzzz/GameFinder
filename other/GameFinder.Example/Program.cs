@@ -247,7 +247,7 @@ public static class Program
         if (OperatingSystem.IsMacOS())
         {
             if (options.Steam)
-                RunSteamHandler(realFileSystem, null, options.SteamAPI);
+                RunSteamHandler(realFileSystem, registry: null, options.SteamAPI);
         }
 
         //if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI), cancelToken));
@@ -282,7 +282,7 @@ public static class Program
     private static void RunOriginHandler(IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(OriginHandler));
-        var handler = new OriginHandler(fileSystem, null);
+        var handler = new OriginHandler(fileSystem, registry: null);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
@@ -351,7 +351,7 @@ public static class Program
     private static void RunGameJoltHandler(IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(GameJoltHandler));
-        var handler = new GameJoltHandler(fileSystem, null);
+        var handler = new GameJoltHandler(fileSystem, registry: null);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
@@ -365,14 +365,14 @@ public static class Program
     private static void RunIGClientHandler(IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(IGClientHandler));
-        var handler = new IGClientHandler(fileSystem, null);
+        var handler = new IGClientHandler(fileSystem, registry: null);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
     private static void RunItchHandler(IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(ItchHandler));
-        var handler = new ItchHandler(fileSystem, null);
+        var handler = new ItchHandler(fileSystem, registry: null);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
@@ -400,14 +400,14 @@ public static class Program
     private static void RunPlariumHandler(IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(PlariumHandler));
-        var handler = new PlariumHandler(fileSystem, null);
+        var handler = new PlariumHandler(fileSystem, registry: null);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
     private static void RunRiotHandler(IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(RiotHandler));
-        var handler = new RiotHandler(fileSystem, null);
+        var handler = new RiotHandler(fileSystem, registry: null);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
@@ -439,17 +439,17 @@ public static class Program
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
-    private static void RunDolphinHandler(IFileSystem fileSystem, IRegistry registry, AbsolutePath path)
+    private static void RunDolphinHandler(IRegistry registry, IFileSystem fileSystem, AbsolutePath path)
     {
         var logger = _provider.CreateLogger(nameof(DolphinHandler));
-        var handler = new DolphinHandler(fileSystem, registry, path); //, logger);
+        var handler = new DolphinHandler(registry, fileSystem, path); //, logger);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
     private static void RunMAMEHandler(IFileSystem fileSystem, AbsolutePath path)
     {
         var logger = _provider.CreateLogger(nameof(MAMEHandler));
-        var handler = new MAMEHandler(fileSystem, path); //, logger);
+        var handler = new MAMEHandler(fileSystem, path, registry: null); //, logger);
         LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 

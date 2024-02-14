@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 using GameFinder.Common;
+using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
@@ -35,6 +36,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     /// </summary>
     private const int ROMsPerBatch = 500;
 
+    private readonly IRegistry? _registry;
     private readonly IFileSystem _fileSystem;
     private AbsolutePath _mamePath;
     private ILogger? _logger;
@@ -53,7 +55,13 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     /// a custom implementation or just a mock of the interface.
     /// </param>
     /// <param name="mamePath"></param>
-    public MAMEHandler(IFileSystem fileSystem, AbsolutePath mamePath) //, ILogger? logger)
+    /// <param name="registry">
+    /// The implementation of <see cref="IRegistry"/> to use. For a shared instance
+    /// use <see cref="WindowsRegistry.Shared"/> on Windows. On Linux use <c>null</c>.
+    /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
+    /// of the interface.
+    /// </param>
+    public MAMEHandler(IFileSystem fileSystem, AbsolutePath mamePath, IRegistry? registry) //, ILogger? logger)
     {
         _fileSystem = fileSystem;
         _mamePath = mamePath;
