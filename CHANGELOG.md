@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 # Changelog
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...HEAD)
 
 **TODO**:
 
@@ -19,7 +19,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
-## [4.2.0.3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...Nutzzz:GameCollector:v4.2.0.3) - 2024-02-14
+## [4.2.0.4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
+
+- Update namespaces of StoreHandlers from upstream to prevent confusion
+- Make nullable arguments optional
+
+## [4.2.0.3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...v4.2.0.3) - 2024-02-14
 
 - EADesktop handler now checks installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
 
