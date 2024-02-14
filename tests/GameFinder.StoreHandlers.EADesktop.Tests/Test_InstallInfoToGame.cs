@@ -19,6 +19,7 @@ public partial class EADesktopTests
             installCheck,
             softwareId,
             ExecutableCheck: null,
+            ExecutablePath: null,
             LocalUninstallProperties: null);
 
         var fs = new InMemoryFileSystem();

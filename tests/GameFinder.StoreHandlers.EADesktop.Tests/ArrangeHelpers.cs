@@ -66,6 +66,7 @@ public partial class EADesktopTests
             InstallCheck: null,
             game.EADesktopGameId.Value,
             ExecutableCheck: null,
+            ExecutablePath: null,
             LocalUninstallProperties: null))
             .ToList();
 

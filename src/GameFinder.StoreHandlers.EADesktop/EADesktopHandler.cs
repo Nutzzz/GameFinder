@@ -270,8 +270,8 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                         if (gameTitle.TitleLocale.Equals("en_US", StringComparison.OrdinalIgnoreCase))
                         {
                         */
-                            title = gameTitle.TitleText ?? "";
-                            break;
+                        title = gameTitle.TitleText ?? "";
+                        break;
                         //}
                         //else { }
                     }
@@ -297,7 +297,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                             info.InfoLocale.Equals("en_US", StringComparison.OrdinalIgnoreCase))
                         {
                         */
-                            title = info.InfoTitle ?? "";
+                        title = info.InfoTitle ?? "";
                         //}
                         //else { }
                     }
@@ -356,7 +356,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         var pub = "";
         var sExeRegKey = "";
         AbsolutePath executable = new();
-        
+
         if (Path.IsPathRooted(executablePath))
             isInstalled = true;
         else if (Path.IsPathRooted(baseInstallPath))
@@ -371,9 +371,9 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                 .Combine(RelativePath.FromUnsanitizedInput(installCheck.AsSpan()[(j + 1)..]));
             if (!install.FileExists)
                 isInstalled = false;
-            
+
             var k = sInstRegKey.IndexOf("\\Install Dir", StringComparison.Ordinal);
-            
+
             if (k > 0)
             {
                 title = Path.GetFileName(sInstRegKey[..k]);
