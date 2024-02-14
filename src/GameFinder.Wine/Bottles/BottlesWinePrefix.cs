@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.Wine.Bottles;
+namespace GameCollector.Wine.Bottles;
 
 /// <summary>
 /// Represents a Wineprefix managed by Bottles.

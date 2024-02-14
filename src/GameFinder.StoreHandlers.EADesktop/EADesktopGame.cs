@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 /// <summary>
 /// Represents a game installed with the EA Desktop app.
@@ -17,7 +18,9 @@ namespace GameFinder.StoreHandlers.EADesktop;
 /// <param name="UninstallParameters"></param>
 /// <param name="IsInstalled"></param>
 /// <param name="IsDLC"></param>
+/// <param name="Publisher"></param>
 /// <param name="BaseSlug">Slug name of the game.</param>
+/// <param name="ContentIDs"></param>
 [PublicAPI]
 public record EADesktopGame(EADesktopGameId EADesktopGameId,
                             string Name,
@@ -27,11 +30,14 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
                             string UninstallParameters = "",
                             bool IsInstalled = true,
                             bool IsDLC = false,
-                            string BaseSlug = "") :
+                            string Publisher = "",
+                            string BaseSlug = "",
+                            IList<string>? ContentIDs = null) :
     GameData(GameId: EADesktopGameId.ToString() ?? "",
              GameName: Name,
              GamePath: BaseInstallPath,
              Launch: Executable,
+             LaunchUrl: ContentIDs?.Count > 0 ? $"origin://game/launch?offerIds={ContentIDs[0]}" : "",
              Icon: Executable,
              Uninstall: UninstallCommand,
              UninstallArgs: UninstallParameters,
@@ -39,7 +45,9 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
              BaseGame: IsDLC ? (!IsDLC).ToString() : null,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
-                 ["BaseSlug"] = new() { BaseSlug }
+                 ["Publishers"] = new() { Publisher ?? "", },
+                 ["BaseSlug"] = new() { BaseSlug },
+                 ["ContentIDs"] = ContentIDs?.ToList<string>() ?? new(),
              })
 {
     /// <summary>

@@ -5,14 +5,15 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.EADesktop.Crypto;
+using GameCollector.StoreHandlers.EADesktop.Crypto;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 /// <summary>
 /// Handler for finding games installed with EA Desktop.
@@ -64,7 +65,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     /// </param>
     /// <param name="hardwareInfoProvider">
     /// The implementation of <see cref="IHardwareInfoProvider"/> to use. Currently only
-    /// <see cref="GameFinder.StoreHandlers.EADesktop.Crypto.Windows.HardwareInfoProvider"/>
+    /// <see cref="GameCollector.StoreHandlers.EADesktop.Crypto.Windows.HardwareInfoProvider"/>
     /// is available and is Windows-only.
     /// </param>
     public EADesktopHandler(IFileSystem fileSystem, IRegistry registry, IHardwareInfoProvider hardwareInfoProvider)
@@ -244,6 +245,71 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         };
     }
 
+    [RequiresUnreferencedCode("Calls System.Xml.Serialization.XmlSerializer.XmlSerializer(Type)")]
+    internal static string ParseInstallerDataFile(IFileSystem fileSystem, string baseInstallPath, out IList<string> contentIds)
+    {
+        var title = "";
+        contentIds = new List<string>();
+
+        var dataFile = fileSystem.FromUnsanitizedFullPath(Path.Combine(baseInstallPath, "__Installer", "installerdata.xml"));
+        if (dataFile.FileExists)
+        {
+            try
+            {
+                XmlSerializer dataSerializer = new(typeof(InstallerDataManifest));
+                using var stream = dataFile.Read();
+                var dataMnfst = (InstallerDataManifest?)dataSerializer.Deserialize(stream);
+
+                if (dataMnfst is not null)
+                {
+                    dataMnfst.ContentIds?.ForEach(contentIds.Add);
+
+                    foreach (var gameTitle in dataMnfst.GameTitles)
+                    {
+                        /*
+                        if (gameTitle.TitleLocale.Equals("en_US", StringComparison.OrdinalIgnoreCase))
+                        {
+                        */
+                        title = gameTitle.TitleText ?? "";
+                        break;
+                        //}
+                        //else { }
+                    }
+                }
+            }
+            catch (Exception) { }
+
+            try
+            {
+                XmlSerializer dataSerializer2 = new(typeof(InstallerDataGame));
+                using var stream2 = dataFile.Read();
+                var dataGame = (InstallerDataGame?)dataSerializer2.Deserialize(stream2);
+
+                if (dataGame is not null)
+                {
+                    dataGame.ContentIds?.ForEach(contentIds.Add);
+
+                    if (dataGame.Metadata is not null && dataGame.Metadata.LocaleInfo is not null)
+                    {
+                        var info = dataGame.Metadata.LocaleInfo;
+                        /*
+                        if (info.InfoLocale is not null &&
+                            info.InfoLocale.Equals("en_US", StringComparison.OrdinalIgnoreCase))
+                        {
+                        */
+                        title = info.InfoTitle ?? "";
+                        //}
+                        //else { }
+                    }
+                }
+            }
+            catch (Exception) { }
+        }
+
+        return title;
+    }
+
+    [RequiresUnreferencedCode("Calls GameCollector.StoreHandlers.EADesktop.EADesktopHandler.ParseInstallerDataFile(IFileSystem, String, out IList<String>)")]
     internal static OneOf<EADesktopGame, ErrorMessage> InstallInfoToGame(IRegistry registry, IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath, bool installedOnly = false, bool baseOnly = false)
     {
         var isInstalled = true;
@@ -279,48 +345,65 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             isInstalled = false;
         }
 
+        // executablePath only in newer versions of EA app
+        var executablePath = installInfo.ExecutablePath ?? "";
         var baseInstallPath = installInfo.BaseInstallPath ?? "";
+        var installCheck = installInfo.InstallCheck ?? "";
+        var executableCheck = installInfo.ExecutableCheck ?? "";
 
-        var sRegKey = "";
+        var sInstRegKey = "";
+        var title = "";
+        var pub = "";
+        var sExeRegKey = "";
         AbsolutePath executable = new();
-        if (isInstalled && Path.IsPathRooted(baseInstallPath))
+
+        if (Path.IsPathRooted(executablePath))
+            isInstalled = true;
+        else if (Path.IsPathRooted(baseInstallPath))
+            isInstalled = true;
+
+        if (installCheck.StartsWith('['))
         {
-            var installCheck = installInfo.InstallCheck;
-            if (string.IsNullOrEmpty(installCheck))
-                installCheck = "";
-            sRegKey = "";
-            if (installCheck.StartsWith('['))
+            var j = installCheck.IndexOf(']', StringComparison.Ordinal);
+            if (j > 1)
+                sInstRegKey = installCheck[1..j];
+            var install = fileSystem.FromUnsanitizedFullPath(baseInstallPath)
+                .Combine(RelativePath.FromUnsanitizedInput(installCheck.AsSpan()[(j + 1)..]));
+            if (!install.FileExists)
+                isInstalled = false;
+
+            var k = sInstRegKey.IndexOf("\\Install Dir", StringComparison.Ordinal);
+
+            if (k > 0)
             {
-                var j = installCheck.IndexOf(']', StringComparison.Ordinal);
-                if (j > 1)
-                    sRegKey = installCheck[1..j];
-                var install = fileSystem.FromUnsanitizedFullPath(baseInstallPath)
-                    .Combine(RelativePath.FromUnsanitizedInput(installCheck.AsSpan()[(j + 1)..]));
-                if (!install.FileExists)
+                title = Path.GetFileName(sInstRegKey[..k]);
+                var l = sInstRegKey.IndexOf(title, StringComparison.Ordinal);
+                pub = Path.GetFileName(sInstRegKey[..l].TrimEnd('/', '\\'));
+            }
+        }
+
+        if (isInstalled)
+        {
+            if (!string.IsNullOrEmpty(executablePath) && Path.IsPathRooted(executablePath))
+            {
+                executable = fileSystem.FromUnsanitizedFullPath(executablePath);
+                if (!executable.FileExists)
                     isInstalled = false;
             }
-
-            if (isInstalled)
+            else if (!string.IsNullOrEmpty(executableCheck) && executableCheck.StartsWith('['))
             {
-                var executableCheck = installInfo.ExecutableCheck;
-                if (string.IsNullOrEmpty(executableCheck))
-                    executableCheck = "";
-                sRegKey = "";
-                if (executableCheck.StartsWith('['))
+                var j = executableCheck.IndexOf(']', StringComparison.Ordinal);
+                if (j == 1)
                 {
-                    var j = executableCheck.IndexOf(']', StringComparison.Ordinal);
-                    if (j == 1)
-                    {
-                        if (baseOnly)
-                            return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) is a DLC");
-                        isDLC = true;
-                    }
-                    else if (j > 1)
-                        sRegKey = executableCheck[1..j];
-                    executable = fileSystem.FromUnsanitizedFullPath(baseInstallPath).Combine(executableCheck[(j + 1)..]);
-                    if (!executable.FileExists)
-                        isInstalled = false;
+                    if (baseOnly)
+                        return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) is a DLC");
+                    isDLC = true;
                 }
+                else if (j > 1)
+                    sExeRegKey = executableCheck[1..j];
+                executable = fileSystem.FromUnsanitizedFullPath(baseInstallPath).Combine(executableCheck[(j + 1)..]);
+                if (!executable.FileExists)
+                    isInstalled = false;
             }
         }
 
@@ -333,34 +416,37 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             uninstallArgs = localUninstallProperties.UninstallParameters ?? "";
         }
 
-        var name = "";
-        if (!string.IsNullOrEmpty(sRegKey))
+        if (!string.IsNullOrEmpty(sExeRegKey))
         {
             try
             {
-                var k = sRegKey.IndexOf('\\', StringComparison.Ordinal);
-                var l = sRegKey.LastIndexOf('\\');
+                var k = sExeRegKey.IndexOf('\\', StringComparison.Ordinal);
+                var l = sExeRegKey.LastIndexOf('\\');
                 if (k > 1 && l > k)
                 {
-                    var regRoot = registry.OpenBaseKey(RegistryHelpers.RegistryHiveFromString(sRegKey[..k].ToUpperInvariant()), RegistryView.Registry32);
-                    var sSubKey = sRegKey[(k + 1)..l];
+                    var regRoot = registry.OpenBaseKey(RegistryHelpers.RegistryHiveFromString(sExeRegKey[..k].ToUpperInvariant()), RegistryView.Registry32);
+                    var sSubKey = sExeRegKey[(k + 1)..l];
                     var subKey = regRoot.OpenSubKey(sSubKey);
-                    subKey?.TryGetString("DisplayName", out name);
+                    subKey?.TryGetString("DisplayName", out title);
                 }
             }
             catch (Exception) { }
         }
 
+        title = ParseInstallerDataFile(fileSystem, baseInstallPath, out var contentIds);
+
         var game = new EADesktopGame(
             EADesktopGameId: EADesktopGameId.From(softwareId),
-            Name: string.IsNullOrEmpty(name) ? (string.IsNullOrEmpty(baseSlug) ? Path.GetFileName(baseInstallPath.TrimEnd('\\', '/')) : baseSlug) : name,
+            Name: string.IsNullOrEmpty(title) ? (string.IsNullOrEmpty(baseSlug) ? Path.GetFileName(baseInstallPath.TrimEnd('\\', '/')) : baseSlug) : title,
             BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromUnsanitizedFullPath(baseInstallPath) : new(),
             Executable: executable,
             UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromUnsanitizedFullPath(uninstall) : new(),
             UninstallParameters: uninstallArgs,
             IsInstalled: isInstalled,
             IsDLC: isDLC,
-            BaseSlug: baseSlug);
+            Publisher: pub,
+            BaseSlug: baseSlug,
+            ContentIDs: contentIds);
 
         return game;
     }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.EGS;
+namespace GameCollector.StoreHandlers.EGS;
 
 [UsedImplicitly]
 internal record CatCacheFile(

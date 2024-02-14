@@ -14,7 +14,7 @@ using NexusMods.Paths;
 using NexusMods.Paths.Extensions;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.Xbox;
+namespace GameCollector.StoreHandlers.Xbox;
 
 /// <summary>
 /// Handler for finding games installed with Xbox Game Pass.

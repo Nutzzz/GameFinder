@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using FluentResults.Extensions.FluentAssertions;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.Steam.Services;
+using GameCollector.StoreHandlers.Steam.Services;
 using NexusMods.Paths;
 
 namespace GameFinder.StoreHandlers.Steam.Tests.Services;

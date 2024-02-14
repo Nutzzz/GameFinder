@@ -1,4 +1,5 @@
 using System.Globalization;
+using GameCollector.StoreHandlers.GOG;
 using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 

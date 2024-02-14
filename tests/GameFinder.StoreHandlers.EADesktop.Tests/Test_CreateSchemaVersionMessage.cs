@@ -1,3 +1,4 @@
+using GameCollector.StoreHandlers.EADesktop;
 using NexusMods.Paths;
 
 namespace GameFinder.StoreHandlers.EADesktop.Tests;

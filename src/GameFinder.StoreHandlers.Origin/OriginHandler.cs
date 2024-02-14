@@ -11,7 +11,7 @@ using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.Origin;
+namespace GameCollector.StoreHandlers.Origin;
 
 /// <summary>
 /// Handler for finding games install with Origin.
@@ -37,7 +37,7 @@ public class OriginHandler : AHandler<OriginGame, OriginGameId>
     /// For tests either use <see cref="InMemoryRegistry"/>, a custom implementation or just a mock
     /// of the interface.
     /// </param>
-    public OriginHandler(IFileSystem fileSystem, IRegistry? registry)
+    public OriginHandler(IFileSystem fileSystem, IRegistry? registry = null)
     {
         _fileSystem = fileSystem;
         _registry = registry;

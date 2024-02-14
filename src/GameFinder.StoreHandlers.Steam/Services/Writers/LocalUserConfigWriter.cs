@@ -4,12 +4,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentResults;
-using GameFinder.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using ValveKeyValue;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 /// <summary>
 /// Writer for <see cref="LocalUserConfig"/>.

@@ -16,7 +16,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.EADesktop\GameFinder.StoreHandlers.EADesktop.csproj" />
-        <TrimmerRootAssembly Include="GameFinder.StoreHandlers.EADesktop" />
+        <TrimmerRootAssembly Include="GameCollector.StoreHandlers.EADesktop" />
         <TrimmerRootAssembly Include="System.Management" />
     </ItemGroup>
 

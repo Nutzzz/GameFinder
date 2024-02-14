@@ -2,7 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text.Json;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.EADesktop.Crypto;
+using GameCollector.StoreHandlers.EADesktop;
+using GameCollector.StoreHandlers.EADesktop.Crypto;
 using NexusMods.Paths;
 using NSubstitute;
 
@@ -66,6 +67,7 @@ public partial class EADesktopTests
             InstallCheck: null,
             game.EADesktopGameId.Value,
             ExecutableCheck: null,
+            ExecutablePath: null,
             LocalUninstallProperties: null))
             .ToList();
 

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto.Windows;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto.Windows;
 
 [SupportedOSPlatform("windows")]
 [ExcludeFromCodeCoverage(Justification = "Uses DllImport.")]

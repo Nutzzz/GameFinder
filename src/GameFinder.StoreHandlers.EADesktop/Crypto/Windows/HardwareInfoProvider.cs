@@ -2,9 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Versioning;
 using JetBrains.Annotations;
-using static GameFinder.StoreHandlers.EADesktop.Crypto.Windows.WMIHelper;
+using static GameCollector.StoreHandlers.EADesktop.Crypto.Windows.WMIHelper;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto.Windows;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto.Windows;
 
 /// <summary>
 /// Implementation of <see cref="IHardwareInfoProvider"/> that uses WMI and GetVolumeInformationW.

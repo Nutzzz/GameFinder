@@ -9,7 +9,7 @@ using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.GOG;
+namespace GameCollector.StoreHandlers.GOG;
 
 public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
 {

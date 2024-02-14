@@ -5,12 +5,12 @@ using System.Globalization;
 using System.Linq;
 using FluentResults;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using NexusMods.Paths.Extensions;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 /// <summary>
 /// Finds the current Steam installation.
@@ -55,7 +55,7 @@ public static class SteamLocationFinder
     /// This uses <see cref="GetDefaultSteamInstallationPaths"/>, <see cref="GetSteamPathFromRegistry"/>
     /// and <see cref="IsValidSteamInstallation"/> to find a valid installation.
     /// </remarks>
-    public static Result<AbsolutePath> FindSteam(IFileSystem fileSystem, IRegistry? registry)
+    public static Result<AbsolutePath> FindSteam(IFileSystem fileSystem, IRegistry? registry = null)
     {
         // 1) try the default installation paths
         var defaultSteamInstallationPath = GetDefaultSteamInstallationPaths(fileSystem)

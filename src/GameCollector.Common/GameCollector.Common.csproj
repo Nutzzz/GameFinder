@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <InternalsVisibleTo Include="GameCollector.Common.Tests" />
+        <InternalsVisibleTo Include="GameFinder.Common.Tests" />
     </ItemGroup>
 
   <ItemGroup>

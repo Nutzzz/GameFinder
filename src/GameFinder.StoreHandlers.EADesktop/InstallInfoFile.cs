@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 [UsedImplicitly]
 internal record InstallInfoFile(
@@ -19,6 +19,7 @@ internal record InstallInfo(
     [property: JsonPropertyName("softwareId")]
     string? SoftwareId,
     string? ExecutableCheck,
+    string? ExecutablePath,
     LocalUninstallProperties? LocalUninstallProperties
 );
 

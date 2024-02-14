@@ -1,6 +1,6 @@
 using TransparentValueObjects;
 
-namespace GameFinder.StoreHandlers.GOG;
+namespace GameCollector.StoreHandlers.GOG;
 
 /// <summary>
 /// Represents an id for games installed with GOG Galaxy.

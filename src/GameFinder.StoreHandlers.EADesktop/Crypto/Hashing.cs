@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using SHA3.Net;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 internal static class Hashing

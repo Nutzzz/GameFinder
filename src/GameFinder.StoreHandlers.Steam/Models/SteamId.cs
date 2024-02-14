@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 /// <summary>
 /// Unique identifier used to identify a Steam account.

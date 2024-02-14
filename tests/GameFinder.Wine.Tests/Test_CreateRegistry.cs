@@ -1,3 +1,4 @@
+using GameCollector.Wine;
 using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 using NexusMods.Paths.TestingHelpers;

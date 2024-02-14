@@ -11,7 +11,7 @@ using NexusMods.Paths;
 using OneOf;
 using static System.Environment;
 
-namespace GameFinder.StoreHandlers.EGS;
+namespace GameCollector.StoreHandlers.EGS;
 
 public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
 {

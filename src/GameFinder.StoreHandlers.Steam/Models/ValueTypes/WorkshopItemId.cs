@@ -3,7 +3,7 @@ using System.Globalization;
 using JetBrains.Annotations;
 using TransparentValueObjects;
 
-namespace GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+namespace GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 
 /// <summary>
 /// Represents a 64-bit unsigned integer unique identifier of a workshop item.

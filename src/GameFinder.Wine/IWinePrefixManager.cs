@@ -3,7 +3,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using OneOf;
 
-namespace GameFinder.Wine;
+namespace GameCollector.Wine;
 
 /// <summary>
 /// Implementation for wine prefix managers.

@@ -5,12 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using FluentResults;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
-using GameFinder.StoreHandlers.Steam.Services;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Services;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 /// <summary>
 /// Represents a parsed workshop manifest file.

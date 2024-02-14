@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 /// <summary>
 /// Known account types for a Steam account.

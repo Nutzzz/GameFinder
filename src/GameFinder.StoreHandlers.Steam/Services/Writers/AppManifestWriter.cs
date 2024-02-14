@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using FluentResults;
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using ValveKeyValue;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 /// <summary>
 /// Writer for <see cref="AppManifest"/>.

@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using FluentResults;
 using GameFinder.Common;
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
-using GameFinder.StoreHandlers.Steam.Services;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Services;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using Steam.Models.SteamCommunity;
 
-namespace GameFinder.StoreHandlers.Steam;
+namespace GameCollector.StoreHandlers.Steam;
 
 /// <summary>
 /// Represents a game installed with Steam.

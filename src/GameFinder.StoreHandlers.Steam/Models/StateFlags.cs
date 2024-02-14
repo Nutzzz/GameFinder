@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 /// <summary>
 /// Describes the various state an app can be in.

@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.Wine;
+namespace GameCollector.Wine;
 
 /// <summary>
 /// Prefix manager for a vanilla Wine installation that searches for prefixes inside

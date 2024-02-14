@@ -1,3 +1,4 @@
+using GameCollector.StoreHandlers.EADesktop;
 using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 using NexusMods.Paths.TestingHelpers;
@@ -19,6 +20,7 @@ public partial class EADesktopTests
             installCheck,
             softwareId,
             ExecutableCheck: null,
+            ExecutablePath: null,
             LocalUninstallProperties: null);
 
         var fs = new InMemoryFileSystem();

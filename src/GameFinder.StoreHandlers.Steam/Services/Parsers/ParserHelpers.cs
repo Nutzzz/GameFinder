@@ -6,13 +6,13 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using FluentResults;
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 using NexusMods.Paths;
 using NexusMods.Paths.Utilities;
 using ValveKeyValue;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 internal static class ParserHelpers
 {

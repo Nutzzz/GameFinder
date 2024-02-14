@@ -2,13 +2,13 @@ using System;
 using System.Text;
 using FluentResults;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
-using GameFinder.StoreHandlers.Steam.Services;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Services;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using NexusMods.Paths.Extensions;
 
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 /// <summary>
 /// Represents a parsed registry entry.
@@ -87,7 +87,7 @@ public sealed record RegistryEntry
     [Pure]
     [System.Diagnostics.Contracts.Pure]
     [MustUseReturnValue]
-    public Result<RegistryEntry> Reload(IFileSystem fileSystem, IRegistry? registry)
+    public Result<RegistryEntry> Reload(IFileSystem fileSystem, IRegistry? registry = null)
     {
         return RegistryEntryParser.ParseRegistryEntry(AppId, fileSystem, registry);
     }

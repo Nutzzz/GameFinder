@@ -6,7 +6,7 @@ using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.Wine;
+namespace GameCollector.Wine;
 
 /// <summary>
 /// Abstract class for wine prefixes.

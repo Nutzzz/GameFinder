@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.Steam;
+namespace GameCollector.StoreHandlers.Steam;
 
 internal static class EnumerableExtensions
 {

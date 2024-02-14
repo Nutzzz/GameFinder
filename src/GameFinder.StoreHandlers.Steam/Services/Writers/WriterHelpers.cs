@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using ValveKeyValue;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 internal static class WriterHelpers
 {

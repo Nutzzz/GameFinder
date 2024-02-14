@@ -5,38 +5,42 @@
 
 .NET library for finding games. GameCollector expands on upstream GameFinder (which is primarily designed to support modding tools), by adding additional supported store launchers, emulators, and data sources, and includes additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). The following launchers and emulators are supported:
 
-- Amazon Games [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Amazon)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Amazon)
-- Arc [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Arc)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Arc)
-- [Bethesda.net](#bethesdanet) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated,upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet)
-- Big Fish Game Manager [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.BigFish)](https://www.nuget.org/packages/GameCollector.StoreHandlers.BigFish)
-- Blizzard Battle.net [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.BattleNet)](https://www.nuget.org/packages/GameCollector.StoreHandlers.BattleNet)
-- Dolphin Emulator [![Nuget](https://img.shields.io/nuget/v/GameCollector.EmuHandlers.Dolphin)](https://www.nuget.org/packages/GameCollector.EmuHandlers.Dolphin)
-- [EA app](#ea-app) [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.EADesktop)](https://www.nuget.org/packages/GameCollector.StoreHandlers.EADesktop) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop)
-- [Epic Games Store](#epic-games-store) [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.EGS)](https://www.nuget.org/packages/GameCollector.StoreHandlers.EGS) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS)
-- Game Jolt Client [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.GameJolt)](https://www.nuget.org/packages/GameCollector.StoreHandlers.GameJolt)
-- [GOG Galaxy](#gog-galaxy) [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.GOG)](https://www.nuget.org/packages/GameCollector.StoreHandlers.GOG) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG)
-- Humble App [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Humble)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Humble)
-- Indiegala IGClient [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.IGClient)](https://www.nuget.org/packages/GameCollector.StoreHandlers.IGClient)
-- itch [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Itch)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Itch)
-- Legacy Games Launcher [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Legacy)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Legacy)
-- Multiple Arcade Machine Emulator (MAME) [![Nuget](https://img.shields.io/nuget/v/GameCollector.EmuHandlers.MAME)](https://www.nuget.org/packages/GameCollector.EmuHandlers.MAME)
-- Oculus [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Oculus)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Oculus)
-- [Origin](#origin) [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Origin)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Origin) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin)
-- Paradox Launcher [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Paradox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Paradox)
-- Plarium Play [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Plarium)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Plarium)
-- Riot Client [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Riot)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Riot)
-- Robot Cache Client [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.RobotCache)](https://www.nuget.org/packages/GameCollector.StoreHandlers.RobotCache)
-- Rockstar Games Launcher [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Rockstar)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Rockstar)
-- [Steam](#steam) [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Steam)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Steam) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam)
-- Ubisoft Connect [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Ubisoft)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Ubisoft)
-- Wargaming.net Game Center [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.WargamingNet)](https://www.nuget.org/packages/GameCollector.StoreHandlers.WargamingNet)
-- [Xbox Game Pass](#xbox-game-pass) [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Xbox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Xbox) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox)
+| handler | package |
+| -- | -- |
+| Amazon Games | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Amazon)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Amazon) |
+| Arc | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Arc)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Arc) |
+| [Bethesda.net](#bethesdanet) | [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.BethNet?color=red&label=deprecated,upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.BethNet) |
+| Big Fish Game Manager | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.BigFish)](https://www.nuget.org/packages/GameCollector.StoreHandlers.BigFish) |
+| Blizzard Battle.net | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.BattleNet)](https://www.nuget.org/packages/GameCollector.StoreHandlers.BattleNet) |
+| Dolphin Emulator | [![Nuget](https://img.shields.io/nuget/v/GameCollector.EmuHandlers.Dolphin)](https://www.nuget.org/packages/GameCollector.EmuHandlers.Dolphin) |
+| [EA app](#ea-app) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.EADesktop)](https://www.nuget.org/packages/GameCollector.StoreHandlers.EADesktop) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EADesktop?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EADesktop) |
+| [Epic Games Store](#epic-games-store) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.EGS)](https://www.nuget.org/packages/GameCollector.StoreHandlers.EGS) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS) |
+| Game Jolt Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.GameJolt)](https://www.nuget.org/packages/GameCollector.StoreHandlers.GameJolt) |
+| [GOG Galaxy](#gog-galaxy) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.GOG)](https://www.nuget.org/packages/GameCollector.StoreHandlers.GOG) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG) |
+| Humble App | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Humble)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Humble) |
+| Indiegala IGClient | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.IGClient)](https://www.nuget.org/packages/GameCollector.StoreHandlers.IGClient) |
+| itch | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Itch)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Itch) |
+| Legacy Games Launcher | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Legacy)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Legacy) |
+| Multiple Arcade Machine Emulator (MAME) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.EmuHandlers.MAME)](https://www.nuget.org/packages/GameCollector.EmuHandlers.MAME) |
+| Oculus | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Oculus)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Oculus) |
+| [Origin](#origin) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Origin)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Origin) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Origin?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Origin) |
+| Paradox Launcher | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Paradox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Paradox) |
+| Plarium Play | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Plarium)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Plarium) |
+| Riot Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Riot)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Riot) |
+| Robot Cache Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.RobotCache)](https://www.nuget.org/packages/GameCollector.StoreHandlers.RobotCache) |
+| Rockstar Games Launcher | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Rockstar)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Rockstar) |
+| [Steam](#steam) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Steam)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Steam) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam) |
+| Ubisoft Connect | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Ubisoft)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Ubisoft) |
+| Wargaming.net Game Center | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.WargamingNet)](https://www.nuget.org/packages/GameCollector.StoreHandlers.WargamingNet) |
+| [Xbox Game Pass](#xbox-game-pass) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Xbox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Xbox) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) |
 
 If you are interested in understanding _how_ GameCollector/GameFinder finds these games, check [the upstream wiki](https://github.com/erri120/GameFinder/wiki) for more information.
 
 Additionally, the following Linux tools are supported:
 
-- [Wine](#wine) [![Nuget](https://img.shields.io/nuget/v/GameCollector.Wine)](https://www.nuget.org/packages/GameCollector.Wine) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Wine?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.Wine)
+| handler | package |
+| -- | :--: |
+| [Wine](#wine) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.Wine)](https://www.nuget.org/packages/GameCollector.Wine) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Wine?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.Wine) |
 
 ## Example
 
@@ -289,7 +293,7 @@ var handler = new EGSHandler(wineRegistry, wineFileSystem);
 
 ### Default Prefix Manager
 
-`GameFinder.Wine` implements a `IWinePrefixManager` for finding Wine prefixes.
+`GameCollector.Wine` implements a `IWinePrefixManager` for finding Wine prefixes.
 
 **Usage**:
 
@@ -310,7 +314,7 @@ foreach (var result in prefixManager.FindPrefixes())
 
 ### Bottles
 
-`GameFinder.Wine` implements a `IWinePrefixManager` for finding Wine prefixes managed by [Bottles](https://usebottles.com/).
+`GameCollector.Wine` implements a `IWinePrefixManager` for finding Wine prefixes managed by [Bottles](https://usebottles.com/).
 
 **Usage**:
 
@@ -331,7 +335,7 @@ foreach (var result in prefixManager.FindPrefixes())
 
 ### Proton
 
-Valve's [Proton](https://github.com/ValveSoftware/Proton) is a compatibility tool for Steam and is mostly based on Wine. The Wine prefixes managed by Proton are in the `compatdata` directory of the steam library where the game itself is installed. Since the path is relative to the game itself and requires the app id, erri120 decided to put this functionality in `GameFinder.StoreHandlers.Steam`:
+Valve's [Proton](https://github.com/ValveSoftware/Proton) is a compatibility tool for Steam and is mostly based on Wine. The Wine prefixes managed by Proton are in the `compatdata` directory of the steam library where the game itself is installed. Since the path is relative to the game itself and requires the app id, erri120 decided to put this functionality in the Steam store handler:
 
 ```csharp
 SteamGame? steamGame = steamHandler.FindOneGameById(1237970, out var errors);
@@ -352,17 +356,17 @@ Self-contained deployments and executables can be [trimmed](https://learn.micros
 
 **Trimmable**:
 
-- `GameFinder.Common`
-- `GameFinder.RegistryUtils`
-- `GameFinder.Wine`
-- `GameFinder.StoreHandlers.Steam`
-- `GameFinder.StoreHandlers.GOG`
-- `GameFinder.StoreHandlers.EGS`
-- `GameFinder.StoreHandlers.Origin`
+- `GameCollector.Common`
+- `GameCollector.RegistryUtils`
+- `GameCollector.Wine`
+- `GameCollector.StoreHandlers.Steam`
+- `GameCollector.StoreHandlers.GOG`
+- `GameCollector.StoreHandlers.EGS`
+- `GameCollector.StoreHandlers.Origin`
 
 **NOT Trimmable**:
 
-- `GameFinder.StoreHandlers.EADesktop`: This package references `System.Management`, which is **not trimmable** due to COM interop issues. See [dotnet/runtime#78038](https://github.com/dotnet/runtime/issues/78038), [dotnet/runtime#75176](https://github.com/dotnet/runtime/pull/75176) and [dotnet/runtime#61960](https://github.com/dotnet/runtime/issues/61960) for more details.
+- `GameCollector.StoreHandlers.EADesktop`: This package references `System.Management`, which is **not trimmable** due to COM interop issues. See [dotnet/runtime#78038](https://github.com/dotnet/runtime/issues/78038), [dotnet/runtime#75176](https://github.com/dotnet/runtime/pull/75176) and [dotnet/runtime#61960](https://github.com/dotnet/runtime/issues/61960) for more details.
 
 I recommend looking at the [project file](./other/GameFinder.Example/GameFinder.Example.csproj) of the example project, if you run into warnings or errors with trimming.
 

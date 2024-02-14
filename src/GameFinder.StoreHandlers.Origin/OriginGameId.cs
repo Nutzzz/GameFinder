@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using TransparentValueObjects;
 
-namespace GameFinder.StoreHandlers.Origin;
+namespace GameCollector.StoreHandlers.Origin;
 
 /// <summary>
 /// Represents an id for games installed with Origin.

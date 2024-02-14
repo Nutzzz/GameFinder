@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using GameFinder.Wine;
+using GameCollector.Wine;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.Steam;
+namespace GameCollector.StoreHandlers.Steam;
 
 /// <summary>
 /// Represents a Wine prefix managed by Valve's Proton library.

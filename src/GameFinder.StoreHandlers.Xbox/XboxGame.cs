@@ -4,7 +4,7 @@ using NexusMods.Paths;
 using System;
 using System.Collections.Generic;
 
-namespace GameFinder.StoreHandlers.Xbox;
+namespace GameCollector.StoreHandlers.Xbox;
 
 /// <summary>
 /// Represents a game installed with Xbox Game Pass.
