@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using TransparentValueObjects;
 
-namespace GameFinder.StoreHandlers.EGS;
+namespace GameCollector.StoreHandlers.EGS;
 
 /// <summary>
 /// Represents an id for games installed with the Epic Games Store.

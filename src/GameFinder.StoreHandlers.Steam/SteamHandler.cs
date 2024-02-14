@@ -8,14 +8,14 @@ using System.Runtime.InteropServices;
 using FluentResults;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
-using GameFinder.StoreHandlers.Steam.Services;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Services;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 using ValveKeyValue;
 
-namespace GameFinder.StoreHandlers.Steam;
+namespace GameCollector.StoreHandlers.Steam;
 
 /// <summary>
 /// Handler for finding games installed with Steam.

@@ -1,7 +1,7 @@
 
 
 using FluentResults.Extensions.FluentAssertions;
-using GameFinder.StoreHandlers.Steam.Services;
+using GameCollector.StoreHandlers.Steam.Services;
 using NexusMods.Paths;
 using NexusMods.Paths.TestingHelpers;
 

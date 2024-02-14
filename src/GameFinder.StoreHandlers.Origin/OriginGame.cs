@@ -2,7 +2,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.Origin;
+namespace GameCollector.StoreHandlers.Origin;
 
 /// <summary>
 /// Represents a game installed with Origin.

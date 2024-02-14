@@ -293,7 +293,7 @@ var handler = new EGSHandler(wineRegistry, wineFileSystem);
 
 ### Default Prefix Manager
 
-`GameFinder.Wine` implements a `IWinePrefixManager` for finding Wine prefixes.
+`GameCollector.Wine` implements a `IWinePrefixManager` for finding Wine prefixes.
 
 **Usage**:
 
@@ -314,7 +314,7 @@ foreach (var result in prefixManager.FindPrefixes())
 
 ### Bottles
 
-`GameFinder.Wine` implements a `IWinePrefixManager` for finding Wine prefixes managed by [Bottles](https://usebottles.com/).
+`GameCollector.Wine` implements a `IWinePrefixManager` for finding Wine prefixes managed by [Bottles](https://usebottles.com/).
 
 **Usage**:
 
@@ -335,7 +335,7 @@ foreach (var result in prefixManager.FindPrefixes())
 
 ### Proton
 
-Valve's [Proton](https://github.com/ValveSoftware/Proton) is a compatibility tool for Steam and is mostly based on Wine. The Wine prefixes managed by Proton are in the `compatdata` directory of the steam library where the game itself is installed. Since the path is relative to the game itself and requires the app id, erri120 decided to put this functionality in `GameFinder.StoreHandlers.Steam`:
+Valve's [Proton](https://github.com/ValveSoftware/Proton) is a compatibility tool for Steam and is mostly based on Wine. The Wine prefixes managed by Proton are in the `compatdata` directory of the steam library where the game itself is installed. Since the path is relative to the game itself and requires the app id, erri120 decided to put this functionality in the Steam store handler:
 
 ```csharp
 SteamGame? steamGame = steamHandler.FindOneGameById(1237970, out var errors);
@@ -356,17 +356,17 @@ Self-contained deployments and executables can be [trimmed](https://learn.micros
 
 **Trimmable**:
 
-- `GameFinder.Common`
-- `GameFinder.RegistryUtils`
-- `GameFinder.Wine`
-- `GameFinder.StoreHandlers.Steam`
-- `GameFinder.StoreHandlers.GOG`
-- `GameFinder.StoreHandlers.EGS`
-- `GameFinder.StoreHandlers.Origin`
+- `GameCollector.Common`
+- `GameCollector.RegistryUtils`
+- `GameCollector.Wine`
+- `GameCollector.StoreHandlers.Steam`
+- `GameCollector.StoreHandlers.GOG`
+- `GameCollector.StoreHandlers.EGS`
+- `GameCollector.StoreHandlers.Origin`
 
 **NOT Trimmable**:
 
-- `GameFinder.StoreHandlers.EADesktop`: This package references `System.Management`, which is **not trimmable** due to COM interop issues. See [dotnet/runtime#78038](https://github.com/dotnet/runtime/issues/78038), [dotnet/runtime#75176](https://github.com/dotnet/runtime/pull/75176) and [dotnet/runtime#61960](https://github.com/dotnet/runtime/issues/61960) for more details.
+- `GameCollector.StoreHandlers.EADesktop`: This package references `System.Management`, which is **not trimmable** due to COM interop issues. See [dotnet/runtime#78038](https://github.com/dotnet/runtime/issues/78038), [dotnet/runtime#75176](https://github.com/dotnet/runtime/pull/75176) and [dotnet/runtime#61960](https://github.com/dotnet/runtime/issues/61960) for more details.
 
 I recommend looking at the [project file](./other/GameFinder.Example/GameFinder.Example.csproj) of the example project, if you run into warnings or errors with trimming.
 

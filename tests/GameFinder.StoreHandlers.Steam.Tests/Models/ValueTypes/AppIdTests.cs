@@ -1,4 +1,4 @@
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 
 namespace GameFinder.StoreHandlers.Steam.Tests.Models.ValueTypes;
 

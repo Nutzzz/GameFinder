@@ -1,3 +1,4 @@
+using GameCollector.StoreHandlers.Xbox;
 using NexusMods.Paths;
 using NexusMods.Paths.TestingHelpers;
 

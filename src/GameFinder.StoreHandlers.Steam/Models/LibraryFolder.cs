@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using NexusMods.Paths.Extensions;
 
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 /// <summary>
 /// Represents a single library folder.

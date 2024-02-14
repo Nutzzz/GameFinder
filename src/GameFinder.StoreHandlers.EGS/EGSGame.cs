@@ -4,7 +4,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.EGS;
+namespace GameCollector.StoreHandlers.EGS;
 
 /// <summary>
 /// Represents a game installed with the Epic Games Store.

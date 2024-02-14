@@ -8,12 +8,12 @@ using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.EADesktop.Crypto;
+using GameCollector.StoreHandlers.EADesktop.Crypto;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 /// <summary>
 /// Handler for finding games installed with EA Desktop.
@@ -65,7 +65,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     /// </param>
     /// <param name="hardwareInfoProvider">
     /// The implementation of <see cref="IHardwareInfoProvider"/> to use. Currently only
-    /// <see cref="GameFinder.StoreHandlers.EADesktop.Crypto.Windows.HardwareInfoProvider"/>
+    /// <see cref="GameCollector.StoreHandlers.EADesktop.Crypto.Windows.HardwareInfoProvider"/>
     /// is available and is Windows-only.
     /// </param>
     public EADesktopHandler(IFileSystem fileSystem, IRegistry registry, IHardwareInfoProvider hardwareInfoProvider)
@@ -309,7 +309,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         return title;
     }
 
-    [RequiresUnreferencedCode("Calls GameFinder.StoreHandlers.EADesktop.EADesktopHandler.ParseInstallerDataFile(IFileSystem, String, out IList<String>)")]
+    [RequiresUnreferencedCode("Calls GameCollector.StoreHandlers.EADesktop.EADesktopHandler.ParseInstallerDataFile(IFileSystem, String, out IList<String>)")]
     internal static OneOf<EADesktopGame, ErrorMessage> InstallInfoToGame(IRegistry registry, IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath, bool installedOnly = false, bool baseOnly = false)
     {
         var isInstalled = true;

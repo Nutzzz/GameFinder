@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using FluentResults;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 /// <summary>
 /// Parser for Steam Uninstall registry entries.

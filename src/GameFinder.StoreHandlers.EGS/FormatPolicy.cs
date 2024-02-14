@@ -1,7 +1,7 @@
 using GameFinder.Common;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.EGS;
+namespace GameCollector.StoreHandlers.EGS;
 
 /// <summary>
 /// Policy to employ when the format version doesn't match the supported format version.

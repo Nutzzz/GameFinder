@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 [JsonSourceGenerationOptions(WriteIndented = false, GenerationMode = JsonSourceGenerationMode.Default)]
 [JsonSerializable(typeof(InstallInfoFile))]

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using TransparentValueObjects;
 
-namespace GameFinder.StoreHandlers.Xbox;
+namespace GameCollector.StoreHandlers.Xbox;
 
 /// <summary>
 /// Represents an id for games installed with the Xbox Game Pass.

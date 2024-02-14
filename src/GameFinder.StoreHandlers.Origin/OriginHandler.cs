@@ -11,7 +11,7 @@ using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.Origin;
+namespace GameCollector.StoreHandlers.Origin;
 
 /// <summary>
 /// Handler for finding games install with Origin.

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 /// <summary>
 /// Background download behavior.

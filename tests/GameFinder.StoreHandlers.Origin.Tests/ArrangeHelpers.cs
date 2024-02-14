@@ -1,4 +1,5 @@
 using System.Web;
+using GameCollector.StoreHandlers.Origin;
 using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 

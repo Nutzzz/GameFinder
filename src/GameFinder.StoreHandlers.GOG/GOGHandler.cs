@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.GOG;
+namespace GameCollector.StoreHandlers.GOG;
 
 /// <summary>
 /// Handler for finding games installed with GOG Galaxy.

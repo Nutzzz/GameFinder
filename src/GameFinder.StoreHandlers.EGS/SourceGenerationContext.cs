@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace GameFinder.StoreHandlers.EGS;
+namespace GameCollector.StoreHandlers.EGS;
 
 [JsonSourceGenerationOptions(WriteIndented = false, GenerationMode = JsonSourceGenerationMode.Default)]
 [JsonSerializable(typeof(CatCacheFile))]

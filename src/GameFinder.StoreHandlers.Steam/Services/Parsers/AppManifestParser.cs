@@ -4,15 +4,15 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using FluentResults;
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using NexusMods.Paths.Utilities;
 using ValveKeyValue;
-using static GameFinder.StoreHandlers.Steam.Services.ParserHelpers;
+using static GameCollector.StoreHandlers.Steam.Services.ParserHelpers;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 /// <summary>
 /// Parser for <c>appmanifest_*.acf</c> files.

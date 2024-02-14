@@ -1,4 +1,5 @@
 using System.Text;
+using GameCollector.StoreHandlers.Xbox;
 using NexusMods.Paths;
 
 namespace GameFinder.StoreHandlers.Xbox.Tests;

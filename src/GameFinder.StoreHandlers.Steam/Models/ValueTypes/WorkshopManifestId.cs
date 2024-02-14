@@ -1,7 +1,7 @@
 using JetBrains.Annotations;
 using TransparentValueObjects;
 
-namespace GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+namespace GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 
 /// <summary>
 /// Represents a unique identifier for a manifest of a workshop item change.

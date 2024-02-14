@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Management;
 using System.Runtime.Versioning;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto.Windows;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto.Windows;
 
 [SupportedOSPlatform("windows")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

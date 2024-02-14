@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 internal static class Decryption

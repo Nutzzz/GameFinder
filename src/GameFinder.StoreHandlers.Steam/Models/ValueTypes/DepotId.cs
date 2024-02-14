@@ -2,7 +2,7 @@ using System.Globalization;
 using JetBrains.Annotations;
 using TransparentValueObjects;
 
-namespace GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+namespace GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 
 /// <summary>
 /// Represents a 32-bit unsigned integer unique identifier for a depot.

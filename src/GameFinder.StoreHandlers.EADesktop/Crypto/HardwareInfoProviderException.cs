@@ -1,7 +1,7 @@
 using System;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto;
 
 /// <summary>
 /// Represents an Exception thrown by <see cref="IHardwareInfoProvider"/>.

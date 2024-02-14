@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentResults;
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using ValveKeyValue;
-using static GameFinder.StoreHandlers.Steam.Services.ParserHelpers;
+using static GameCollector.StoreHandlers.Steam.Services.ParserHelpers;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 /// <summary>
 /// Parser for <c>libraryfolders.vdf</c> files.

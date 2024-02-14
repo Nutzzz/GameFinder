@@ -1,5 +1,5 @@
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
 using NexusMods.Paths;
 
 namespace GameFinder.StoreHandlers.Steam.Tests.Models;

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 [XmlRoot(ElementName = "DiPManifest")]

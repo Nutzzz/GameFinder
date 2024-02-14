@@ -5,7 +5,7 @@ using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 /// <summary>
 /// Represents a game installed with the EA Desktop app.

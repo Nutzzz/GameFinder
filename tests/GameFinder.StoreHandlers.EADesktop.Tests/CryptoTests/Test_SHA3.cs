@@ -1,5 +1,5 @@
 using System.Globalization;
-using GameFinder.StoreHandlers.EADesktop.Crypto;
+using GameCollector.StoreHandlers.EADesktop.Crypto;
 
 namespace GameFinder.StoreHandlers.EADesktop.Tests;
 

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using FluentResults;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.Steam.Models;
-using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
-using GameFinder.StoreHandlers.Steam.Services;
+using GameCollector.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models.ValueTypes;
+using GameCollector.StoreHandlers.Steam.Services;
 using NexusMods.Paths;
 using OneOf;
 using Steam.Models.SteamCommunity;
@@ -16,7 +16,7 @@ using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 using ValveKeyValue;
 
-namespace GameFinder.StoreHandlers.Steam;
+namespace GameCollector.StoreHandlers.Steam;
 
 public partial class SteamHandler : AHandler<SteamGame, Models.ValueTypes.AppId>
 {

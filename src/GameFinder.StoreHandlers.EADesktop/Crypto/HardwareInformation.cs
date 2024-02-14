@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto;
 
 internal static class HardwareInformation
 {

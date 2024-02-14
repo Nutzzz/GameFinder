@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 using JetBrains.Annotations;
 #pragma warning disable CS1591
 
-namespace GameFinder.StoreHandlers.Xbox;
+namespace GameCollector.StoreHandlers.Xbox;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 [XmlRoot(ElementName = "Identity", Namespace = "http://schemas.microsoft.com/appx/manifest/foundation/windows10")]

@@ -1,4 +1,4 @@
-using GameFinder.Wine.Bottles;
+using GameCollector.Wine.Bottles;
 using NexusMods.Paths;
 
 namespace GameFinder.Wine.Tests.Bottles;

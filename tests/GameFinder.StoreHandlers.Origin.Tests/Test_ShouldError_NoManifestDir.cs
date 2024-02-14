@@ -1,3 +1,4 @@
+using GameCollector.StoreHandlers.Origin;
 using GameFinder.RegistryUtils;
 using NexusMods.Paths;
 using NexusMods.Paths.TestingHelpers;

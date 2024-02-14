@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.EADesktop.Crypto;
+namespace GameCollector.StoreHandlers.EADesktop.Crypto;
 
 /// <summary>
 /// Represents a Hardware Info Provider.

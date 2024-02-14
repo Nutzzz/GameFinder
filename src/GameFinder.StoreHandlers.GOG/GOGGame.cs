@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace GameFinder.StoreHandlers.GOG;
+namespace GameCollector.StoreHandlers.GOG;
 
 /// <summary>
 /// Represents a game installed with GOG Galaxy.

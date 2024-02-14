@@ -5,12 +5,12 @@ using System.Globalization;
 using System.Linq;
 using FluentResults;
 using GameFinder.RegistryUtils;
-using GameFinder.StoreHandlers.Steam.Models;
+using GameCollector.StoreHandlers.Steam.Models;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using NexusMods.Paths.Extensions;
 
-namespace GameFinder.StoreHandlers.Steam.Services;
+namespace GameCollector.StoreHandlers.Steam.Services;
 
 /// <summary>
 /// Finds the current Steam installation.

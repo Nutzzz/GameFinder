@@ -1,7 +1,7 @@
 using GameFinder.Common;
 using JetBrains.Annotations;
 
-namespace GameFinder.StoreHandlers.EADesktop;
+namespace GameCollector.StoreHandlers.EADesktop;
 
 /// <summary>
 /// Policy to employ when the schema version doesn't match the supported schema version.

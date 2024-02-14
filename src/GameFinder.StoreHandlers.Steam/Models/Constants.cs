@@ -1,4 +1,4 @@
-namespace GameFinder.StoreHandlers.Steam.Models;
+namespace GameCollector.StoreHandlers.Steam.Models;
 
 internal static class Constants
 {

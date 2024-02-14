@@ -13,7 +13,7 @@ using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.StoreHandlers.EGS;
+namespace GameCollector.StoreHandlers.EGS;
 
 /// <summary>
 /// Handler for finding games installed with the Epic Games Store.
