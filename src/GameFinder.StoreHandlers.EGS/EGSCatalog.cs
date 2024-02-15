@@ -107,6 +107,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                         DisplayName: (game.Title ?? "").Replace("?", "", StringComparison.Ordinal),
                         InstallLocation: new(),
                         CloudSaveFolder: Path.IsPathRooted(savePath) ? fileSystem.FromUnsanitizedFullPath(savePath) : new(),
+                        IsInstalled: false,
                         MainGame: baseGame,
                         ImageTallUrl: imageUrl,
                         ImageUrl: wideImageUrl,

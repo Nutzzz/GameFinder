@@ -200,6 +200,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                 InstallLocation: _fileSystem.FromUnsanitizedFullPath(loc),
                 CloudSaveFolder: new(),
                 InstallLaunch: launch,
+                IsInstalled: true,
                 MainGame: isDLC ? (!isDLC).ToString() : null);
 
             return game;
