@@ -190,7 +190,7 @@ public static class Program
                     if (Path.IsPathRooted(options.Dolphin))
                     {
                         var path = realFileSystem.FromUnsanitizedFullPath(options.Dolphin);
-                        RunDolphinHandler(realFileSystem, windowsRegistry, path);
+                        RunDolphinHandler(windowsRegistry, realFileSystem, path);
                     }
                     else
                         logger.LogError("Bad Dolphin path {DolphinPath}", options.Dolphin);
