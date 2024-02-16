@@ -128,7 +128,7 @@ if (games.TryGetValue(someId, out var game))
 
 ## Supported Emulators
 
-This is a new category of handler for GameCollector. They are Windows-only for now. These both require you pass the path to the emulator executable.
+This is a new category of handler for GameCollector. They are Windows-only for now.
 
 - Dolphin
 - MAME
@@ -154,6 +154,22 @@ The following handlers have been added for GameCollector. They are all Windows-o
 - Rockstar Games Launcher
 - Ubisoft Connect
 - Wargaming.net Game Center
+
+## GameCollector Special Notes
+
+### General
+
+- Known issues: See [GameCollector issues here](https://github.com/Nutzzz/GameCollector/issues) or [upstream GameFinder issues here](https://github.com/erri120/GameFinder/issues). Please do not submit bugs/requests for GameCollector on GameFinder's GitHub.
+- DLCs/clones: When an entry is detected as a DLC addon (or a clone in the MAME handler), the BaseGame field is set to the ID of the main game. To hide DLCs from the consumer application, do not use entries with a non-null BaseGame.
+- Owned not-installed games: Some handlers can find owned not-installed games. To support this feature for Steam games, [see note below](#steam). To show only installed games, do not use entries where IsInstalled is false.
+
+### Dolphin/MAME
+
+These handlers both require you pass the path to the emulator executable.
+
+### Oculus
+
+If the Oculus service is running (as it does even when the program is not open), the database is usually locked and connot be read. The handler attempts to stop the service, but this only works if the consumer application is running as administrator.
 
 ## Upstream Supported Launchers
 
