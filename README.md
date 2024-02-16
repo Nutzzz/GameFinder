@@ -27,7 +27,7 @@
 | Paradox Launcher | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Paradox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Paradox) |
 | Plarium Play | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Plarium)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Plarium) |
 | Riot Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Riot)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Riot) |
-| Robot Cache Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.RobotCache)](https://www.nuget.org/packages/GameCollector.StoreHandlers.RobotCache) |
+| RobotCache Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.RobotCache)](https://www.nuget.org/packages/GameCollector.StoreHandlers.RobotCache) |
 | Rockstar Games Launcher | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Rockstar)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Rockstar) |
 | [Steam](#steam) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Steam)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Steam) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam) |
 | Ubisoft Connect | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Ubisoft)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Ubisoft) |
@@ -150,7 +150,7 @@ The following handlers have been added for GameCollector. They are all Windows-o
 - Paradox Launcher
 - Plarium Play
 - Riot Client
-- Robot Cache Client
+- RobotCache Client
 - Rockstar Games Launcher
 - Ubisoft Connect
 - Wargaming.net Game Center
