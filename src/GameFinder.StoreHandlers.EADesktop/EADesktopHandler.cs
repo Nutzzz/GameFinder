@@ -324,6 +324,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         var isDLC = false;
         var baseSlug = installInfo.BaseSlug ?? "";
 
+        // only catches some DLC
         if (!string.IsNullOrEmpty(installInfo.DLCSubPath))
         {
             if (baseOnly)
@@ -338,10 +339,10 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             isInstalled = false;
         }
 
-        if (string.IsNullOrEmpty(installInfo.ExecutableCheck))
+        if (string.IsNullOrEmpty(installInfo.ExecutableCheck) && string.IsNullOrEmpty(installInfo.ExecutablePath))
         {
             if (installedOnly)
-                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"executableCheck\"");
+                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"executableCheck\" or \"executablePath\"");
             isInstalled = false;
         }
 
@@ -380,6 +381,8 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                 var l = sInstRegKey.IndexOf(title, StringComparison.Ordinal);
                 pub = Path.GetFileName(sInstRegKey[..l].TrimEnd('/', '\\'));
             }
+
+            var sInstFile = installCheck[(j + 1)..];
         }
 
         if (isInstalled)
@@ -393,6 +396,8 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             else if (!string.IsNullOrEmpty(executableCheck) && executableCheck.StartsWith('['))
             {
                 var j = executableCheck.IndexOf(']', StringComparison.Ordinal);
+
+                // only catches some DLC
                 if (j == 1)
                 {
                     if (baseOnly)
@@ -433,11 +438,24 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             catch (Exception) { }
         }
 
-        title = ParseInstallerDataFile(fileSystem, baseInstallPath, out var contentIds);
+        var dataTitle = ParseInstallerDataFile(fileSystem, baseInstallPath, out var contentIds);
+        if (string.IsNullOrEmpty(title))
+        {
+            if (!string.IsNullOrEmpty(dataTitle))
+                title = dataTitle;
+            else if (!string.IsNullOrEmpty(baseSlug))
+            {
+                CultureInfo ci = new("en-US");
+                var ti = ci.TextInfo;
+                title = ti.ToTitleCase(baseSlug.Replace('-', ' '));
+            }
+            else
+                title = Path.GetFileName(baseInstallPath.TrimEnd('\\', '/'));
+        }
 
         var game = new EADesktopGame(
             EADesktopGameId: EADesktopGameId.From(softwareId),
-            Name: string.IsNullOrEmpty(title) ? (string.IsNullOrEmpty(baseSlug) ? Path.GetFileName(baseInstallPath.TrimEnd('\\', '/')) : baseSlug) : title,
+            Name: title,
             BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromUnsanitizedFullPath(baseInstallPath) : new(),
             Executable: executable,
             UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromUnsanitizedFullPath(uninstall) : new(),
