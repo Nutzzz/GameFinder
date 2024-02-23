@@ -122,6 +122,10 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
 
             foreach (var acfFilePath in libraryFolder.EnumerateAppManifestFilePaths())
             {
+                // skip Steamworks Common Redistributables
+                if (acfFilePath.FileName.Equals("228980", StringComparison.Ordinal))
+                    continue;
+
                 var appManifestResult = AppManifestParser.ParseManifestFile(acfFilePath);
                 if (appManifestResult.IsFailed)
                 {
