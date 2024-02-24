@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
+using System.ServiceProcess;
 using System.Text;
 using NexusMods.Paths;
 
@@ -86,6 +88,71 @@ public static class Utils
         return (uint)((value | 0x20) - 'a') <= 'z' - 'a';
     }
     */
+
+    /// <summary>
+    /// Stops a Windows service
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="wait"></param>
+    [SupportedOSPlatform("windows")]
+    public static bool ServiceStop(string name, TimeSpan? wait = null)
+    {
+        ServiceController sc = new(name);
+        try
+        {
+            if (sc.Status.Equals(ServiceControllerStatus.Running) || sc.Status.Equals(ServiceControllerStatus.StartPending))
+            {
+                sc.Stop();
+                if (wait is not null)
+                    sc.WaitForStatus(ServiceControllerStatus.Stopped, (TimeSpan)wait);
+                return true;
+            }
+        }
+        catch (Exception) { }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Starts a Windows service
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="wait"></param>
+    [SupportedOSPlatform("windows")]
+    public static bool ServiceStart(string name, TimeSpan? wait = null)
+    {
+        ServiceController sc = new(name);
+        try
+        {
+            if (sc.Status.Equals(ServiceControllerStatus.Stopped))
+            {
+                sc.Start();
+                if (wait is not null)
+                    sc.WaitForStatus(ServiceControllerStatus.Running, (TimeSpan)wait);
+                return true;
+            }
+        }
+        catch (Exception) { }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Gets status for a Windows service
+    /// </summary>
+    /// <param name="name"></param>
+    [SupportedOSPlatform("windows")]
+    public static ServiceControllerStatus ServiceStatus(string name)
+    {
+        ServiceController sc = new(name);
+        try
+        {
+            return sc.Status;
+        }
+        catch (Exception) { }
+
+        return default;
+    }
 
     /// <summary>
     /// Returns the path to the best-guess of a game executable found recursively in a given path.

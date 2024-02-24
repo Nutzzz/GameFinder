@@ -8,6 +8,7 @@ using System.Runtime.Versioning;
 using System.ServiceProcess;
 using System.Text.Json;
 using System.Text;
+using GameCollector.Common;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
@@ -84,7 +85,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
 
         // Stop service (otherwise database is locked)
         if (OperatingSystem.IsWindows())
-            restartSvc = StopService();
+            restartSvc = Utils.ServiceStop("OVRService", TimeSpan.FromSeconds(5));
 
         List<string> libPaths = new();
         Dictionary<string, string> exePaths = new(StringComparer.OrdinalIgnoreCase);
@@ -155,6 +156,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
             //ulong userId = 0;
 
             using SQLiteConnection con = new($"Data Source={database.GetFullPath()}");
+            con.DefaultTimeout = 5;
             con.Open();
 
             // Get the user ID to check entitlements for expired trials
@@ -306,14 +308,25 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
             }
             con.Close();
         }
+        catch (SQLiteException se)
+        {
+            if (se.ErrorCode.Equals(5)) // busy
+            {
+                if (OperatingSystem.IsWindows() && Utils.ServiceStatus("OVRService") == ServiceControllerStatus.Running)
+                    games.Add(new ErrorMessage(se, $"Admin rights required to stop OVRService to allow parsing database file {database}"));
+                else
+                    games.Add(new ErrorMessage(se, $"Busy error parsing database file {database}"));
+            }
+            else
+                games.Add(new ErrorMessage(se, $"Exception parsing database file {database}"));
+        }
         catch (Exception e)
         {
             games.Add(new ErrorMessage(e, $"Exception parsing database file {database}"));
         }
 
-        // TODO: Should we bother with starting the service back up?
-        //if (OperatingSystem.IsWindows() && restartSvc)
-        //    sc.Start();
+        if (OperatingSystem.IsWindows() && restartSvc)
+            Utils.ServiceStart("OVRService");
 
         return games;
     }
@@ -337,23 +350,5 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
             return strVal[start..stop];
         }
         return "";
-    }
-
-    [SupportedOSPlatform("windows")]
-    public bool StopService(string serviceName = "OVRService")
-    {
-        ServiceController sc = new(serviceName);
-        try
-        {
-            if (sc.Status.Equals(ServiceControllerStatus.Running) || sc.Status.Equals(ServiceControllerStatus.StartPending))
-            {
-                sc.Stop();
-                sc.WaitForStatus(ServiceControllerStatus.Stopped);
-                return true;
-            }
-        }
-        catch (Exception) { }
-
-        return false;
     }
 }
