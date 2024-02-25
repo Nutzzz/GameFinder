@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 # Changelog
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...HEAD)
 
 **TODO**:
 
@@ -18,6 +18,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 - Add DataHandlers to download metadata and images from online sources
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+## [4.2.0.5](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...v4.2.0.5) - 2024-02-25
+
+- Change order of parameters for EmuHandlers to be consistent with the inconsistent upstream ordering (based on whether the registry is required)
+- Fix duplicate GOG entries
+- Fix Epic not-installed owned games being marked as installed
+- Warn when Oculus needs admin rights to stop OVRService
+- Fix titles for EA not-installed owned games
+- Don't show "Steamworks Common Redistributables"
+- Add installedOnly and baseOnly flags to the GameFinder.Example
+- Update dependencies
 
 ## [4.2.0.4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
 
