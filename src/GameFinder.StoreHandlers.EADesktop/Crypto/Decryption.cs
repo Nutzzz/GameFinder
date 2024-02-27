@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 namespace GameCollector.StoreHandlers.EADesktop.Crypto;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-internal static class Decryption
+public static class Decryption
 {
     private const string AllUsersGenericId = "allUsersGenericId";
     private const string IS = "IS";

@@ -8,10 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...HEAD)
 
+- Set single-file publish options for GameFinder.Example, and rename its assembly to output GameCollector.exe
+
 **TODO**:
 
 - Fix/add unit tests
 - Update documentation
+- For more, see [Issues](https://github.com/Nutzzz/GameCollector/issues)
 
 **WIP**:
 

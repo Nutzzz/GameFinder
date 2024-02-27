@@ -52,7 +52,7 @@ using IFileSystem = NexusMods.Paths.IFileSystem;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 [assembly: ExcludeFromCodeCoverage]
-namespace GameFinder.Example;
+namespace GameCollector;
 
 public static class Program
 {

@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace GameFinder.Example;
+namespace GameCollector;
 
 public class Options
 {
