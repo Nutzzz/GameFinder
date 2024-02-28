@@ -65,5 +65,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: GameFinder.Example-${{ runner.os }}-${{ github.sha }}
-        path: ${{ github.workspace }}/bin/${{ runner.os }}/GameFinder*
+        path: ${{ github.workspace }}/bin/${{ runner.os }}/GameCollector*
         if-no-files-found: error
