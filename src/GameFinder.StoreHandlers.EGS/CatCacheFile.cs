@@ -20,6 +20,8 @@ internal record Catalog(
     string? Developer,
     [property: JsonPropertyName("keyImages")]
     List<KeyImages>? KeyImages,
+    [property: JsonPropertyName("categories")]
+    List<Categories>? Categories,
     [property: JsonPropertyName("releaseInfo")]
     List<ReleaseInfo>? ReleaseInfo,
     [property: JsonPropertyName("customAttributes")]
@@ -34,6 +36,14 @@ internal record KeyImages(
     string? Type,
     [property: JsonPropertyName("url")]
     string? Url
+);
+
+[UsedImplicitly]
+internal record Categories(
+    [property: JsonPropertyName("name")]
+    string? Name,
+    [property: JsonPropertyName("path")]
+    string? Path
 );
 
 [UsedImplicitly]

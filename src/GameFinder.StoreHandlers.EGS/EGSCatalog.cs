@@ -69,6 +69,25 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                         baseGame = game.MainGameItem.Id;
                     }
 
+                    if (game.Categories is not null)
+                    {
+                        var audience = false;
+                        foreach (var category in game.Categories)
+                        {
+                            if (category is not null && category.Path is not null &&
+                                category.Path.Equals("audience", StringComparison.OrdinalIgnoreCase))
+                            {
+                                audience = true;
+                                break;
+                            }
+                        }
+                        if (audience)
+                        {
+                            games.Add(new ErrorMessage($"{id} is an audience"));
+                            continue;
+                        }
+                    }
+
                     space = game.Namespace ?? "";
                     // skip Twinmotion and Unreal Engine
                     if (space.Equals("poodle", StringComparison.OrdinalIgnoreCase) ||
