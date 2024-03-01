@@ -2,15 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com) and this project adheres to [Semantic Versioning](https://semver.org).
+The format is based on [Keep a Changelog](https://keepachangelog.com).
+
+Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit is used for hotfixes or pre-release versions, in this case since GameCollector is still in its infancy, breaking changes may occur regularly between releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme may need to be used.
 
 # Changelog
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...HEAD)
-
-- Fix crash in EADesktopHandler when multiple video controllers exist
-- Ignore "Audience" entries for Epic
-- Set single-file publish options for GameFinder.Example, and rename its assembly to output GameCollector.exe
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...HEAD)
 
 **TODO**:
 
@@ -24,29 +22,54 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
+## [4.2.0.6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-01
+
+### Changed
+
+- Set single-file publish options for GameFinder.Example, and rename its assembly to output GameCollector.exe
+
+### Fixed
+
+- Fix crash in EADesktopHandler when multiple video controllers exist
+- Ignore "Audience" entries for Epic
+
 ## [4.2.0.5](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...v4.2.0.5) - 2024-02-25
 
+### Added
+
+- Add installedOnly and baseOnly flags to GameFinder.Example
+
+### Changed
+
 - Change order of parameters for EmuHandlers to be consistent with the inconsistent upstream ordering (based on whether the registry is required)
+- Update dependencies
+
+### Fixed
+
 - Fix duplicate GOG entries
 - Fix Epic not-installed owned games being marked as installed
 - Warn when Oculus needs admin rights to stop OVRService
 - Fix titles for EA not-installed owned games
 - Don't show "Steamworks Common Redistributables"
-- Add installedOnly and baseOnly flags to the GameFinder.Example
-- Update dependencies
 
 ## [4.2.0.4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
+
+### Changed
 
 - Update namespaces of StoreHandlers from upstream to prevent confusion
 - Make nullable arguments optional
 
 ## [4.2.0.3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...v4.2.0.3) - 2024-02-14
 
+### Changed
+
 - EADesktop handler now checks installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
 
 ## [4.2.0.2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
 
-**Changes**:
+Initial release of GameCollector
+
+### Added
 
 - Added a generic `record GameData` to collect data for all handlers:
   - `string GameId`
@@ -79,6 +102,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com) and this p
   - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Robot Cache, Rockstar, Ubisoft, Wargaming.net
 - Add `FindClient` to get path to store client executable.
 - EADesktop handler now attempts to get a proper game title from the Registry.
+
+### Changed
+
 - EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to continue to find installed games even after a Windows system reset or reinstall.
 - Steam handler can now optionally use [SteamWebAPI2](https://github.com/babelshift/SteamWebAPI2) library to collect information about owned, not-installed games. This feature requires an API key to be specified and the user profile must be set to public.
 
