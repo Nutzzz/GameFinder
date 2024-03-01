@@ -37,8 +37,9 @@ jobs:
 
     - name: Get Changelog Entry
       id: changelog_reader
-      uses: mindsers/changelog-reader-action@v2
+      uses: mindsers/changelog-reader-action@v2.2.2
       with:
+        validation_level: warn
         version: ${{ steps.tag_name.outputs.current_version }}
         path: ./CHANGELOG.md
 
@@ -46,7 +47,7 @@ jobs:
       run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
     - name: Push to GitHub Packages
-      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Nutty/index.json
+      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Nutzzz/index.json
 
     - name: Create Release
       id: create_release
