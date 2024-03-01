@@ -22,7 +22,7 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
-## [4.2.0.6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-01
+## [4.2.0-6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-04
 
 ### Changed
 
@@ -33,7 +33,7 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 - Fix crash in EADesktopHandler when multiple video controllers exist
 - Ignore "Audience" entries for Epic
 
-## [4.2.0.5](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...v4.2.0.5) - 2024-02-25
+## [4.2.0-5](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...v4.2.0.5) - 2024-02-25
 
 ### Added
 
@@ -52,20 +52,20 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 - Fix titles for EA not-installed owned games
 - Don't show "Steamworks Common Redistributables"
 
-## [4.2.0.4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
+## [4.2.0-4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
 
 ### Changed
 
 - Update namespaces of StoreHandlers from upstream to prevent confusion
 - Make nullable arguments optional
 
-## [4.2.0.3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...v4.2.0.3) - 2024-02-14
+## [4.2.0-3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...v4.2.0.3) - 2024-02-14
 
 ### Changed
 
 - EADesktop handler now checks installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
 
-## [4.2.0.2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
+## [4.2.0-2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
 
 Initial release of GameCollector
 
