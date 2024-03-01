@@ -8,7 +8,6 @@ using GameFinder.StoreHandlers.Steam.Models.ValueTypes;
 using GameFinder.StoreHandlers.Steam.Services;
 using JetBrains.Annotations;
 using NexusMods.Paths;
-using OneOf;
 using ValveKeyValue;
 
 namespace GameFinder.StoreHandlers.Steam;
@@ -56,12 +55,12 @@ public class SteamHandler : AHandler<SteamGame, AppId>
     public override IEqualityComparer<AppId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames()
+    public override IEnumerable<Result<SteamGame>> FindAllGames()
     {
         var steamPathResult = SteamLocationFinder.FindSteam(_fileSystem, _registry);
         if (steamPathResult.IsFailed)
         {
-            yield return ConvertResultToErrorMessage(steamPathResult);
+            yield return Result.Fail(steamPathResult.Errors);
             yield break;
         }
 
@@ -71,7 +70,7 @@ public class SteamHandler : AHandler<SteamGame, AppId>
         var libraryFoldersResult = LibraryFoldersManifestParser.ParseManifestFile(libraryFoldersFilePath);
         if (libraryFoldersResult.IsFailed)
         {
-            yield return ConvertResultToErrorMessage(libraryFoldersResult);
+            yield return Result.Fail(libraryFoldersResult.Errors);
             yield break;
         }
 
@@ -83,7 +82,7 @@ public class SteamHandler : AHandler<SteamGame, AppId>
             var libraryFolderPath = libraryFolder.Path;
             if (!_fileSystem.DirectoryExists(libraryFolderPath))
             {
-                yield return new ErrorMessage($"Steam Library at {libraryFolderPath} doesn't exist!");
+                yield return Result.Fail($"Steam Library at {libraryFolderPath} doesn't exist!");
                 continue;
             }
 
@@ -92,7 +91,7 @@ public class SteamHandler : AHandler<SteamGame, AppId>
                 var appManifestResult = AppManifestParser.ParseManifestFile(acfFilePath);
                 if (appManifestResult.IsFailed)
                 {
-                    yield return ConvertResultToErrorMessage(appManifestResult);
+                    yield return Result.Fail(appManifestResult.Errors);
                     continue;
                 }
 
@@ -103,14 +102,8 @@ public class SteamHandler : AHandler<SteamGame, AppId>
                     LibraryFolder = libraryFolder,
                 };
 
-                yield return steamGame;
+                yield return Result.Ok(steamGame);
             }
         }
-    }
-
-    private static ErrorMessage ConvertResultToErrorMessage<T>(Result<T> result)
-    {
-        // TODO: for compatability, remove this mapping once FindAllGames uses FluentResults
-        return new ErrorMessage(result.Errors.Select(x => x.Message).Aggregate((a, b) => $"{a}\n{b}"));
     }
 }

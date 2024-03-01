@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using FluentResults;
 using JetBrains.Annotations;
-using OneOf;
 
 namespace GameFinder.Common;
 
@@ -20,7 +20,7 @@ public abstract class AHandler
     /// <seealso cref="AHandler{TGame,TId}.FindAllGames"/>
     [MustUseReturnValue]
     [System.Diagnostics.Contracts.Pure]
-    public abstract IEnumerable<OneOf<IGame, ErrorMessage>> FindAllInterfaceGames();
+    public abstract IEnumerable<Result<IGame>> FindAllInterfaceGames();
 }
 
 /// <summary>
@@ -48,12 +48,11 @@ public abstract class AHandler<TGame, TId> : AHandler
     public abstract IEqualityComparer<TId>? IdEqualityComparer { get; }
 
     /// <inheritdoc/>
-    [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
-    public override IEnumerable<OneOf<IGame, ErrorMessage>> FindAllInterfaceGames()
+    public override IEnumerable<Result<IGame>> FindAllInterfaceGames()
     {
         foreach (var res in FindAllGames())
         {
-            yield return res.MapT0(x => (IGame)x);
+            yield return res.AsGame();
         }
     }
 
@@ -63,7 +62,7 @@ public abstract class AHandler<TGame, TId> : AHandler
     /// <returns></returns>
     [MustUseReturnValue]
     [System.Diagnostics.Contracts.Pure]
-    public abstract IEnumerable<OneOf<TGame, ErrorMessage>> FindAllGames();
+    public abstract IEnumerable<Result<TGame>> FindAllGames();
 
     /// <summary>
     /// Calls <see cref="FindAllGames"/> and converts the result into a dictionary where
@@ -73,7 +72,7 @@ public abstract class AHandler<TGame, TId> : AHandler
     /// <returns></returns>
     [MustUseReturnValue]
     [System.Diagnostics.Contracts.Pure]
-    public IReadOnlyDictionary<TId, TGame> FindAllGamesById(out ErrorMessage[] errors)
+    public IReadOnlyDictionary<TId, TGame> FindAllGamesById(out IList<IError>[] errors)
     {
         var (games, allErrors) = FindAllGames().SplitResults();
         errors = allErrors;
@@ -89,7 +88,7 @@ public abstract class AHandler<TGame, TId> : AHandler
     /// <returns></returns>
     [MustUseReturnValue]
     [System.Diagnostics.Contracts.Pure]
-    public TGame? FindOneGameById(TId id, out ErrorMessage[] errors)
+    public TGame? FindOneGameById(TId id, out IList<IError>[] errors)
     {
         var allGames = FindAllGamesById(out errors);
         return allGames.TryGetValue(id, out var game) ? game : null;

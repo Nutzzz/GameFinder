@@ -152,7 +152,7 @@ public static class SteamLocationFinder
             }
 
             var directoryInfo = fileSystem.FromUnsanitizedFullPath(steamPath);
-            return directoryInfo;
+            return Result.Ok(directoryInfo);
         }
         catch (Exception e)
         {

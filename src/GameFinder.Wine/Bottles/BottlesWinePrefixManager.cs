@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using FluentResults;
 using GameFinder.Common;
 using NexusMods.Paths;
-using OneOf;
 
 namespace GameFinder.Wine.Bottles;
 
@@ -23,51 +23,56 @@ public class BottlesWinePrefixManager : IWinePrefixManager<BottlesWinePrefix>
     }
 
     /// <inheritdoc/>
-    public IEnumerable<OneOf<BottlesWinePrefix, ErrorMessage>> FindPrefixes()
+    public IEnumerable<Result<BottlesWinePrefix>> FindPrefixes()
     {
         var defaultLocation = GetDefaultLocations(_fileSystem)
             .FirstOrDefault(x => _fileSystem.DirectoryExists(x));
 
         if (string.IsNullOrEmpty(defaultLocation.Directory))
         {
-            yield return new ErrorMessage("Unable to find any bottles installation.");
+            yield return Result.Fail("Unable to find any bottles installation.");
             yield break;
         }
 
         var bottles = defaultLocation.Combine("bottles");
         if (!bottles.DirectoryExists())
         {
-            yield return new ErrorMessage($"Bottles directory {bottles.GetFullPath()} does not exist");
+            yield return Result.Fail($"Bottles directory {bottles.GetFullPath()} does not exist");
             yield break;
         }
 
         foreach (var bottle in _fileSystem.EnumerateDirectories(bottles, recursive: false))
         {
             var res = IsValidBottlesPrefix(_fileSystem, bottle);
-            yield return res.Match<OneOf<BottlesWinePrefix, ErrorMessage>>(
-                _ => new BottlesWinePrefix
+            if (res.IsFailed)
+            {
+                yield return Result.Fail(res.AsErrors());
+            }
+            else
+            {
+                yield return Result.Ok(new BottlesWinePrefix
                 {
                     ConfigurationDirectory = bottle,
-                },
-                error => error);
+                });
+            }
         }
     }
 
-    internal static OneOf<bool, ErrorMessage> IsValidBottlesPrefix(IFileSystem fs, AbsolutePath directory)
+    internal static Result<bool> IsValidBottlesPrefix(IFileSystem fs, AbsolutePath directory)
     {
         var defaultWinePrefixRes = DefaultWinePrefixManager.IsValidPrefix(fs, directory);
         if (defaultWinePrefixRes.IsError())
         {
-            return defaultWinePrefixRes.AsError();
+            return Result.Fail(defaultWinePrefixRes.AsErrors());
         }
 
         var bottlesConfigFile = directory.Combine("bottle.yml");
         if (!fs.FileExists(bottlesConfigFile))
         {
-            return new ErrorMessage($"Bottles configuration file is missing at {bottlesConfigFile}");
+            return Result.Fail($"Bottles configuration file is missing at {bottlesConfigFile}");
         }
 
-        return true;
+        return Result.Ok(true);
     }
 
     internal static IEnumerable<AbsolutePath> GetDefaultLocations(IFileSystem fs)

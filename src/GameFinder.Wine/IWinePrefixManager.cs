@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using FluentResults;
 using GameFinder.Common;
 using JetBrains.Annotations;
-using OneOf;
 
 namespace GameFinder.Wine;
 
@@ -16,5 +16,5 @@ public interface IWinePrefixManager<TPrefix> where TPrefix : AWinePrefix
     /// Finds all prefixes associated with this manager.
     /// </summary>
     /// <returns></returns>
-    IEnumerable<OneOf<TPrefix, ErrorMessage>> FindPrefixes();
+    IEnumerable<Result<TPrefix>> FindPrefixes();
 }

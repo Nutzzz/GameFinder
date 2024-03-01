@@ -1,3 +1,4 @@
+using FluentResults;
 using FluentResults.Extensions.FluentAssertions;
 using GameFinder.Common;
 using GameFinder.StoreHandlers.Steam.Services;
@@ -16,7 +17,7 @@ public class SteamHandlerTests
         steamHandler.FindAllGames()
             .Should().ContainSingle()
             .Which.Value
-            .Should().BeOfType<ErrorMessage>()
+            .Should().BeOfType<IError>()
             .Which.Message
             .Should().Be("Unable to find a valid Steam installation at the default installation paths!");
 
@@ -29,7 +30,7 @@ public class SteamHandlerTests
         steamHandler.FindAllGames()
             .Should().ContainSingle()
             .Which.Value
-            .Should().BeOfType<ErrorMessage>()
+            .Should().BeOfType<IError>()
             .Which.Message
             .Should().Be("Exception was thrown while parsing the manifest file!");
 

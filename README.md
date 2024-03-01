@@ -27,7 +27,7 @@ The [example project](./other/GameFinder.Example) uses every available store han
 
 ## Usage
 
-All store handlers inherit from `AHandler<TGame, TId>` and implement `FindAllGames()` which returns `IEnumerable<OneOf<TGame, ErrorMessage>>`. The [`OneOf`](https://github.com/mcintyre321/OneOf) struct is a F# style union and is guaranteed to only contain _one of_ the following: a `TGame` or an `ErrorMessage`. I recommended checking out the [OneOf library](https://github.com/mcintyre321/OneOf), if you want to learn more.
+All store handlers inherit from `AHandler<TGame, TId>` and implement `FindAllGames()` which returns `IEnumerable<Result<TGame>>`. The `Result` struct contains a `.Value` for a `TGame` and/or `.Errors`. I recommended checking out the [FluentResults library](https://github.com/altmann/FluentResults) if you want to learn more.
 
 Some **important** things to remember:
 
@@ -41,22 +41,10 @@ var results = handler.FindAllGames();
 
 foreach (var result in results)
 {
-    // using the switch method
-    result.Switch(game =>
-    {
-        Console.WriteLine($"Found {game}");
-    }, error =>
-    {
-        Console.WriteLine(error);
-    });
-
-    // using the provided extension functions
-    if (result.TryGetGame(out var game))
-    {
-        Console.WriteLine($"Found {game}");
-    } else
-    {
-        Console.WriteLine(result.AsError());
+    if (result.IsError) {
+        Console.WriteLine(result.AsErrors());
+    } else {
+        Console.WriteLine($"Found {result.Value}");
     }
 }
 ```
@@ -69,16 +57,13 @@ If you're working on an application that only needs to find **1** game, then you
 var game = handler.FindOneGameById(someId, out var errors);
 
 // I highly recommend logging errors regardless of whether or not the game was found.
-foreach (var error in errors)
-{
+foreach (var error in errors) {
     Console.WriteLine(error);
 }
 
-if (game is null)
-{
+if (game is null) {
     Console.WriteLine("Unable to find game");
-} else
-{
+} else {
     Console.WriteLine($"Found {game}");
 }
 ```
@@ -91,16 +76,13 @@ If you need to find multiple games at once, you can use the `FindAllGamesById` m
 var games = handler.FindAllGamesById(out var errors);
 
 // I highly recommend always logging errors.
-foreach (var error in errors)
-{
+foreach (var error in errors) {
     Console.WriteLine(error);
 }
 
-if (games.TryGetValue(someId, out var game))
-{
+if (games.TryGetValue(someId, out var game)) {
     Console.WriteLine($"Found {game}");
-} else
-{
+} else {
     Console.WriteLine($"Unable to find game with the id {someId}");
 }
 ```
@@ -242,15 +224,12 @@ var handler = new EGSHandler(wineRegistry, wineFileSystem);
 ```csharp
 var prefixManager = new DefaultWinePrefixManager(FileSystem.Shared);
 
-foreach (var result in prefixManager.FindPrefixes())
-{
-    result.Switch(prefix =>
-    {
-        Console.WriteLine($"Found wine prefix at {prefix.ConfigurationDirectory}");
-    }, error =>
-    {
-        Console.WriteLine(error.Value);
-    });
+foreach (var result in prefixManager.FindPrefixes()) {
+    if (result.IsFailed) {
+        Console.WriteLine(result.AsErrors());
+    } else {
+        Console.WriteLine($"Found wine prefix at {result.Value.ConfigurationDirectory}");
+    }
 }
 ```
 
@@ -263,15 +242,12 @@ foreach (var result in prefixManager.FindPrefixes())
 ```csharp
 var prefixManager = new BottlesWinePrefixManager(FileSystem.Shared);
 
-foreach (var result in prefixManager.FindPrefixes())
-{
-    result.Switch(prefix =>
-    {
-        Console.WriteLine($"Found wine prefix at {prefix.ConfigurationDirectory}");
-    }, error =>
-    {
-        Console.WriteLine(error.Value);
-    });
+foreach (var result in prefixManager.FindPrefixes()) {
+    if (result.IsFailed) {
+        Console.WriteLine(result.AsErrors());
+    } else {
+        Console.WriteLine($"Found wine prefix at {result.Value.ConfigurationDirectory}");
+    }
 }
 ```
 
@@ -286,8 +262,7 @@ if (steamGame is null) return;
 ProtonWinePrefix protonPrefix = steamGame.GetProtonPrefix();
 var protonPrefixDirectory = protonPrefix.ProtonDirectory;
 
-if (protonDirectory != default && fileSystem.DirectoryExists(protonDirectory))
-{
+if (protonDirectory != default && fileSystem.DirectoryExists(protonDirectory)) {
     Console.WriteLine($"Proton prefix is at {protonDirectory}");
 }
 ```

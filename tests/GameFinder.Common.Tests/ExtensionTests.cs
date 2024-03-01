@@ -1,15 +1,15 @@
+using FluentResults;
 using NSubstitute;
-using OneOf;
 
 namespace GameFinder.Common.Tests;
 
 public class ExtensionTests
 {
     private static readonly IGame Game = Substitute.For<IGame>();
-    private static readonly ErrorMessage Error = new(string.Empty);
+    private static readonly IError Error = new Error(string.Empty);
 
-    private static readonly OneOf<IGame, ErrorMessage> GameResult = OneOf<IGame, ErrorMessage>.FromT0(Game);
-    private static readonly OneOf<IGame, ErrorMessage> ErrorResult = OneOf<IGame, ErrorMessage>.FromT1(Error);
+    private static readonly Result<IGame> GameResult = new Result<IGame>().WithValue(Game);
+    private static readonly Result<IGame> ErrorResult = new Result<IGame>().WithError(Error);
 
     [Fact]
     public void Test_CustomToDictionary()
@@ -65,10 +65,10 @@ public class ExtensionTests
     }
 
     [Fact]
-    public void Test_AsError()
+    public void Test_AsErrors()
     {
         var result = ErrorResult;
-        result.AsError().Should().Be(string.Empty);
+        result.AsErrors()[0].Should().Be(string.Empty);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class ExtensionTests
     {
         var result = GameResult;
         result
-            .Invoking(x => x.AsError())
+            .Invoking(x => x.AsErrors())
             .Should().ThrowExactly<InvalidOperationException>();
     }
 
@@ -99,14 +99,14 @@ public class ExtensionTests
     public void Test_TryGetError_True()
     {
         var result = ErrorResult;
-        result.TryGetError(out _).Should().BeTrue();
+        result.TryGetErrors(out _).Should().BeTrue();
     }
 
     [Fact]
     public void Test_TryGetError_False()
     {
         var result = GameResult;
-        result.TryGetError(out var error).Should().BeFalse();
-        error.Should().Be(default(ErrorMessage));
+        result.TryGetErrors(out var error).Should().BeFalse();
+        error[0].Should().Be(default(IError));
     }
 }

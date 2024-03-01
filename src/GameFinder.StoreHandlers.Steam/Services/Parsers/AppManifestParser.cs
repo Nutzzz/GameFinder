@@ -208,7 +208,7 @@ public static class AppManifestParser
         }
 
         var absolutePath = fileSystem.FromUnsanitizedFullPath(rawPath);
-        return absolutePath;
+        return Result.Ok(absolutePath);
     }
 
     private static Result<IReadOnlyDictionary<DepotId, InstalledDepot>> ParseInstalledDepots(KVObject appState)

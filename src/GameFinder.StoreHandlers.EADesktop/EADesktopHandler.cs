@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FluentResults;
 using GameFinder.Common;
 using GameFinder.StoreHandlers.EADesktop.Crypto;
 using JetBrains.Annotations;
 using NexusMods.Paths;
-using OneOf;
 
 namespace GameFinder.StoreHandlers.EADesktop;
 
@@ -71,30 +71,30 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     public override Func<EADesktopGame, EADesktopGameId> IdSelector => game => game.EADesktopGameId;
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<EADesktopGame, ErrorMessage>> FindAllGames()
+    public override IEnumerable<Result<EADesktopGame>> FindAllGames()
     {
         var dataFolder = GetDataFolder(_fileSystem);
         if (!_fileSystem.DirectoryExists(dataFolder))
         {
-            yield return new ErrorMessage($"Data folder {dataFolder} does not exist!");
+            yield return Result.Fail($"Data folder {dataFolder} does not exist!");
             yield break;
         }
 
         var installInfoFile = GetInstallInfoFile(dataFolder);
         if (!_fileSystem.FileExists(installInfoFile))
         {
-            yield return new ErrorMessage($"File does not exist: {installInfoFile.GetFullPath()}");
+            yield return Result.Fail($"File does not exist: {installInfoFile.GetFullPath()}");
             yield break;
         }
 
         var decryptionResult = DecryptInstallInfoFile(_fileSystem, installInfoFile, _hardwareInfoProvider);
-        if (decryptionResult.TryGetError(out var error))
+        if (decryptionResult.TryGetErrors(out var errors))
         {
-            yield return error;
+            yield return Result.Fail(errors);
             yield break;
         }
 
-        var plaintext = decryptionResult.AsT0;
+        var plaintext = decryptionResult.Value;
         foreach (var result in ParseInstallInfoFile(plaintext, installInfoFile, SchemaPolicy))
         {
             yield return result;
@@ -115,7 +115,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             .Combine(InstallInfoFileName);
     }
 
-    internal static OneOf<string, ErrorMessage> DecryptInstallInfoFile(IFileSystem fileSystem, AbsolutePath installInfoFile, IHardwareInfoProvider hardwareInfoProvider)
+    internal static Result<string> DecryptInstallInfoFile(IFileSystem fileSystem, AbsolutePath installInfoFile, IHardwareInfoProvider hardwareInfoProvider)
     {
         try
         {
@@ -127,15 +127,15 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
 
             var iv = Decryption.CreateDecryptionIV();
             var plainText = Decryption.DecryptFile(cipherText, key, iv);
-            return plainText;
+            return Result.Ok(plainText);
         }
         catch (Exception e)
         {
-            return new ErrorMessage(e, $"Exception while decrypting file {installInfoFile.GetFullPath()}");
+            return Result.Fail(new Error($"Exception while decrypting file {installInfoFile.GetFullPath()}").CausedBy(e));
         }
     }
 
-    internal IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFile(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy)
+    internal IEnumerable<Result<EADesktopGame>> ParseInstallInfoFile(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy)
     {
         try
         {
@@ -143,9 +143,9 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         }
         catch (Exception e)
         {
-            return new OneOf<EADesktopGame, ErrorMessage>[]
+            return new Result<EADesktopGame>[]
             {
-                new ErrorMessage(e, $"Exception while parsing InstallInfoFile {installInfoFile.GetFullPath()}"),
+                Result.Fail(new Error($"Exception while parsing InstallInfoFile {installInfoFile.GetFullPath()}").CausedBy(e)),
             };
         }
     }
@@ -155,20 +155,20 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFileInner(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy)
+    private IEnumerable<Result<EADesktopGame>> ParseInstallInfoFileInner(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy)
     {
         var installInfoFileContents = JsonSerializer.Deserialize<InstallInfoFile>(plaintext, JsonSerializerOptions);
 
         if (installInfoFileContents is null)
         {
-            yield return new ErrorMessage($"Unable to deserialize InstallInfoFile {installInfoFile.GetFullPath()}");
+            yield return Result.Fail($"Unable to deserialize InstallInfoFile {installInfoFile.GetFullPath()}");
             yield break;
         }
 
         var schemaVersionNullable = installInfoFileContents.Schema?.Version;
         if (!schemaVersionNullable.HasValue)
         {
-            yield return new ErrorMessage($"InstallInfoFile {installInfoFile.GetFullPath()} does not have a schema version!");
+            yield return Result.Fail($"InstallInfoFile {installInfoFile.GetFullPath()} does not have a schema version!");
             yield break;
         }
 
@@ -176,14 +176,14 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         var (schemaMessage, isSchemaError) = CreateSchemaVersionMessage(schemaPolicy, schemaVersion, installInfoFile);
         if (schemaMessage is not null)
         {
-            yield return new ErrorMessage(schemaMessage);
+            yield return Result.Fail(schemaMessage);
             if (isSchemaError) yield break;
         }
 
         var installInfos = installInfoFileContents.InstallInfos;
         if (installInfos is null || installInfos.Count == 0)
         {
-            yield return new ErrorMessage($"InstallInfoFile {installInfoFile.GetFullPath()} does not have any infos!");
+            yield return Result.Fail($"InstallInfoFile {installInfoFile.GetFullPath()} does not have any infos!");
             yield break;
         }
 
@@ -217,27 +217,27 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         };
     }
 
-    internal static OneOf<EADesktopGame, ErrorMessage> InstallInfoToGame(IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath)
+    internal static Result<EADesktopGame> InstallInfoToGame(IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath)
     {
         var num = i.ToString(CultureInfo.InvariantCulture);
 
         if (string.IsNullOrEmpty(installInfo.SoftwareId))
         {
-            return new ErrorMessage($"InstallInfo #{num} does not have the value \"softwareId\"");
+            return Result.Fail($"InstallInfo #{num} does not have the value \"softwareId\"");
         }
 
         var softwareId = installInfo.SoftwareId;
 
         if (string.IsNullOrEmpty(installInfo.BaseSlug))
         {
-            return new ErrorMessage($"InstallInfo #{num} for {softwareId} does not have the value \"baseSlug\"");
+            return Result.Fail($"InstallInfo #{num} for {softwareId} does not have the value \"baseSlug\"");
         }
 
         var baseSlug = installInfo.BaseSlug;
 
         if (string.IsNullOrEmpty(installInfo.BaseInstallPath))
         {
-            return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"baseInstallPath\"");
+            return Result.Fail($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"baseInstallPath\"");
         }
 
         var baseInstallPath = installInfo.BaseInstallPath;
@@ -247,6 +247,6 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             fileSystem.FromUnsanitizedFullPath(baseInstallPath)
         );
 
-        return game;
+        return Result.Ok(game);
     }
 }

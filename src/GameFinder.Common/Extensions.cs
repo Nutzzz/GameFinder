@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using FluentResults;
 using JetBrains.Annotations;
-using OneOf;
 
 namespace GameFinder.Common;
 
@@ -20,20 +20,20 @@ public static class Extensions
     /// <param name="results"></param>
     /// <typeparam name="TGame"></typeparam>
     /// <returns></returns>
-    public static (TGame[] games, ErrorMessage[] errors) SplitResults<TGame>(
-        [InstantHandle] this IEnumerable<OneOf<TGame, ErrorMessage>> results)
+    public static (TGame[] games, IList<IError>[]) SplitResults<TGame>(
+        [InstantHandle] this IEnumerable<Result<TGame>> results)
         where TGame : class, IGame
     {
         var allResults = results.ToArray();
 
         var games = allResults
-            .Where(x => x.IsT0)
-            .Select(x => x.AsT0)
+            .Where(x => x.IsSuccess)
+            .Select(x => x.Value)
             .ToArray();
 
         var errors = allResults
-            .Where(x => x.IsT1)
-            .Select(x => x.AsT1)
+            .Where(x => x.IsFailed)
+            .Select(x => x.Errors)
             .ToArray();
 
         return (games, errors);
@@ -75,21 +75,21 @@ public static class Extensions
     /// <param name="result"></param>
     /// <typeparam name="TGame"></typeparam>
     /// <returns></returns>
-    public static bool IsGame<TGame>(this OneOf<TGame, ErrorMessage> result)
+    public static bool IsGame<TGame>(this Result<TGame> result)
         where TGame : class, IGame
     {
-        return result.IsT0;
+        return result.IsSuccess;
     }
 
     /// <summary>
-    /// Returns <c>true</c> if the result is of type <see cref="ErrorMessage"/>.
+    /// Returns <c>true</c> if the result IsFailed.
     /// </summary>
     /// <param name="result"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static bool IsError<T>(this OneOf<T, ErrorMessage> result)
+    public static bool IsError<T>(this Result<T> result)
     {
-        return result.IsT1;
+        return result.IsFailed;
     }
 
     /// <summary>
@@ -102,27 +102,29 @@ public static class Extensions
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the result is not of type <typeparamref name="TGame"/>.
+    /// TODO: Is this true for FluentResults?
     /// </exception>
-    public static TGame AsGame<TGame>(this OneOf<TGame, ErrorMessage> result)
+    public static TGame AsGame<TGame>(this Result<TGame> result)
         where TGame : class, IGame
     {
-        return result.AsT0;
+        return result.Value;
     }
 
     /// <summary>
-    /// Returns the <see cref="ErrorMessage"/> part of the result. This can
-    /// throw if the result is not of type <see cref="ErrorMessage"/>. Use
+    /// Returns the <see cref="IError"/> parts of the result. This can
+    /// throw if the result is not of type <see cref="IError"/>. Use
     /// <see cref="TryGetError{T}"/> instead.
     /// </summary>
     /// <param name="result"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when the result is not of type <see cref="ErrorMessage"/>.
+    /// Thrown when the result is not of type <see cref="IError"/>.
+    /// TODO: Is this true for FluentResults?
     /// </exception>
-    public static ErrorMessage AsError<T>(this OneOf<T, ErrorMessage> result)
+    public static IList<IError> AsErrors<T>(this Result<T> result)
     {
-        return result.AsT1;
+        return result.Errors;
     }
 
     /// <summary>
@@ -133,7 +135,7 @@ public static class Extensions
     /// <param name="game"></param>
     /// <typeparam name="TGame"></typeparam>
     /// <returns></returns>
-    public static bool TryGetGame<TGame>(this OneOf<TGame, ErrorMessage> result,
+    public static bool TryGetGame<TGame>(this Result<TGame> result,
         [MaybeNullWhen(false)] out TGame game)
         where TGame : class, IGame
     {
@@ -145,19 +147,19 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Returns the <see cref="ErrorMessage"/> part of the result using the
+    /// Returns the <see cref="IError"/> part of the result using the
     /// try-get pattern.
     /// </summary>
     /// <param name="result"></param>
-    /// <param name="error"></param>
+    /// <param name="errors"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static bool TryGetError<T>(this OneOf<T, ErrorMessage> result, out ErrorMessage error)
+    public static bool TryGetErrors<T>(this Result<T> result, out IList<IError> errors)
     {
-        error = default;
+        errors = new List<IError>();
         if (!result.IsError()) return false;
 
-        error = result.AsError();
+        errors = result.AsErrors();
         return true;
     }
 }

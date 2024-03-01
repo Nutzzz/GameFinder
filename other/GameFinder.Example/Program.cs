@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using CommandLine;
+using FluentResults;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
 using GameFinder.StoreHandlers.EADesktop;
@@ -22,7 +23,6 @@ using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets;
-using OneOf;
 using FileSystem = NexusMods.Paths.FileSystem;
 using IFileSystem = NexusMods.Paths.IFileSystem;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -202,32 +202,40 @@ public static class Program
 
         foreach (var result in prefixManager.FindPrefixes())
         {
-            result.Switch(prefix =>
+            if (result.IsFailed)
             {
-                logger.LogInformation("Found wine prefix at {PrefixConfigurationDirectory}", prefix.ConfigurationDirectory);
-                res.Add(prefix);
-            }, error =>
+                foreach (var error in result.Errors)
+                {
+                    logger.LogError("{Error}", error);
+                }
+            }
+            else
             {
-                logger.LogError("{Error}", error);
-            });
+                logger.LogInformation("Found wine prefix at {PrefixConfigurationDirectory}", result.Value.ConfigurationDirectory);
+                res.Add(result.Value);
+            }
         }
 
         return res;
     }
 
-    private static void LogGamesAndErrors<TGame>(IEnumerable<OneOf<TGame, ErrorMessage>> results, ILogger logger, Action<TGame>? action = null)
+    private static void LogGamesAndErrors<TGame>(IEnumerable<Result<TGame>> results, ILogger logger, Action<TGame>? action = null)
         where TGame : class
     {
         foreach (var result in results)
         {
-            result.Switch(game =>
+            if (result.IsFailed)
             {
-                logger.LogInformation("Found {Game}", game);
-                action?.Invoke(game);
-            }, error =>
+                foreach (var error in result.Errors)
+                {
+                    logger.LogError("{Error}", error);
+                }
+            }
+            else
             {
-                logger.LogError("{Error}", error);
-            });
+                logger.LogInformation("Found {Game}", result.Value);
+                action?.Invoke(result.Value);
+            }
         }
     }
 }

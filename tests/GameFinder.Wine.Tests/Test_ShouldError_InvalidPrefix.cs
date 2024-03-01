@@ -15,7 +15,7 @@ public partial class WineTests
         prefixManager.FindPrefixes().Should()
             .ContainSingle(result => result.IsError())
             .Which
-            .AsError()
+            .AsErrors()
             .Should()
             .Be($"Virtual C: drive does not exist at {virtualDriveDirectory}");
     }
@@ -32,7 +32,7 @@ public partial class WineTests
         prefixManager.FindPrefixes().Should()
             .ContainSingle(result => result.IsError())
             .Which
-            .AsError()
+            .AsErrors()[0]
             .Should()
             .Be($"System registry file does not exist at {systemRegistryFile}");
     }
@@ -52,7 +52,7 @@ public partial class WineTests
         prefixManager.FindPrefixes().Should()
             .ContainSingle(result => result.IsError())
             .Which
-            .AsError()
+            .AsErrors()[0]
             .Should()
             .Be($"User registry file does not exist at {userRegistryFile}");
     }

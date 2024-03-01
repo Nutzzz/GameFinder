@@ -20,7 +20,7 @@ public partial class BottlesTests
         prefixManager.FindPrefixes().Should()
             .ContainSingle(result => result.IsError())
             .Which
-            .AsError()
+            .AsErrors()[0]
             .Should()
             .Be($"Bottles configuration file is missing at {bottlesConfigFile}");
     }

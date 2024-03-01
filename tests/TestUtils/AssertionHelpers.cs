@@ -1,24 +1,24 @@
+using FluentResults;
 using GameFinder.Common;
-using OneOf;
 
 namespace TestUtils;
 
 public static class AssertionHelpers
 {
-    public static IEnumerable<TGame> ShouldOnlyBeGames<TGame>(this ICollection<OneOf<TGame, ErrorMessage>> results)
+    public static IEnumerable<TGame> ShouldOnlyBeGames<TGame>(this ICollection<Result<TGame>> results)
         where TGame : class, IGame
     {
         results.Should().AllSatisfy(result =>
         {
-            result.IsGame().Should().BeTrue(result.IsError() ? result.AsError().Message : string.Empty);
+            result.IsGame().Should().BeTrue(result.IsError() ? result.AsErrors()[0].Message : string.Empty);
             result.IsError().Should().BeFalse();
         });
 
         return results.Select(result => result.AsGame());
     }
 
-    private static ErrorMessage ShouldOnlyBeOneError<TGame>(
-        this ICollection<OneOf<TGame, ErrorMessage>> results)
+    private static IList<IError> ShouldOnlyBeOneError<TGame>(
+        this ICollection<Result<TGame>> results)
         where TGame : class, IGame
     {
         results.Should().ContainSingle();
@@ -27,10 +27,10 @@ public static class AssertionHelpers
         result.IsError().Should().BeTrue();
         result.IsGame().Should().BeFalse();
 
-        return result.AsError();
+        return result.AsErrors();
     }
 
-    public static ErrorMessage ShouldOnlyBeOneError<TGame, TId>(
+    public static IList<IError> ShouldOnlyBeOneError<TGame, TId>(
         this AHandler<TGame, TId> handler)
         where TGame : class, IGame
         where TId : notnull

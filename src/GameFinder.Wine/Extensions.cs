@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using FluentResults;
 using GameFinder.Common;
 using JetBrains.Annotations;
-using OneOf;
 
 namespace GameFinder.Wine;
 
@@ -18,10 +18,10 @@ public static class Extensions
     /// <param name="result"></param>
     /// <typeparam name="TPrefix"></typeparam>
     /// <returns></returns>
-    public static bool IsPrefix<TPrefix>(this OneOf<TPrefix, ErrorMessage> result)
+    public static bool IsPrefix<TPrefix>(this Result<TPrefix> result)
         where TPrefix : AWinePrefix
     {
-        return result.IsT0;
+        return result.IsSuccess;
     }
 
     /// <summary>
@@ -35,10 +35,10 @@ public static class Extensions
     /// <exception cref="InvalidOperationException">
     /// Thrown when the result is not of type <typeparamref name="TPrefix"/>.
     /// </exception>
-    public static TPrefix AsPrefix<TPrefix>(this OneOf<TPrefix, ErrorMessage> result)
+    public static TPrefix AsPrefix<TPrefix>(this Result<TPrefix> result)
         where TPrefix : AWinePrefix
     {
-        return result.AsT0;
+        return result.Value;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public static class Extensions
     /// <typeparam name="TPrefix"></typeparam>
     /// <returns></returns>
     public static bool TryGetPrefix<TPrefix>(
-        this OneOf<TPrefix, ErrorMessage> result,
+        this Result<TPrefix> result,
         [MaybeNullWhen(false)] out TPrefix prefix)
         where TPrefix : AWinePrefix
     {

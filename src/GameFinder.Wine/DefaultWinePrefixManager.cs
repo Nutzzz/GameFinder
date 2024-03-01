@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using FluentResults;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
-using OneOf;
 
 namespace GameFinder.Wine;
 
@@ -27,43 +27,48 @@ public class DefaultWinePrefixManager : IWinePrefixManager<WinePrefix>
     }
 
     /// <inheritdoc/>
-    public IEnumerable<OneOf<WinePrefix, ErrorMessage>> FindPrefixes()
+    public IEnumerable<Result<WinePrefix>> FindPrefixes()
     {
         foreach (var defaultWinePrefixLocation in GetDefaultWinePrefixLocations(_fileSystem))
         {
             if (!_fileSystem.DirectoryExists(defaultWinePrefixLocation)) continue;
 
             var res = IsValidPrefix(_fileSystem, defaultWinePrefixLocation);
-            yield return res.Match<OneOf<WinePrefix, ErrorMessage>>(
-                _ => new WinePrefix
+            if (res.IsFailed)
+            {
+                yield return Result.Fail(res.AsErrors());
+            }
+            else
+            {
+                yield return Result.Ok(new WinePrefix
                 {
                     ConfigurationDirectory = defaultWinePrefixLocation,
-                },
-                error => error);
+                });
+            }
         }
     }
 
-    internal static OneOf<bool, ErrorMessage> IsValidPrefix(IFileSystem fileSystem, AbsolutePath directory)
+    internal static Result<bool> IsValidPrefix(IFileSystem fileSystem, AbsolutePath directory)
     {
         var virtualDrive = directory.Combine("drive_c");
         if (!fileSystem.DirectoryExists(virtualDrive))
         {
-            return new ErrorMessage($"Virtual C: drive does not exist at {virtualDrive}");
+            return Result.Fail($"Virtual C: drive does not exist at {virtualDrive}");
         }
 
         var systemRegistryFile = directory.Combine("system.reg");
         if (!fileSystem.FileExists(systemRegistryFile))
         {
-            return new ErrorMessage($"System registry file does not exist at {systemRegistryFile}");
+            return Result.Fail($"System registry file does not exist at {systemRegistryFile}");
         }
 
         var userRegistryFile = directory.Combine("user.reg");
         if (!fileSystem.FileExists(userRegistryFile))
         {
-            return new ErrorMessage($"User registry file does not exist at {userRegistryFile}");
+            return Result.Fail($"User registry file does not exist at {userRegistryFile}");
         }
 
-        return true;
+        return Result.Ok(true);
     }
 
     internal static IEnumerable<AbsolutePath> GetDefaultWinePrefixLocations(IFileSystem fileSystem)
