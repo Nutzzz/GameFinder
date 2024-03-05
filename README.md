@@ -3,7 +3,9 @@
 
 [![CI](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml/badge.svg)](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/Nutzzz/GameCollector/branch/master/graph/badge.svg?token=ARU010EHZ4)](https://codecov.io/gh/Nutzzz/GameCollector)
 
-.NET library for finding games. GameCollector expands on upstream GameFinder (which is primarily designed to support modding tools), by adding additional supported store launchers, emulators, and data sources, and includes additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). The following launchers and emulators are supported:
+.NET library for finding games. GameCollector expands on upstream GameFinder (which is primarily designed to support modding tools), by adding additional supported store launchers, emulators, and data sources, and includes additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). This fork is indebted to erri120's hard work, but as [he is reticent](https://github.com/erri120/GameFinder/issues/49) to expand the scope of GameFinder, GameCollector continues with a different philosophy.
+
+The following launchers and emulators are supported:
 
 | handler | package |
 | -- | -- |
@@ -34,7 +36,7 @@
 | Wargaming.net Game Center | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.WargamingNet)](https://www.nuget.org/packages/GameCollector.StoreHandlers.WargamingNet) |
 | [Xbox Game Pass](#xbox-game-pass) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Xbox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Xbox) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) |
 
-If you are interested in understanding _how_ GameCollector/GameFinder finds these games, check [the upstream wiki](https://github.com/erri120/GameFinder/wiki) for more information.
+If you are interested in understanding _how_ GameCollector/GameFinder finds these games, check [the upstream wiki](https://github.com/erri120/GameFinder/wiki) for more information (descriptions of the added handlers should eventually be added to a wiki here).
 
 Additionally, the following Linux tools are supported:
 
@@ -160,7 +162,7 @@ The following handlers have been added for GameCollector. They are all Windows-o
 ### General
 
 - Known issues: See [GameCollector issues here](https://github.com/Nutzzz/GameCollector/issues) or [upstream GameFinder issues here](https://github.com/erri120/GameFinder/issues). Please do not submit bugs/requests for GameCollector on GameFinder's GitHub.
-- DLCs/clones: When an entry is detected as a DLC addon (or a clone in the MAME handler), the BaseGame field is set to the ID of the main game (or sometimes "False" when it can't be determined). To hide DLCs from the consumer application, use FindAllGames(baseOnly: true), or do not use entries with a non-null BaseGame.
+- DLCs/clones: When an entry is detected as a DLC addon (or a clone in the MAME handler), the BaseGame field is set to the ID of the main game (or sometimes the string "False" when the relationship can't be determined). To hide DLCs from the consumer application, use FindAllGames(baseOnly: true), or do not use entries with a non-null BaseGame.
 - Owned not-installed games: Some handlers can find owned not-installed games. To support this feature for Steam games, [see note below](#steam). To show only installed games, use FindAllGames(installedOnly: true), or do not use entries where IsInstalled is False.
 
 ### Dolphin/MAME
@@ -185,7 +187,7 @@ Steam is supported natively on Windows and Linux. Use [SteamDB](https://steamdb.
 var handler = new SteamHandler(FileSystem.Shared, OperatingSystem.IsWindows() ? WindowsRegistry.Shared : null);
 ```
 
-GameCollector adds the ability to check a Steam profile for owned not-installed games. A specific [Steam ID](https://store.steampowered.com/account) may be specified, though it will automatically attempt to find one. However, this feature requires that [an API key be activated](https://steamcommunity.com/dev/apikey) and specified, and the [user profile set to public](https://steamcommunity.com/my/edit/settings).
+**GameCollector adds the ability to check a Steam profile for owned not-installed games. A specific [Steam ID](https://store.steampowered.com/account) may be specified, though it will automatically attempt to find one. However, this feature requires that [an API key be activated](https://steamcommunity.com/dev/apikey) and specified, and the [user profile set to public](https://steamcommunity.com/my/edit/settings).**
 
 ### GOG Galaxy
 
@@ -209,7 +211,7 @@ var wineRegistry = winePrefix.CreateRegistry(FileSystem.Shared);
 var handler = new GOGHandler(wineRegistry, wineFileSystem);
 ```
 
-GameCollector adds finding owned not-installed GOG games.
+**GameCollector adds finding owned not-installed GOG games.**
 
 ### Epic Games Store
 
@@ -233,7 +235,7 @@ var wineRegistry = winePrefix.CreateRegistry(FileSystem.Shared);
 var handler = new EGSHandler(wineRegistry, wineFileSystem);
 ```
 
-GameCollector adds finding owned not-installed EGS games.
+**GameCollector adds finding owned not-installed EGS games.**
 
 ### Origin
 

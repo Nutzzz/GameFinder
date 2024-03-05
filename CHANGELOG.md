@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com).
 
-Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit is used for hotfixes or pre-release versions, in this case since GameCollector is still in its infancy, breaking changes may occur regularly between releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme may need to be used.
+Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used unless erri120 changes his mind and 
 
 # Changelog
 
@@ -22,22 +22,22 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
-## [4.2.0-6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-04
+## [4.2.0-6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-05
 
 ### Changed
 
-- Set single-file publish options for GameFinder.Example, and rename its assembly to output GameCollector.exe
+- GameFinder.Example: Set single-file publish options, and rename assembly to output GameCollector.exe
 
 ### Fixed
 
-- Fix crash in EADesktopHandler when multiple video controllers exist
-- Ignore "Audience" entries for Epic
+- EADesktop: Fix crash when multiple video controllers exist
+- EGS: Ignore "GeneralAudience" and game engine entries; for installed items, set duplicate namespace entries as DLCs
 
 ## [4.2.0-5](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...v4.2.0.5) - 2024-02-25
 
 ### Added
 
-- Add installedOnly and baseOnly flags to GameFinder.Example
+- GameFinder.Example: Add installedOnly and baseOnly flags
 
 ### Changed
 
@@ -46,11 +46,11 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ### Fixed
 
-- Fix duplicate GOG entries
-- Fix Epic not-installed owned games being marked as installed
-- Warn when Oculus needs admin rights to stop OVRService
-- Fix titles for EA not-installed owned games
-- Don't show "Steamworks Common Redistributables"
+- GOG: Fix duplicate entries
+- EGS: Fix not-installed owned games being marked as installed
+- Oculus: Warn when admin rights are needed to stop OVRService
+- EADesktop: Fix titles for not-installed owned games
+- Steam: Don't show "Steamworks Common Redistributables"
 
 ## [4.2.0-4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
 
@@ -63,7 +63,7 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ### Changed
 
-- EADesktop handler now checks installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
+- EADesktop: check installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
 
 ## [4.2.0-2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
 
