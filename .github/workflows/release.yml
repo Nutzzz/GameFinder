@@ -10,6 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
 
     steps:
     - name: Get version from input
@@ -96,9 +99,11 @@ jobs:
       with:
         tag_name: v${{ steps.tag_name.outputs.current_dotnetver }}
         name: Release ${{ steps.changelog_reader.outputs.version }}
+        # TODO: Get prior version to prepend to body:
+        #**Full Changelog**: https://github.com/Nutzzz/GameCollector/compare/v1.2.3.3...v1.2.3.4
         body: ${{ steps.changelog_reader.outputs.changes }}
         draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
-        prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
+        #prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
         files: |
           Linux/GameCollector
           Windows/GameCollector.exe
