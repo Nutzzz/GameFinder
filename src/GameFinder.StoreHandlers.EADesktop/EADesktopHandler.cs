@@ -322,27 +322,27 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
 
         var softwareId = installInfo.SoftwareId;
         var isDLC = false;
-        var baseSlug = installInfo.BaseSlug ?? "";
+        var baseSlug = installInfo.BaseSlug ?? softwareId;
 
         // only catches some DLC
         if (!string.IsNullOrEmpty(installInfo.DLCSubPath))
         {
             if (baseOnly)
-                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) is a DLC");
+                return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" is a DLC");
             isDLC = true;
         }
 
         if (string.IsNullOrEmpty(installInfo.BaseInstallPath))
         {
             if (installedOnly)
-                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"baseInstallPath\"");
+                return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" does not have the value \"baseInstallPath\"");
             isInstalled = false;
         }
 
         if (string.IsNullOrEmpty(installInfo.ExecutableCheck) && string.IsNullOrEmpty(installInfo.ExecutablePath))
         {
             if (installedOnly)
-                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"executableCheck\" or \"executablePath\"");
+                return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" does not have the value \"executableCheck\" or \"executablePath\"");
             isInstalled = false;
         }
 
@@ -401,7 +401,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                 if (j == 1)
                 {
                     if (baseOnly)
-                        return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) is a DLC");
+                        return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" is a DLC");
                     isDLC = true;
                 }
                 else if (j > 1)
