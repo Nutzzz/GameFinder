@@ -114,23 +114,26 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             return allGames;
         }
 
-        Dictionary<EGSGameId, OneOf<EGSGame, ErrorMessage>> installedGames = new();
+        Dictionary<EGSGameId, OneOf<EGSGame, ErrorMessage>> installedDict = new();
         foreach (var itemFile in itemFiles)
         {
             var game = DeserializeGame(itemFile, FormatPolicy, baseOnly);
-            try
+            if (game.IsT0)
             {
-                installedGames.Add(game.IsT0 ? game.AsT0.CatalogItemId : EGSGameId.From(""), game);
+                try
+                {
+                    installedDict.Add(game.AsT0.CatalogItemId, game);
+                }
+                catch (Exception e)
+                {
+                    installedDict.Add(EGSGameId.From(installedDict.Count.ToString()), new ErrorMessage(e, $"Exception adding \"{game.AsT0.GameName}\" [{game.AsT0.CatalogItemId}]"));
+                }
+                continue;
             }
-            catch (Exception e)
-            {
-                installedGames.Add(EGSGameId.From(""), new ErrorMessage(e, $"Exception adding \"{game.AsT0.GameName}\" [{game.AsT0.CatalogItemId}]"));
-            }
+            installedDict.TryAdd(EGSGameId.From(installedDict.Count.ToString()), game);
         }
-        if (installedOnly)
-            return installedGames.Values;
 
-        return GetOwnedGames(installedGames, _fileSystem, baseOnly);
+        return GetOwnedGames(installedDict, _fileSystem, installedOnly, baseOnly);
     }
 
     [UnconditionalSuppressMessage(
@@ -164,22 +167,24 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                     return new ErrorMessage(formatMessage);
             }
 
+            var id = manifest.CatalogItemId ?? "";
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (manifest.CatalogItemId is null)
+            if (string.IsNullOrEmpty(id))
             {
                 return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"CatalogItemId\"");
             }
 
+            var title = manifest.DisplayName ?? "";
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (manifest.DisplayName is null)
+            if (string.IsNullOrEmpty(title))
             {
-                return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"DisplayName\"");
+                return new ErrorMessage($"[{id}] Manifest {itemFile.GetFullPath()} does not have a value \"DisplayName\"");
             }
 
             var loc = manifest.InstallLocation ?? "";
             if (string.IsNullOrEmpty(loc) || !Path.IsPathRooted(loc))
             {
-                return new ErrorMessage($"Manifest {itemFile.GetFullPath()} does not have a value \"InstallLocation\"");
+                return new ErrorMessage($"\"{title}\" [{id}] Manifest {itemFile.GetFullPath()} does not have a value \"InstallLocation\"");
             }
 
             var isDLC = false;
@@ -188,15 +193,15 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             if (string.IsNullOrEmpty(exe))
             {
                 if (baseOnly)
-                    return new ErrorMessage($"Manifest {itemFile.GetFullPath()} is a DLC or has no LaunchExecutable");
+                    return new ErrorMessage($"\"{title}\" [{id}] Manifest {itemFile.GetFullPath()} is a DLC or has no LaunchExecutable");
                 isDLC = true;
             }
             else
                 launch = _fileSystem.FromUnsanitizedFullPath(loc).Combine(exe);
 
             var game = new EGSGame(
-                CatalogItemId: EGSGameId.From(manifest.CatalogItemId),
-                DisplayName: manifest.DisplayName,
+                CatalogItemId: EGSGameId.From(id),
+                DisplayName: title,
                 InstallLocation: _fileSystem.FromUnsanitizedFullPath(loc),
                 CloudSaveFolder: new(),
                 InstallLaunch: launch,
