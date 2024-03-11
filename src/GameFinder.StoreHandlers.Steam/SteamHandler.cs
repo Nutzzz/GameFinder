@@ -114,7 +114,8 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
         foreach (var libraryFolder in libraryFolders)
         {
             var libraryFolderPath = libraryFolder.Path;
-            if (!_fileSystem.DirectoryExists(libraryFolderPath))
+            if (!_fileSystem.DirectoryExists(libraryFolderPath) ||
+                !_fileSystem.DirectoryExists(libraryFolderPath.Combine(Models.LibraryFolder.SteamAppsDirectoryName)))
             {
                 allGames.Add(new ErrorMessage($"Steam Library at {libraryFolderPath} doesn't exist!"));
                 continue;
