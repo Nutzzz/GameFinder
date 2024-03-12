@@ -39,7 +39,7 @@ using GameCollector.StoreHandlers.Ubisoft;
 using GameCollector.StoreHandlers.WargamingNet;
 using GameCollector.EmuHandlers.Dolphin;
 using GameCollector.EmuHandlers.MAME;
-//using GameCollector.DataHandlers.TheGamesDb;
+using GameCollector.DataHandlers.TheGamesDb;
 using Microsoft.Extensions.Logging;
 using NexusMods.Paths;
 using NLog;
@@ -145,7 +145,7 @@ public static class Program
             options.RobotCache = true;
             options.Rockstar = true;
             options.Steam = true;
-            //options.TheGamesDB = true;
+            options.TheGamesDB = true;
             options.Ubisoft = true;
             options.Wargaming = true;
             options.Xbox = true;
@@ -259,9 +259,17 @@ public static class Program
                 RunSteamHandler(realFileSystem, registry: null, options.SteamAPI, i, p);
         }
 
-        //if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI, i, p), cancelToken));
+        if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI, i, p), cancelToken));
 
         Task.WaitAll(tasks.ToArray(), cancelToken);
+
+        /*
+        Parallel.ForEach(tasks, task =>
+        {
+            task.Start();
+        });
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+        */
 
         /*
         Parallel.ForEach(tasks, task =>
@@ -464,7 +472,6 @@ public static class Program
         LogGamesAndErrors(handler.FindAllGames(installed, baseOnly), logger);
     }
 
-    /*
     private static async void RunTheGamesDbHandler(IFileSystem fileSystem, string? tgdbApi, bool installed = false, bool baseOnly = false)
     {
         var logger = _provider.CreateLogger(nameof(TheGamesDbHandler));
@@ -472,7 +479,6 @@ public static class Program
         var handler = new TheGamesDbHandler(fileSystem, registry: null, logger);
         LogGamesAndErrors(handler.FindAllGames(installed, baseOnly), logger);
     }
-    */
 
     private static List<AWinePrefix> LogWinePrefixes<TWinePrefix>(IWinePrefixManager<TWinePrefix> prefixManager, ILogger logger)
     where TWinePrefix : AWinePrefix
