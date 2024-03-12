@@ -4,7 +4,8 @@
         <InternalsVisibleTo Include="GameFinder.Common.Tests" />
     </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NexusMods.Paths" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NexusMods.Paths" />
+        <PackageReference Include="System.ServiceProcess.ServiceController" />
+    </ItemGroup>
 </Project>

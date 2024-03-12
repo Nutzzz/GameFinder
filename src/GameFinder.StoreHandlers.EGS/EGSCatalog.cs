@@ -52,32 +52,71 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                     }
 
                     var id = "";
+                    var title = "";
                     var space = "";
                     var imageUrl = "";
                     var wideImageUrl = "";
                     var appId = "";
                     var savePath = "";
-                    string? baseGame = null;
-
-                    if (game.MainGameItem is not null)
-                    {
-                        if (baseOnly)
-                        {
-                            games.Add(new ErrorMessage($"{id} is a DLC"));
-                            continue;
-                        }
-                        baseGame = game.MainGameItem.Id;
-                    }
-
-                    space = game.Namespace ?? "";
-                    // skip Twinmotion and Unreal Engine
-                    if (space.Equals("poodle", StringComparison.OrdinalIgnoreCase) ||
-                        space.Equals("ue", StringComparison.OrdinalIgnoreCase))
-                        continue;
+                    string? mainGame = null;
 
                     id = game.Id ?? "";
                     if (string.IsNullOrEmpty(id))
                         continue;
+
+                    // File seems to be encoded to Base64 improperly, so we need to remove Unicode replacement character
+                    title = (game.Title ?? "").Replace("?", "", StringComparison.Ordinal) ?? id;
+                    if (string.IsNullOrEmpty(title))
+                        title = id;
+
+                    if (game.MainGameItem is not null && !string.IsNullOrEmpty(game.MainGameItem.Id))
+                    {
+                        if (baseOnly)
+                        {
+                            games.Add(new ErrorMessage($"\"{title}\" is a DLC of {game.MainGameItem.Id}"));
+                            continue;
+                        }
+                        mainGame = game.MainGameItem.Id;
+                    }
+
+                    space = game.Namespace ?? "";
+                    // skip Twinmotion
+                    if (space.Equals("poodle", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    List<string> genres = new();
+                    if (game.Categories is not null)
+                    {
+                        var audience = false;
+                        var engines = false;
+                        foreach (var category in game.Categories)
+                        {
+                            // skip "audience" and "engines" categories (but "games", "software", "applications", etc. OK)
+                            if (category is not null && category.Path is not null)
+                            {
+                                if (category.Path.Equals("audience", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    audience = true;
+                                    break;
+                                }
+                                if (category.Path.Equals("engines", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    engines = true;
+                                    break;
+                                }
+                                genres.Add(category?.Name ?? "");
+                            }
+                        }
+                        if (audience)
+                            continue;
+
+                        if (engines)
+                        {
+                            games.Add(new ErrorMessage($"\"{title}\" is game engine-related"));
+                            continue;
+                        }
+                    }
+
                     if (game.ReleaseInfo is not null)
                     {
                         foreach (var info in game.ReleaseInfo)
@@ -103,14 +142,15 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
 
                     games.Add(new EGSGame(
                         CatalogItemId: EGSGameId.From(id),
-                        // File seems to be encoded to Base64 improperly, so we need to remove Unicode replacement character
-                        DisplayName: (game.Title ?? "").Replace("?", "", StringComparison.Ordinal),
+                        DisplayName: title,
                         InstallLocation: new(),
                         CloudSaveFolder: Path.IsPathRooted(savePath) ? fileSystem.FromUnsanitizedFullPath(savePath) : new(),
-                        MainGame: baseGame,
+                        IsInstalled: false,
+                        MainGame: mainGame,
                         ImageTallUrl: imageUrl,
                         ImageUrl: wideImageUrl,
                         Developer: game.Developer ?? "",
+                        Categories: genres,
                         Namespace: space,
                         AppId: appId));
                 }
@@ -123,41 +163,100 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
         return games;
     }
 
-    private static IEnumerable<OneOf<EGSGame, ErrorMessage>> GetOwnedGames(
-        Dictionary<EGSGameId, OneOf<EGSGame, ErrorMessage>> installedGames,
+    private static List<OneOf<EGSGame, ErrorMessage>> GetOwnedGames(
+        Dictionary<EGSGameId, OneOf<EGSGame, ErrorMessage>> installedDict,
         IFileSystem fileSystem,
+        bool installedOnly = false,
         bool baseOnly = false)
     {
-        List<OneOf<EGSGame, ErrorMessage>> allGames = new();
+        List<OneOf<EGSGame, ErrorMessage>> ownedList = new();
+        List<OneOf<EGSGame, ErrorMessage>> installedList = new();
+        Dictionary<string, EGSGameId> namespaces = new(StringComparer.OrdinalIgnoreCase);
 
         var ownedGames = ParseCatCacheFile(fileSystem, baseOnly);
         foreach (var game in ownedGames)
         {
+            if (game.IsT0)
+                namespaces.TryAdd(game.AsT0.Namespace, game.AsT0.CatalogItemId);
+        }
+        foreach (var game in ownedGames)
+        {
             if (game.IsT1)
             {
-                allGames.Add(game);
+                ownedList.Add(game);
                 continue;
             }
-
             var id = game.AsT0.CatalogItemId;
-            if (!installedGames.ContainsKey(id))
+            var mainGame = game.AsT0.MainGame;
+            if (!installedDict.ContainsKey(id))
             {
-                allGames.Add(game);
+                if (string.IsNullOrEmpty(mainGame) && namespaces.TryGetValue(game.AsT0.Namespace, out var value) && !id.Equals(value))
+                {
+                    ownedList.Add(new ErrorMessage($"\"{game.AsT0.DisplayName}\" is a DLC or alternate install of {value}"));
+                    if (baseOnly)
+                        continue;
+                    mainGame = value.ToString();
+                }
+                if (!installedOnly)
+                    ownedList.Add(game);
                 continue;
             }
-            allGames.Add(new EGSGame(
+            installedList.Add(new EGSGame(
                 CatalogItemId: id,
-                DisplayName: installedGames[id].AsT0.DisplayName,
-                InstallLocation: installedGames[id].AsT0.InstallLocation,
+                DisplayName: installedDict[id].AsT0.DisplayName,
+                InstallLocation: installedDict[id].AsT0.InstallLocation,
                 CloudSaveFolder: game.AsT0.CloudSaveFolder,
-                InstallLaunch: installedGames[id].AsT0.InstallLaunch,
+                InstallLaunch: installedDict[id].AsT0.InstallLaunch,
                 IsInstalled: true,
-                MainGame: game.AsT0.BaseGame,
+                MainGame: mainGame,
                 ImageTallUrl: game.AsT0.ImageTallUrl,
                 ImageUrl: game.AsT0.ImageUrl,
-                Developer: game.AsT0.Developer));
+                Developer: game.AsT0.Developer,
+                Namespace: game.AsT0.Namespace,
+                AppId: game.AsT0.AppId));
         }
 
-        return allGames;
+        foreach (var error in installedDict)
+        {
+            if (error.Value.IsT1)
+                installedList.Add(error.Value);
+        }
+
+        /*
+        foreach (var installed in installedList)
+        {
+            if (installed.IsT0)
+            {
+                foreach (var owned in ownedList)
+                {
+                    if (owned.IsT0 && owned.AsT0.Namespace.Equals(installed.AsT0.Namespace, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _ = ownedList.Remove(owned);
+                        if (!baseOnly)
+                        {
+                            ownedList.Add(new EGSGame(
+                                CatalogItemId: owned.AsT0.CatalogItemId,
+                                DisplayName: owned.AsT0.DisplayName,
+                                InstallLocation: default,
+                                IsInstalled: false,
+                                MainGame: installed.AsT0.CatalogItemId.ToString(),
+                                ImageTallUrl: owned.AsT0.ImageTallUrl,
+                                ImageUrl: owned.AsT0.ImageUrl,
+                                Developer: owned.AsT0.Developer,
+                                Namespace: owned.AsT0.Namespace,
+                                AppId: owned.AsT0.AppId));
+                        }
+                        else
+                            ownedList.Add(new ErrorMessage($"{owned.AsT0.DisplayName} is a DLC or alternate install"));
+
+                        break;
+                    }
+                }
+            }
+        }
+        */
+
+        ownedList.AddRange(installedList);
+        return ownedList;
     }
 }

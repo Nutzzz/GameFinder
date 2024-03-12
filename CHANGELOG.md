@@ -2,67 +2,97 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com) and this project adheres to [Semantic Versioning](https://semver.org).
+The format is based on [Keep a Changelog](https://keepachangelog.com).
 
-# Changelog
+Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used.
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.7...HEAD)
 
 **TODO**:
 
 - Fix/add unit tests
 - Update documentation
+- For more, see [Issues](https://github.com/Nutzzz/GameCollector/issues)
 
 **WIP**:
 
-- Add DataHandlers to download metadata and images from online sources
+- Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
-## [4.2.0.4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
+### Added
+
+- GameFinder.Common: Add enum to GameData record to identify the handler
+- EGS: Add Categories to Genres metadata (though this is mostly "games", "software", and "applications")
+
+### Fixed
+
+- EGS: Fix crash introduced in 4.2.0-6; DLC behavior should work properly now
+- Plarium: Correct titles in some cases; skip games with missing data
+- Steam: Fix crash when library is missing
+
+## [4.2.0-7](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...v4.2.0.7) - 2024-03-12
+
+## [4.2.0-6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-05
+
+### Changed
+
+- GameFinder.Example: Set single-file publish options, and rename assembly to output GameCollector.exe
+
+### Fixed
+
+- EADesktop: Fix crash when multiple video controllers exist
+- EGS: Ignore "GeneralAudience" and game engine entries; for installed items, set duplicate namespace entries as DLCs
+
+## [4.2.0-5](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.4...v4.2.0.5) - 2024-02-25
+
+### Added
+
+- GameFinder.Example: Add installedOnly and baseOnly flags
+
+### Changed
+
+- Change order of parameters for EmuHandlers to be consistent with the inconsistent upstream ordering (based on whether the registry is required)
+- Update dependencies
+
+### Fixed
+
+- GOG: Fix duplicate entries
+- EGS: Fix not-installed owned games being marked as installed
+- Oculus: Warn when admin rights are needed to stop OVRService
+- EADesktop: Fix titles for not-installed owned games
+- Steam: Don't show "Steamworks Common Redistributables"
+
+## [4.2.0-4](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.3...v4.2.0.4) - 2024-02-14
+
+### Changed
 
 - Update namespaces of StoreHandlers from upstream to prevent confusion
 - Make nullable arguments optional
 
-## [4.2.0.3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...v4.2.0.3) - 2024-02-14
+## [4.2.0-3](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.2...v4.2.0.3) - 2024-02-14
 
-- EADesktop handler now checks installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
+### Changed
 
-## [4.2.0.2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
+- EADesktop: check installerdata.xml for contentIDs and gameTitles; title from installCheck in IS file if not installed
 
-**Changes**:
+## [4.2.0-2](https://github.com/erri120/GameFinder/compare/v2.5.0...Nutzzz:GameCollector:v4.2.0.2) - 2024-02-08
 
-- Added a generic `record GameData` to collect data for all handlers:
-  - `string GameId`
-  - `string GameName`
-  - `AbsolutePath GamePath`
-  - `AbsolutePath? SavePath`
-  - `AbsolutePath Launch`
-  - `string LaunchArgs`
-  - `string LaunchUrl`
-  - `AbsolutePath Icon`
-  - `AbsolutePath Uninstall`
-  - `string UninstallArgs`
-  - `string UninstallUrl`
-  - `DateTime? InstallDate`
-  - `DateTime? LastRunDate`
-  - `uint NumRuns`
-  - `TimeSpan? RunTime`
-  - `bool IsInstalled`
-  - `bool IsHidden`
-  - `bool HasProblem`
-  - `List<string>? Tags`
-  - `ushort? MyRating`
-  - `string? BaseGame`
-  - `Dictionary<string, List<string>>? Metadata`
-- Metadata Dictionary may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
-- The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
+Initial release of GameCollector
+
+### Added
+
+- Added a generic `record GameData` to collect data for all handlers
+- The `IGame` implementations from GameFinder are subclasses of `GameData`. This should hopefully make merging with upstream easier.
 - Added emulators:
   - Dolphin, MAME
 - Added additional store launchers:
-  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Robot Cache, Rockstar, Ubisoft, Wargaming.net
-- Add `FindClient` to get path to store client executable.
+  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, RobotCache, Rockstar, Ubisoft, Wargaming.net
+- Add `FindClient()` to get path to store client executable.
 - EADesktop handler now attempts to get a proper game title from the Registry.
+
+### Changed
+
 - EGS and GOG handlers now use the client databases to find owned not-installed games and acquire additional information about all games. The GOG handler will be able to continue to find installed games even after a Windows system reset or reinstall.
 - Steam handler can now optionally use [SteamWebAPI2](https://github.com/babelshift/SteamWebAPI2) library to collect information about owned, not-installed games. This feature requires an API key to be specified and the user profile must be set to public.
 

@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace GameFinder.Example;
+namespace GameCollector;
 
 public class Options
 {
@@ -128,4 +128,14 @@ public class Options
 
     [Option('b', "bottles", HelpText = "Search for Wine prefixes managed with Bottles")]
     public bool Bottles { get; set; } = false;
+
+    [Option('i', "installed", HelpText = "Only retrieve installed games")]
+    public bool Installed { get; set; } = false;
+
+    // alias for "parent"
+    [Option("base", HelpText = "Only retrieve base games (no DLCs or clones)", Hidden = true)]
+    public bool Base { get; set; } = false;
+
+    [Option('p', "parent", HelpText = "Only retrieve base games (no DLCs or clones)")]
+    public bool Parent { get; set; } = false;
 }

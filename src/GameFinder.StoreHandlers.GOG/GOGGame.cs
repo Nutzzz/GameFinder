@@ -24,6 +24,7 @@ namespace GameCollector.StoreHandlers.GOG;
 /// <param name="IsHidden"></param>
 /// <param name="Tags"></param>
 /// <param name="MyRating"></param>
+/// <param name="ParentId"></param>
 /// <param name="ReleaseDate"></param>
 /// <param name="BoxArtUrl"></param>
 /// <param name="LogoUrl"></param>
@@ -43,11 +44,13 @@ public record GOGGame(GOGGameId Id,
                       bool IsHidden = false,
                       IList<string>? Tags = null,
                       ushort? MyRating = null,
+                      GOGGameId? ParentId = default,
                       DateTime? ReleaseDate = null,
                       string BoxArtUrl = "",
                       string LogoUrl = "",
                       string IconUrl = "") :
-    GameData(GameId: Id.ToString() ?? "",
+    GameData(Handler: Handlers.StoreHandler_GOG,
+             GameId: Id.ToString() ?? "",
              GameName: Name,
              GamePath: Path,
              Launch: Launch,
@@ -61,6 +64,7 @@ public record GOGGame(GOGGameId Id,
              IsHidden: IsHidden,
              Tags: Tags,
              MyRating: MyRating,
+             BaseGame: ParentId.ToString(),
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { ReleaseDate is null ? "" : ((DateTime)ReleaseDate).ToString(CultureInfo.InvariantCulture) },

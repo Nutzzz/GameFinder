@@ -76,6 +76,8 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
     /// <inheritdoc/>
     public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
     {
+        Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> allGames = new();
+
         try
         {
             var localMachine = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
@@ -98,12 +100,64 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 };
             }
 
-            var games = FindGamesFromDatabase(installedOnly).ToList();
-            games.AddRange(subKeyNames
-                .Select(subKeyName => ParseSubKey(gogKey, subKeyName))
-                .ToArray());
+            Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> installedGames = new();
+            foreach (var subKeyName in subKeyNames)
+            {
+                var reg = ParseSubKey(gogKey, subKeyName, baseOnly);
+                GOGGameId id = default;
+                if (reg.IsT0)
+                    id = reg.AsT0.Id;
+                _ = installedGames.TryAdd(id, reg);
+            }
 
-            return games;
+            var ownedGames = FindGamesFromDatabase(installedGames, installedOnly).ToDictionary();
+            foreach (var owned in ownedGames)
+            {
+                if (owned.Value.IsT0)
+                {
+                    var reg = owned.Value.AsT0;
+                    if (installedGames.TryGetValue(owned.Key, out var installed))
+                    {
+                        var db = installed.AsT0;
+                        allGames.Add(owned.Key, new GOGGame(
+                            Id: owned.Key,
+                            Name: db.Name,
+                            Path: db.Path == default ? reg.Path : db.Path,
+                            Launch: db.Launch == default ? (reg.Exe.FileExists ? reg.Exe : new()) : db.Launch,
+                            LaunchParam: string.IsNullOrEmpty(db.LaunchParam) ? reg.LaunchParam : db.LaunchParam,
+                            LaunchUrl: db.LaunchUrl,
+                            Exe: db.Exe == default ? reg.Exe : db.Exe,
+                            UninstallCommand: reg.UninstallCommand,
+                            InstallDate: db.InstallDate,
+                            LastPlayedDate: db.LastPlayedDate,
+                            IsInstalled: db.IsInstalled,
+                            IsHidden: db.IsHidden,
+                            Tags: db.Tags,
+                            MyRating: db.MyRating,
+                            ReleaseDate: db.ReleaseDate,
+                            BoxArtUrl: db.BoxArtUrl,
+                            LogoUrl: db.LogoUrl,
+                            IconUrl: db.IconUrl));
+                    }
+                    else
+                        allGames.Add(owned.Key, owned.Value);
+                }
+                else
+                    _ = allGames.TryAdd(default, owned.Value);
+            }
+
+            foreach (var installed in installedGames)
+            {
+                if (installed.Value.IsT0)
+                {
+                    if (!allGames.ContainsKey(installed.Key))
+                        allGames.Add(installed.Key, installed.Value);
+                }
+                else
+                    _ = allGames.TryAdd(default, installed.Value);
+            }
+
+            return allGames.Values;
         }
         catch (Exception e)
         {
@@ -114,7 +168,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
         }
     }
 
-    private OneOf<GOGGame, ErrorMessage> ParseSubKey(IRegistryKey gogKey, string subKeyName)
+    private OneOf<GOGGame, ErrorMessage> ParseSubKey(IRegistryKey gogKey, string subKeyName, bool baseOnly)
     {
         try
         {
@@ -129,10 +183,11 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 return new ErrorMessage($"{subKey.GetName()} doesn't have a string value \"gameID\"");
             }
 
-            if (!long.TryParse(sId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id))
+            if (!long.TryParse(sId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lId))
             {
                 return new ErrorMessage($"The value \"gameID\" of {subKey.GetName()} is not a number: \"{sId}\"");
             }
+            var id = GOGGameId.From(lId);
 
             if (!subKey.TryGetString("gameName", out var name))
             {
@@ -144,21 +199,37 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 return new ErrorMessage($"{subKey.GetName()} doesn't have a string value \"path\"");
             }
 
-            //subKey.TryGetString("launchCommand", out var launch);
+            GOGGameId parentId = default;
+            subKey.TryGetString("dependsOn", out var sParent);
+            if (!string.IsNullOrEmpty(sParent))
+            {
+                if (baseOnly)
+                    return new ErrorMessage($"{subKey.GetName()} is a DLC");
+
+                if (long.TryParse(sParent, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lParent))
+                    parentId = GOGGameId.From(lParent);
+            }
             subKey.TryGetString("exe", out var exe);
+            //subKey.TryGetString("launchCommand", out var launch);
             subKey.TryGetString("launchParam", out var launchParam);
             subKey.TryGetString("uninstallCommand", out var uninst);
 
-            var game = new GOGGame(
-                Id: GOGGameId.From(id),
+            AbsolutePath exePath = default;
+            if (exe is not null)
+                exePath = Path.IsPathRooted(exe) ? _fileSystem.FromUnsanitizedFullPath(exe) : new();
+
+            return new GOGGame(
+                Id: id,
                 Name: name,
                 Path: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(path) : new(),
-                Exe: Path.IsPathRooted(exe) ? _fileSystem.FromUnsanitizedFullPath(exe) : new(),
+                Launch: exePath,
+                LaunchUrl: $"goggalaxy://openGameView/{sId}",
                 LaunchParam: launchParam ?? "",
-                UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromUnsanitizedFullPath(uninst) : new()
+                Exe: exePath,
+                UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromUnsanitizedFullPath(uninst) : new(),
+                IsInstalled: exePath != default && exePath.FileExists,
+                ParentId: parentId
             );
-
-            return game;
         }
         catch (Exception e)
         {

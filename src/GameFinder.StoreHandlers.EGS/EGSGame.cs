@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -19,6 +20,7 @@ namespace GameCollector.StoreHandlers.EGS;
 /// <param name="ImageTallUrl"></param>
 /// <param name="ImageUrl"></param>
 /// <param name="Developer"></param>
+/// <param name="Categories"></param>
 /// <param name="Namespace"></param>
 /// <param name="AppId"></param>
 [PublicAPI]
@@ -32,9 +34,11 @@ public record EGSGame(EGSGameId CatalogItemId,
                       string ImageTallUrl = "",
                       string ImageUrl = "",
                       string Developer = "",
+                      IList<string>? Categories = null,
                       string Namespace = "",
                       string AppId = "") :
-    GameData(GameId: CatalogItemId.ToString(),
+    GameData(Handler: Handlers.StoreHandler_EGS,
+             GameId: CatalogItemId.ToString(),
              GameName: DisplayName,
              GamePath: InstallLocation,
              SavePath: CloudSaveFolder,
@@ -46,6 +50,7 @@ public record EGSGame(EGSGameId CatalogItemId,
                  ["ImageUrl"] = new() { ImageTallUrl },
                  ["ImageWideUrl"] = new() { ImageUrl },
                  ["Developers"] = new() { Developer },
+                 ["Genres"] = Categories?.ToList<string>() ?? new List<string>(),
                  ["Namespace"] = new() { Namespace },
                  ["AppId"] = new() { AppId },
              });

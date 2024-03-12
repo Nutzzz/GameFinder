@@ -11,6 +11,7 @@ using GameCollector.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
+using System.Globalization;
 
 namespace GameCollector.StoreHandlers.Plarium;
 
@@ -96,25 +97,32 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
             yield return new ErrorMessage($"Unable to deserialize file {jsonFile.GetFullPath()}");
             yield break;
         }
-        ulong id = 0;
-        var gameId = "";
-        var gameName = "";
-        var name = "";
-        var strPath = "";
-        AbsolutePath path = new();
-        AbsolutePath gamePath = new();
-        AbsolutePath exe = new();
-        var args = "";
-        var company = "";
+        var ti = new CultureInfo("en-US", useUserOverride: false).TextInfo;
         foreach (var game in gameStorage.InstalledGames)
         {
+            ulong id = 0;
+            var gameId = "";
+            var gameName = "";
+            var name = "";
+            var strPath = "";
+            AbsolutePath path = new();
+            AbsolutePath gamePath = new();
+            AbsolutePath exe = new();
+            var args = "";
+            var company = "";
+
             id = game.Value.Id ?? 0;
+            if (id == 0)
+                continue;
+
             var games = game.Value.InsalledGames; // [sic]
             if (games is not null && games.Count > 0)
             {
                 gameName = games.Keys.ToArray()[0];
                 gameId = games.Values.ToArray()[0];
             }
+            else continue;
+
             strPath = game.Value.InstallationPath ?? "";
             if (string.IsNullOrEmpty(strPath) || strPath.Equals("null", StringComparison.OrdinalIgnoreCase))
             {
@@ -150,7 +158,7 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
                             if (line is not null)
                             {
                                 company = line;
-                                reader.ReadLine();
+                                line = reader.ReadLine();
                                 if (line is not null)
                                     name = line;
                             }
@@ -160,7 +168,7 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
             }
             yield return new PlariumGame(
                 ProductId: PlariumGameId.From(id),
-                ProductName: string.IsNullOrEmpty(name) ? gameName : name,
+                ProductName: string.IsNullOrEmpty(name) ? ti.ToTitleCase(gameName) ?? id.ToString() : name,
                 InstallationPath: gamePath == default ? path : gamePath,
                 Launch: exe,
                 LaunchArgs: args,

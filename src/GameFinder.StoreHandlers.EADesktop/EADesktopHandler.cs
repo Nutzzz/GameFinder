@@ -322,26 +322,27 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
 
         var softwareId = installInfo.SoftwareId;
         var isDLC = false;
-        var baseSlug = installInfo.BaseSlug ?? "";
+        var baseSlug = installInfo.BaseSlug ?? softwareId;
 
+        // only catches some DLC
         if (!string.IsNullOrEmpty(installInfo.DLCSubPath))
         {
             if (baseOnly)
-                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) is a DLC");
+                return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" is a DLC");
             isDLC = true;
         }
 
         if (string.IsNullOrEmpty(installInfo.BaseInstallPath))
         {
             if (installedOnly)
-                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"baseInstallPath\"");
+                return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" does not have the value \"baseInstallPath\"");
             isInstalled = false;
         }
 
-        if (string.IsNullOrEmpty(installInfo.ExecutableCheck))
+        if (string.IsNullOrEmpty(installInfo.ExecutableCheck) && string.IsNullOrEmpty(installInfo.ExecutablePath))
         {
             if (installedOnly)
-                return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) does not have the value \"executableCheck\"");
+                return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" does not have the value \"executableCheck\" or \"executablePath\"");
             isInstalled = false;
         }
 
@@ -380,6 +381,8 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                 var l = sInstRegKey.IndexOf(title, StringComparison.Ordinal);
                 pub = Path.GetFileName(sInstRegKey[..l].TrimEnd('/', '\\'));
             }
+
+            var sInstFile = installCheck[(j + 1)..];
         }
 
         if (isInstalled)
@@ -393,10 +396,12 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             else if (!string.IsNullOrEmpty(executableCheck) && executableCheck.StartsWith('['))
             {
                 var j = executableCheck.IndexOf(']', StringComparison.Ordinal);
+
+                // only catches some DLC
                 if (j == 1)
                 {
                     if (baseOnly)
-                        return new ErrorMessage($"InstallInfo #{num} for {softwareId} ({baseSlug}) is a DLC");
+                        return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" is a DLC");
                     isDLC = true;
                 }
                 else if (j > 1)
@@ -433,11 +438,24 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
             catch (Exception) { }
         }
 
-        title = ParseInstallerDataFile(fileSystem, baseInstallPath, out var contentIds);
+        var dataTitle = ParseInstallerDataFile(fileSystem, baseInstallPath, out var contentIds);
+        if (string.IsNullOrEmpty(title))
+        {
+            if (!string.IsNullOrEmpty(dataTitle))
+                title = dataTitle;
+            else if (!string.IsNullOrEmpty(baseSlug))
+            {
+                CultureInfo ci = new("en-US");
+                var ti = ci.TextInfo;
+                title = ti.ToTitleCase(baseSlug.Replace('-', ' '));
+            }
+            else
+                title = Path.GetFileName(baseInstallPath.TrimEnd('\\', '/'));
+        }
 
         var game = new EADesktopGame(
             EADesktopGameId: EADesktopGameId.From(softwareId),
-            Name: string.IsNullOrEmpty(title) ? (string.IsNullOrEmpty(baseSlug) ? Path.GetFileName(baseInstallPath.TrimEnd('\\', '/')) : baseSlug) : title,
+            Name: title,
             BaseInstallPath: Path.IsPathRooted(baseInstallPath) ? fileSystem.FromUnsanitizedFullPath(baseInstallPath) : new(),
             Executable: executable,
             UninstallCommand: Path.IsPathRooted(uninstall) ? fileSystem.FromUnsanitizedFullPath(uninstall) : new(),

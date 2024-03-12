@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <AssemblyName>GameCollector</AssemblyName>
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>false</SelfContained>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
         <!-- Enabling trimming disables COM, which is required for WMI -->
         <PublishTrimmed>false</PublishTrimmed>
+        <PublishUrl>publish\</PublishUrl>
         <UserSecretsId>2f3f5c05-f8b8-4435-901e-1caec9ff8715</UserSecretsId>
     </PropertyGroup>
 

@@ -3,7 +3,9 @@
 
 [![CI](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml/badge.svg)](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/Nutzzz/GameCollector/branch/master/graph/badge.svg?token=ARU010EHZ4)](https://codecov.io/gh/Nutzzz/GameCollector)
 
-.NET library for finding games. GameCollector expands on upstream GameFinder (which is primarily designed to support modding tools), by adding additional supported store launchers, emulators, and data sources, and includes additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). The following launchers and emulators are supported:
+.NET library for finding games. GameCollector expands on upstream GameFinder (which is primarily designed to support modding tools), by adding additional supported store launchers, emulators, and data sources, and includes additional information about each game (sufficient for a multi-store game launcher such as [GLC](https://github.com/Solaire/GLC)). This fork is indebted to erri120's hard work, but as [he is reticent](https://github.com/erri120/GameFinder/issues/49) to expand the scope of GameFinder, GameCollector continues with a different philosophy.
+
+The following launchers and emulators are supported:
 
 | handler | package |
 | -- | -- |
@@ -27,14 +29,14 @@
 | Paradox Launcher | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Paradox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Paradox) |
 | Plarium Play | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Plarium)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Plarium) |
 | Riot Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Riot)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Riot) |
-| Robot Cache Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.RobotCache)](https://www.nuget.org/packages/GameCollector.StoreHandlers.RobotCache) |
+| RobotCache Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.RobotCache)](https://www.nuget.org/packages/GameCollector.StoreHandlers.RobotCache) |
 | Rockstar Games Launcher | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Rockstar)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Rockstar) |
 | [Steam](#steam) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Steam)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Steam) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Steam?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Steam) |
 | Ubisoft Connect | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Ubisoft)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Ubisoft) |
 | Wargaming.net Game Center | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.WargamingNet)](https://www.nuget.org/packages/GameCollector.StoreHandlers.WargamingNet) |
 | [Xbox Game Pass](#xbox-game-pass) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Xbox)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Xbox) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.Xbox?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.Xbox) |
 
-If you are interested in understanding _how_ GameCollector/GameFinder finds these games, check [the upstream wiki](https://github.com/erri120/GameFinder/wiki) for more information.
+If you are interested in understanding _how_ GameCollector/GameFinder finds these games, check [the upstream wiki](https://github.com/erri120/GameFinder/wiki) for more information (descriptions of the added handlers should eventually be added to a wiki here).
 
 Additionally, the following Linux tools are supported:
 
@@ -42,18 +44,92 @@ Additionally, the following Linux tools are supported:
 | -- | :--: |
 | [Wine](#wine) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.Wine)](https://www.nuget.org/packages/GameCollector.Wine) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Wine?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.Wine) |
 
-## Example
+## Example and Binaries
 
-The [example project](./other/GameFinder.Example) uses every available store handler and can be used as a reference. You can go to the [GitHub Actions Page](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) and click on one of the latest CI workflow runs to download a build of this project.
+The [example project](./other/GameFinder.Example) uses every available store handler and can be used as a reference. You can go to [Releases](https://github.com/Nutzzz/GameCollector/releases) to download Windows builds of GameCollector.exe, or the [GitHub Actions Page](https://github.com/Nutzzz/GameCollector/actions/workflows/ci.yml) and click on one of the latest CI workflow runs to download pre-release binaries for this project.
+
+## GameCollector Issues
+
+- Known issues: See [GameCollector issues here](https://github.com/Nutzzz/GameCollector/issues) or [upstream GameFinder issues here](https://github.com/erri120/GameFinder/issues). Please do not submit bugs/requests for GameCollector on GameFinder's GitHub.
+- DLCs/clones: When an entry is detected as a DLC addon (or a clone in the MAME handler), the BaseGame field is set to the ID of the main game (or sometimes the string "False" when the relationship can't be determined). To hide DLCs from the consumer application, use FindAllGames(baseOnly: true), or do not use entries with a non-null BaseGame.
+- Owned not-installed games: Some handlers can find owned not-installed games. To support this feature for Steam games, [see note below](#steam). To show only installed games, use FindAllGames(installedOnly: true), or do not use entries where IsInstalled is False.
+
+### Dolphin/MAME
+
+These handlers both require you pass the path to the emulator executable.
+
+### Oculus
+
+If the Oculus service is running (as it does even when the program is not open), the database is usually locked and connot be read. The handler attempts to stop the service, but this only works if the consumer application is running as administrator.
+
+## Differences from Upstream
+
+GameCollector adds a `FindClient()` function to get the path to a given store client's executable.
+
+The TGame implementations of GameCollector's handlers inherit a generic GameData record. Unfortunately, no handler populates all of the fields, and many only provide a few:
+  - `enum Handler`
+  - `string GameId`
+  - `string GameName`
+  - `AbsolutePath GamePath`
+  - `AbsolutePath? SavePath`
+  - `AbsolutePath Launch`
+  - `string LaunchArgs`
+  - `string LaunchUrl`
+  - `AbsolutePath Icon`
+  - `AbsolutePath Uninstall`
+  - `string UninstallArgs`
+  - `string UninstallUrl`
+  - `DateTime? InstallDate`
+  - `DateTime? LastRunDate`
+  - `uint NumRuns`
+  - `TimeSpan? RunTime`
+  - `bool IsInstalled`
+  - `bool IsHidden`
+  - `bool HasProblem`
+  - `List<string>? Tags`
+  - `ushort? MyRating`
+  - `string? BaseGame`
+  - `Dictionary<string, List<string>>? Metadata`
+
+The Metadata dictionary may include (depending on available information): "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
+
+### Supported Emulators
+
+This is a new category of handler for GameCollector. They are Windows-only for now.
+
+- Dolphin
+- MAME
+
+### New Supported Launchers
+
+The following 17 handlers have been added for GameCollector. They are all Windows-only for now:
+
+- Amazon Games
+- Arc
+- Big Fish Game Manager
+- Blizzard Battle.net
+- Game Jolt
+- Humble App
+- Indiegala IGClient
+- itch
+- Legacy Games Launcher
+- Oculus
+- Paradox Launcher
+- Plarium Play
+- Riot Client
+- RobotCache Client
+- Rockstar Games Launcher
+- Ubisoft Connect
+- Wargaming.net Game Center
 
 ## Usage
 
-All store handlers inherit from `AHandler<TGame, TId>` and implement `FindAllGames()` which returns `IEnumerable<OneOf<TGame, ErrorMessage>>`. The [`OneOf`](https://github.com/mcintyre321/OneOf) struct is a F# style union and is guaranteed to only contain _one of_ the following: a `TGame` or an `ErrorMessage`. I recommended checking out the [OneOf library](https://github.com/mcintyre321/OneOf), if you want to learn more.
+Like GameFinder, all store handlers inherit from `AHandler<TGame, TId>` and implement `FindAllGames()` which returns `IEnumerable<OneOf<TGame, ErrorMessage>>`. The [`OneOf`](https://github.com/mcintyre321/OneOf) struct is a F# style union and is guaranteed to only contain _one of_ the following: a `TGame` or an `ErrorMessage`. I recommended checking out the [OneOf library](https://github.com/mcintyre321/OneOf), if you want to learn more.
 
 Some **important** things to remember:
 
 - All store handler methods are _pure_, meaning they do not change the internal state of the store handler because they don't have any. This also means that the **results are not cached** and you **shouldn't call the same method multiple times**. It's up to the library consumer to cache the results somewhere.
-- Ids are **store dependent**. Each store handler has their own type of id and figuring out the right id for your game might require some testing. You can find useful resources in this README for some store handlers.
+- GameIds are **store dependent**. Each store handler has their own type of id and figuring out the right id for your game might require some testing. You can find useful resources in this README for some store handlers.
 
 ### Basic Usage
 
@@ -126,35 +202,6 @@ if (games.TryGetValue(someId, out var game))
 }
 ```
 
-## Supported Emulators
-
-This is a new category of handler for GameCollector. They are Windows-only for now. These both require you pass the path to the emulator executable.
-
-- Dolphin
-- MAME
-
-## New Supported Launchers
-
-The following handlers have been added for GameCollector. They are all Windows-only for now:
-
-- Amazon Games
-- Arc
-- Big Fish Game Manager
-- Blizzard Battle.net
-- Game Jolt
-- Humble App
-- Indiegala IGClient
-- itch
-- Legacy Games Launcher
-- Oculus
-- Paradox Launcher
-- Plarium Play
-- Riot Client
-- Robot Cache Client
-- Rockstar Games Launcher
-- Ubisoft Connect
-- Wargaming.net Game Center
-
 ## Upstream Supported Launchers
 
 The following handlers come from upstream [GameFinder](https://github.com/erri120/GameFinder):
@@ -169,7 +216,7 @@ Steam is supported natively on Windows and Linux. Use [SteamDB](https://steamdb.
 var handler = new SteamHandler(FileSystem.Shared, OperatingSystem.IsWindows() ? WindowsRegistry.Shared : null);
 ```
 
-GameCollector adds the ability to check a Steam profile for owned not-installed games. A specific [Steam ID](https://store.steampowered.com/account) may be specified, though it will automatically attempt to find one. However, this feature requires that [an API key be activated](https://steamcommunity.com/dev/apikey) and specified, and the [user profile set to public](https://steamcommunity.com/my/edit/settings).
+**GameCollector adds the ability to check a Steam profile for owned not-installed games. A specific [Steam ID](https://store.steampowered.com/account) may be specified, though it will automatically attempt to find one. However, this feature requires that [an API key be activated](https://steamcommunity.com/dev/apikey) and specified, and the [user profile set to public](https://steamcommunity.com/my/edit/settings).**
 
 ### GOG Galaxy
 
@@ -193,7 +240,7 @@ var wineRegistry = winePrefix.CreateRegistry(FileSystem.Shared);
 var handler = new GOGHandler(wineRegistry, wineFileSystem);
 ```
 
-GameCollector adds finding owned not-installed GOG games.
+**GameCollector adds finding owned not-installed GOG games.**
 
 ### Epic Games Store
 
@@ -217,7 +264,7 @@ var wineRegistry = winePrefix.CreateRegistry(FileSystem.Shared);
 var handler = new EGSHandler(wineRegistry, wineFileSystem);
 ```
 
-GameCollector adds finding owned not-installed EGS games.
+**GameCollector adds finding owned not-installed EGS games.**
 
 ### Origin
 

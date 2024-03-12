@@ -34,7 +34,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
     /// The supported gameinfo version of this handler. You can change the version policy with
     /// <see cref="VersionPolicy"/>.
     /// </summary>
-    public const float SupportedMetadataVersion = 7.2f; // 6.9f;
+    public const float SupportedMetadataVersion = 6.9f; // 7.2f;
 
     /// <summary>
     /// Policy to use when the metadata or gameinfo version does not match <see cref="SupportedMetadataVersion"/>.

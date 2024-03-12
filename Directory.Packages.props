@@ -4,7 +4,7 @@
         <PackageVersion Include="CommandLineParser" Version="2.9.1" />
         <PackageVersion Include="FluentResults" Version="3.15.2" />
         <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
-        <PackageVersion Include="NexusMods.Paths" Version="0.6.0" />
+        <PackageVersion Include="NexusMods.Paths" Version="0.7.0" />
         <PackageVersion Include="NLog" Version="5.2.8" />
         <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
         <PackageVersion Include="OneOf" Version="3.0.263" />
@@ -14,7 +14,7 @@
         <PackageVersion Include="TransparentValueObjects" Version="1.0.1" />
     </ItemGroup>
     <ItemGroup>
-        <PackageVersion Include="HtmlAgilityPack" Version="1.11.58" />
+        <PackageVersion Include="HtmlAgilityPack" Version="1.11.59" />
         <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="5.2.9" />
         <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
         <PackageVersion Include="protobuf-net" Version="3.2.30" />
@@ -40,7 +40,7 @@
         </PackageVersion>
         <PackageVersion Include="FluentResults.Extensions.FluentAssertions" Version="2.1.1" />
         <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-        <PackageVersion Include="NexusMods.Paths.TestingHelpers" Version="0.6.0" />
+        <PackageVersion Include="NexusMods.Paths.TestingHelpers" Version="0.7.0" />
         <PackageVersion Include="NSubstitute" Version="5.1.0" />
         <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
             <PrivateAssets>all</PrivateAssets>
