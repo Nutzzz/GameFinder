@@ -4,11 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com).
 
-Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used unless erri120 changes his mind and 
+Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used.
 
-# Changelog
-
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.7...HEAD)
 
 **TODO**:
 
@@ -18,9 +16,22 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 **WIP**:
 
-- Add DataHandlers to download metadata and images from online sources
+- Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+### Added
+
+- GameFinder.Common: Add enum to GameData record to identify the handler
+- EGS: Add Categories to Genres metadata (though this is mostly "games", "software", and "applications")
+
+### Fixed
+
+- EGS: Fix crash introduced in 4.2.0-6; DLC behavior should work properly now
+- Plarium: Correct titles in some cases; skip games with missing data
+- Steam: Fix crash when library is missing
+
+## [4.2.0-7](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...v4.2.0.7) - 2024-03-12
 
 ## [4.2.0-6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-05
 
@@ -71,36 +82,13 @@ Initial release of GameCollector
 
 ### Added
 
-- Added a generic `record GameData` to collect data for all handlers:
-  - `string GameId`
-  - `string GameName`
-  - `AbsolutePath GamePath`
-  - `AbsolutePath? SavePath`
-  - `AbsolutePath Launch`
-  - `string LaunchArgs`
-  - `string LaunchUrl`
-  - `AbsolutePath Icon`
-  - `AbsolutePath Uninstall`
-  - `string UninstallArgs`
-  - `string UninstallUrl`
-  - `DateTime? InstallDate`
-  - `DateTime? LastRunDate`
-  - `uint NumRuns`
-  - `TimeSpan? RunTime`
-  - `bool IsInstalled`
-  - `bool IsHidden`
-  - `bool HasProblem`
-  - `List<string>? Tags`
-  - `ushort? MyRating`
-  - `string? BaseGame`
-  - `Dictionary<string, List<string>>? Metadata`
-- Metadata Dictionary may include (depending on available information) "ReleaseDate", "Description", "Developers", "Publishers", "Genres", "ImageUrl", etc.
-- The `IGame` implementations from GameFinder are now subclasses of `GameData`. This should hopefully make merging with upstream easier.
+- Added a generic `record GameData` to collect data for all handlers
+- The `IGame` implementations from GameFinder are subclasses of `GameData`. This should hopefully make merging with upstream easier.
 - Added emulators:
   - Dolphin, MAME
 - Added additional store launchers:
-  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, Robot Cache, Rockstar, Ubisoft, Wargaming.net
-- Add `FindClient` to get path to store client executable.
+  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, RobotCache, Rockstar, Ubisoft, Wargaming.net
+- Add `FindClient()` to get path to store client executable.
 - EADesktop handler now attempts to get a proper game title from the Registry.
 
 ### Changed
