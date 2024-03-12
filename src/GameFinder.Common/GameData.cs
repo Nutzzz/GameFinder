@@ -8,6 +8,7 @@ namespace GameFinder.Common;
 /// <summary>
 /// Generic representation of a game.
 /// </summary>
+/// <param name="Handler"></param>
 /// <param name="GameId"></param>
 /// <param name="GameName"></param>
 /// <param name="GamePath"></param>
@@ -31,7 +32,8 @@ namespace GameFinder.Common;
 /// <param name="BaseGame"></param>
 /// <param name="Metadata"></param>
 [PublicAPI]
-public record GameData(string GameId,
+public record GameData(Handlers Handler,
+                       string GameId,
                        string GameName,
                        AbsolutePath GamePath,
                        AbsolutePath? SavePath = null,
