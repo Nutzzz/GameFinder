@@ -20,6 +20,8 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
+## [4.2.0-7](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...v4.2.0.7) - 2024-03-12
+
 ### Added
 
 - GameFinder.Common: Add enum to GameData record to identify the handler
@@ -30,8 +32,6 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 - EGS: Fix crash introduced in 4.2.0-6; DLC behavior should work properly now
 - Plarium: Correct titles in some cases; skip games with missing data
 - Steam: Fix crash when library is missing
-
-## [4.2.0-7](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...v4.2.0.7) - 2024-03-12
 
 ## [4.2.0-6](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.5...v4.2.0.6) - 2024-03-05
 
