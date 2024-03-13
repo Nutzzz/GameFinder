@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <!-- Enabling trimming disables COM, which is required for WMI -->
-        <PublishTrimmed>false</PublishTrimmed>
+        <PublishTrimmed>true</PublishTrimmed>
+        <!-- Enabling trimming disables COM, which is required for WMI (for EA Desktop handler) -->
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,7 +17,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\GameFinder.StoreHandlers.EADesktop\GameFinder.StoreHandlers.EADesktop.csproj" />
         <TrimmerRootAssembly Include="GameFinder.StoreHandlers.EADesktop" />
-        <TrimmerRootAssembly Include="System.Management" />
+        <TrimmerRootAssembly Include="WmiLight" />
     </ItemGroup>
 
     <ItemGroup>

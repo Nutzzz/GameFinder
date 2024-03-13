@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Management;
 using System.Runtime.Versioning;
+using WmiLight;
 
 namespace GameFinder.StoreHandlers.EADesktop.Crypto.Windows;
 
@@ -27,28 +27,14 @@ internal static class WMIHelper
 
     public static string GetWMIProperty(string className, string propertyName)
     {
-        try
+        var query = $"SELECT {propertyName} FROM {className}";
+
+        using var con = new WmiConnection();
+        foreach (var obj in con.CreateQuery(query))
         {
-            var query = $"SELECT {propertyName} FROM {className}";
-            var selectQuery = new SelectQuery(query);
-            var searcher = new ManagementObjectSearcher(selectQuery);
-
-            using var results = searcher.Get();
-
-            var arr = new ManagementBaseObject[1];
-            results.CopyTo(arr, 0);
-
-            var baseObject = arr[0];
-
-            var propertyData = baseObject.Properties[propertyName];
-            if (propertyData.Type == CimType.String) return (string)propertyData.Value;
-
-            throw new Exception($"Property from query is not of type {nameof(CimType.String)} but {propertyData.Type}");
-
+            return obj[propertyName].ToString() ?? "";
         }
-        catch (Exception e)
-        {
-            throw new HardwareInfoProviderException($"Exception while getting property {propertyName} from class {className}", e);
-        }
+
+        return "";
     }
 }

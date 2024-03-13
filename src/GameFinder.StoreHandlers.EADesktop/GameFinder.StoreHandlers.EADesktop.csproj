@@ -5,13 +5,14 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <IsTrimmable>false</IsTrimmable>
+        <!-- Trimmable only if <BuiltInComInteropSupport> is true -->
+        <IsTrimmable>true</IsTrimmable>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="SHA3.Net" />
-        <PackageReference Include="System.Management" />
         <PackageReference Include="TransparentValueObjects" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <PackageReference Include="WmiLight" />
     </ItemGroup>
 
     <ItemGroup>
