@@ -11,8 +11,6 @@ using OneOf;
 
 namespace GameCollector.StoreHandlers.Rockstar;
 
-// TODO: Confirm this handler works at all
-
 /// <summary>
 /// Handler for finding games installed with Rockstar Games Launcher.
 /// </summary>
