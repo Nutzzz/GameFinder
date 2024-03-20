@@ -1,3 +1,4 @@
+![](GameCollector.png)
 # GameCollector
 #### a fork of [GameFinder](https://github.com/erri120/GameFinder)
 
