@@ -11,6 +11,8 @@ using GameCollector.SQLiteUtils;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameCollector.StoreHandlers.Amazon;
 
@@ -101,92 +103,201 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
 
     private IEnumerable<OneOf<AmazonGame, ErrorMessage>> ParseDatabase(AbsolutePath prodDb, AbsolutePath instDb, bool installedOnly = false)
     {
-        var products = SQLiteHelpers.GetDataTable(prodDb, "SELECT * FROM DbSet;").ToList<ProductInfo>();
-        var installs = SQLiteHelpers.GetDataTable(instDb, "SELECT * FROM DbSet;").ToList<InstallInfo>();
-        if (products is null)
+        var owned = ParseOwned(prodDb, installedOnly);
+        var installed = ParseInstalled(instDb, installedOnly);
+
+        foreach (var install in installed.Values)
         {
-            yield return new ErrorMessage($"Could not deserialize file {prodDb}");
-            yield break;
+            if (install.IsT0)
+            {
+                var game = install.AsT0;
+                var id = game.ProductId;
+                AmazonGame? ownedGame = null;
+                if (owned.TryGetValue(id, out var value) && value.IsT0)
+                    ownedGame = value.AsT0;
+
+                yield return new AmazonGame(
+                    ProductId: id,
+                    ProductTitle: game.ProductTitle,
+                    InstallDirectory: game.InstallDirectory,
+                    LaunchUrl: game.LaunchUrl,
+                    Icon: game.Icon,
+                    Uninstall: game.Uninstall,
+                    IsInstalled: game.IsInstalled,
+                    InstallDate: game.InstallDate,
+                    ReleaseDate: ownedGame?.ReleaseDate,
+                    ProductDescription: ownedGame?.ProductDescription,
+                    ProductIconUrl: ownedGame?.ProductIconUrl,
+                    ProductLogoUrl: ownedGame?.ProductLogoUrl,
+                    Developers: ownedGame?.Developers,
+                    ProductPublisher: ownedGame?.ProductPublisher,
+                    EsrbRating: ownedGame?.EsrbRating ?? EsrbRating.NO_RATING,
+                    GameModes: ownedGame?.GameModes,
+                    Genres: ownedGame?.Genres
+                );
+            }
+            else
+                yield return install.AsT1;
         }
-        foreach (var product in products)
+
+        foreach (var own in owned.Values)
+        {
+            if (own.IsT0)
+            {
+                var game = own.AsT0;
+                var id = game.ProductId;
+                if (!installed.ContainsKey(id))
+                {
+                    yield return new AmazonGame(
+                        ProductId: id,
+                        ProductTitle: game.ProductTitle,
+                        InstallDirectory: default,
+                        LaunchUrl: "amazon-games://play/" + id,
+                        IsInstalled: false,
+                        ReleaseDate: game.ReleaseDate,
+                        ProductDescription: game.ProductDescription,
+                        ProductIconUrl: game.ProductIconUrl,
+                        ProductLogoUrl: game.ProductLogoUrl,
+                        Developers: game.Developers,
+                        ProductPublisher: game.ProductPublisher,
+                        EsrbRating: game.EsrbRating,
+                        GameModes: game.GameModes,
+                        Genres: game.Genres
+                    );
+                }
+            }
+            else
+                yield return own.AsT1;
+        }
+    }
+
+    private Dictionary<AmazonGameId, OneOf<AmazonGame, ErrorMessage>> ParseInstalled(AbsolutePath db, bool installedOnly = false)
+    {
+        Dictionary<AmazonGameId, OneOf<AmazonGame, ErrorMessage>> installDict = new();
+
+        var installs = SQLiteHelpers.GetDataTable(db, "SELECT * FROM DbSet;").ToList<InstallInfo>();
+        if (installs is not null)
         {
             AbsolutePath path = new();
             AbsolutePath icon = new();
             AbsolutePath uninstall = new();
-            var isInstalled = false;
+            var isInstalled = true;
 
-            var id = product.ProductIdStr;
-            if (id is null)
+            var i = 0;
+            foreach (var install in installs)
             {
-                yield return new ErrorMessage($"Value for \"ProductIdStr\" does not exist in file {prodDb}");
-                continue;
-            }
-
-            var found = false;
-            if (installs is not null)
-            {
-                foreach (var install in installs)
+                i++;
+                if (install.Installed.Equals(0)) // was installed, now uninstalled
                 {
-                    var dir = install.InstallDirectory;
-                    if (id.Equals(install.Id, StringComparison.Ordinal) && dir is not null && Path.IsPathRooted(dir))
-                    {
-                        path = _fileSystem.FromUnsanitizedFullPath(dir);
-                        found = true;
-                    }
+                    if (installedOnly)
+                        continue;
+                    isInstalled = false;
                 }
-            }
 
-            if (!found)
-            {
-                if (installedOnly)
+                var strId = install.Id;
+                if (strId is null)
                 {
-                    yield return new ErrorMessage($"Value for \"InstallDirectory\" does not exist in file {instDb}");
+                    installDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                        new ErrorMessage($"Value for \"ProductIdStr\" does not exist in file {db}"));
                     continue;
                 }
-            }
-            else
-            {
-                isInstalled = true;
-                icon = ParseFuelFileForExe(path);
-                var regGame = ParseRegistryForId(_fileSystem, _registry, id);
-                if (regGame.IsGame())
+
+                var id = AmazonGameId.From(strId);
+                var dir = install.InstallDirectory;
+                if (dir is not null && Path.IsPathRooted(dir))
+                    path = _fileSystem.FromUnsanitizedFullPath(dir);
+                else
                 {
-                    if (icon == default)
-                        icon = regGame.AsGame().Icon;
-                    uninstall = regGame.AsGame().Uninstall;
+                    if (installedOnly)
+                    {
+                        installDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                            new ErrorMessage($"Value for \"InstallDirectory\" does not exist in file {db}"));
+                        continue;
+                    }
+                    isInstalled = false;
                 }
+
+                _ = DateTime.TryParseExact(install.InstallDate, "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dtInstallDate);
+
+                if (isInstalled)
+                {
+                    icon = ParseFuelFileForExe(path);
+                    var regGame = ParseRegistryForId(_fileSystem, _registry, strId);
+                    if (regGame.IsGame())
+                    {
+                        if (icon == default)
+                            icon = regGame.AsGame().Icon;
+                        uninstall = regGame.AsGame().Uninstall;
+                    }
+                }
+
+                installDict.Add(id, new AmazonGame(
+                    ProductId: id,
+                    ProductTitle: install.ProductTitle,
+                    InstallDirectory: path,
+                    Icon: icon,
+                    Uninstall: uninstall,
+                    IsInstalled: isInstalled,
+                    InstallDate: dtInstallDate
+                ));
             }
-
-            var url = "amazon-games://play/" + id;
-            var releaseDate = product.ReleaseDate ?? DateTime.MinValue.ToString(CultureInfo.InvariantCulture);
-            _ = DateTime.TryParseExact(releaseDate, "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dtReleaseDate);
-            var developers = product.DevelopersJson ?? "";
-            _ = Enum.TryParse(product.EsrbRating ?? "NO_RATING", out EsrbRating ageRating);
-            var players = product.GameModesJson ?? "";
-            var genres = product.GenresJson ?? "";
-
-            yield return new AmazonGame(
-                ProductId: AmazonGameId.From(id),
-                ProductTitle: product.ProductTitle,
-                InstallDirectory: path,
-                LaunchUrl: url,
-                Icon: icon,
-                Uninstall: uninstall,
-                IsInstalled: isInstalled,
-                ReleaseDate: dtReleaseDate,
-                ProductDescription: product.ProductDescription,
-                ProductIconUrl: product.ProductIconUrl,
-                ProductLogoUrl: product.ProductLogoUrl,
-                Developers: developers,
-                ProductPublisher: product.ProductPublisher,
-                EsrbRating: ageRating,
-                GameModes: players,
-                Genres: genres
-            );
         }
+
+        return installDict;
     }
 
-    private IEnumerable<OneOf<AmazonGame, ErrorMessage>> ParseRegistry()
+    private Dictionary<AmazonGameId, OneOf<AmazonGame, ErrorMessage>> ParseOwned(AbsolutePath db, bool installedOnly = false)
+    {
+        Dictionary<AmazonGameId, OneOf<AmazonGame, ErrorMessage>> ownedDict = new();
+
+        var products = SQLiteHelpers.GetDataTable(db, "SELECT * FROM DbSet;").ToList<ProductInfo>();
+        if (products is not null)
+        {
+            var i = 0;
+            foreach (var product in products)
+            {
+                i++;
+                var strId = product.ProductIdStr;
+                if (strId is null)
+                {
+                    ownedDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                        new ErrorMessage($"Value for \"ProductIdStr\" does not exist in file {db}"));
+                    continue;
+                }
+
+                var id = AmazonGameId.From(strId);
+                _ = DateTime.TryParseExact(product.ReleaseDate, "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dtReleaseDate);
+                _ = Enum.TryParse(product.EsrbRating ?? "NO_RATING", out EsrbRating ageRating);
+
+                if (ownedDict.ContainsKey(id))
+                {
+                    ownedDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                        new ErrorMessage($"Item with value \"ProductIdStr\" already exists"));
+                    continue;
+                }
+
+                ownedDict.Add(id, new AmazonGame(
+                    ProductId: id,
+                    ProductTitle: product.ProductTitle,
+                    InstallDirectory: default,
+                    ReleaseDate: dtReleaseDate,
+                    ProductDescription: product.ProductDescription,
+                    ProductIconUrl: product.ProductIconUrl,
+                    ProductLogoUrl: product.ProductLogoUrl,
+                    Developers: product.DevelopersJson ?? "",
+                    ProductPublisher: product.ProductPublisher,
+                    EsrbRating: ageRating,
+                    GameModes: product.GameModesJson ?? "",
+                    Genres: product.GenresJson ?? ""
+                ));
+            }
+        }
+
+        return ownedDict;
+    }
+
+    private OneOf<AmazonGame, ErrorMessage>[] ParseRegistry()
     {
         if (_registry is null)
         {
@@ -236,7 +347,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
             using var unKey = currentUser.OpenSubKey(UninstallRegKey);
             if (unKey is null)
             {
-                new ErrorMessage($"Unable to open HKEY_CURRENT_USER\\{UninstallRegKey}");
+                return new ErrorMessage($"Unable to open HKEY_CURRENT_USER\\{UninstallRegKey}");
             }
             else
             {
@@ -244,7 +355,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     keyName => keyName[(keyName.LastIndexOf('\\') + 1)..].StartsWith("AmazonGames/", StringComparison.OrdinalIgnoreCase)).ToArray();
                 if (subKeyNames.Length == 0)
                 {
-                    new ErrorMessage($"Registry key {unKey.GetName()} has no sub-keys beginning with \"AmazonGames/\"");
+                    return new ErrorMessage($"Registry key {unKey.GetName()} has no sub-keys beginning with \"AmazonGames/\"");
                 }
 
                 foreach (var subKeyName in subKeyNames)

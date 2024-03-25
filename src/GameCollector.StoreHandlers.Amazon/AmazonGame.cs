@@ -19,6 +19,7 @@ namespace GameCollector.StoreHandlers.Amazon;
 /// <param name="Icon"></param>
 /// <param name="Uninstall"></param>
 /// <param name="IsInstalled"></param>
+/// <param name="InstallDate"></param>
 /// <param name="ReleaseDate"></param>
 /// <param name="ProductDescription"></param>
 /// <param name="ProductIconUrl"></param>
@@ -37,6 +38,7 @@ public record AmazonGame(AmazonGameId ProductId,
                          AbsolutePath Icon = new(),
                          AbsolutePath Uninstall = new(),
                          bool IsInstalled = true,
+                         DateTime? InstallDate = null,
                          DateTime? ReleaseDate = null,
                          string? ProductDescription = null,
                          string? ProductIconUrl = null,
@@ -55,17 +57,18 @@ public record AmazonGame(AmazonGameId ProductId,
              Icon: Icon == default ? Command : Icon,
              Uninstall: Uninstall,
              IsInstalled: IsInstalled,
+             InstallDate: InstallDate,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { ReleaseDate is null ? "" : ((DateTime)ReleaseDate).ToString(CultureInfo.InvariantCulture), },
                  ["Description"] = new() { ProductDescription ?? "", },
                  ["ImageUrl"] = new() { ProductIconUrl ?? "", },
                  ["LogoUrl"] = new() { ProductLogoUrl ?? "", },
-                 ["Developers"] = GetJsonArray(@Developers ?? ""),
+                 ["Developers"] = string.IsNullOrEmpty(Developers) ? new() : GetJsonArray(@Developers ?? ""),
                  ["Publishers"] = new() { ProductPublisher ?? "", },
                  ["AgeRating"] = new() { EsrbRating == (EsrbRating)(-1) ? "" : EsrbRating.ToString(), },
-                 ["Players"] = GetJsonArray(@GameModes ?? ""),
-                 ["Genres"] = GetJsonArray(@Genres ?? ""),
+                 ["Players"] = string.IsNullOrEmpty(GameModes) ? new() : GetJsonArray(@GameModes ?? ""),
+                 ["Genres"] = string.IsNullOrEmpty(Genres) ? new() : GetJsonArray(@Genres ?? ""),
              })
 {
     internal static List<string> GetJsonArray(string json)
