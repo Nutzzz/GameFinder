@@ -92,7 +92,7 @@ public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
     /// <inheritdoc/>
     public override IEnumerable<OneOf<LegacyGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
-        List<OneOf<LegacyGame, ErrorMessage >> games = new();
+        List<OneOf<LegacyGame, ErrorMessage>> games = new();
         var regDict = ParseRegistry();
         var jsonDict = ParseJsonFile(regDict.Keys);
         var instDirs = new List<AbsolutePath>();

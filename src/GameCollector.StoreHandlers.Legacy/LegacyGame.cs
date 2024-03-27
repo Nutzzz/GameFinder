@@ -17,7 +17,7 @@ namespace GameCollector.StoreHandlers.Legacy;
 /// <param name="UninstallString"></param>
 /// <param name="IsInstalled"></param>
 /// <param name="IsOwned"></param>
-/// <param name="NotFoundOnDisk"></param>
+/// <param name="NotFoundInData"></param>
 /// <param name="Description"></param>
 /// <param name="Publisher"></param>
 /// <param name="Genre"></param>
@@ -30,7 +30,7 @@ public record LegacyGame(LegacyGameId InstallerUuid,
                        AbsolutePath DisplayIcon = new(),
                        AbsolutePath UninstallString = new(),
                        bool IsInstalled = false,
-                       bool IsOwned = true,
+                       bool IsOwned = false,
                        bool NotFoundInData = false,
                        string? Description = "",
                        string? Publisher = "",
