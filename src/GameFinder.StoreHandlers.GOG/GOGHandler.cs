@@ -76,7 +76,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
     /// <inheritdoc/>
     public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
-        Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> allGames = new();
+        Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> games = new();
 
         try
         {
@@ -110,8 +110,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 _ = installedGames.TryAdd(id, reg);
             }
 
-            var ownedGames = FindGamesFromDatabase(installedGames, installedOnly).ToDictionary();
-            foreach (var owned in ownedGames)
+            foreach (var owned in FindGamesFromDatabase(installedGames, installedOnly, baseOnly, ownedOnly).ToDictionary())
             {
                 if (owned.Value.IsT0)
                 {
@@ -119,7 +118,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                     if (installedGames.TryGetValue(owned.Key, out var installed))
                     {
                         var db = installed.AsT0;
-                        allGames.Add(owned.Key, new GOGGame(
+                        games.Add(owned.Key, new GOGGame(
                             Id: owned.Key,
                             Name: db.Name,
                             Path: db.Path == default ? reg.Path : db.Path,
@@ -131,6 +130,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                             InstallDate: db.InstallDate,
                             LastPlayedDate: db.LastPlayedDate,
                             IsInstalled: db.IsInstalled,
+                            IsOwned: db.IsOwned,
                             IsHidden: db.IsHidden,
                             Tags: db.Tags,
                             MyRating: db.MyRating,
@@ -140,24 +140,24 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                             IconUrl: db.IconUrl));
                     }
                     else
-                        allGames.Add(owned.Key, owned.Value);
+                        games.Add(owned.Key, owned.Value);
                 }
                 else
-                    _ = allGames.TryAdd(default, owned.Value);
+                    _ = games.TryAdd(default, owned.Value);
             }
 
             foreach (var installed in installedGames)
             {
                 if (installed.Value.IsT0)
                 {
-                    if (!allGames.ContainsKey(installed.Key))
-                        allGames.Add(installed.Key, installed.Value);
+                    if (!games.ContainsKey(installed.Key))
+                        games.Add(installed.Key, installed.Value);
                 }
                 else
-                    _ = allGames.TryAdd(default, installed.Value);
+                    _ = games.TryAdd(default, installed.Value);
             }
 
-            return allGames.Values;
+            return games.Values;
         }
         catch (Exception e)
         {
@@ -228,6 +228,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 Exe: exePath,
                 UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromUnsanitizedFullPath(uninst) : new(),
                 IsInstalled: exePath != default && exePath.FileExists,
+                IsOwned: true,
                 ParentId: parentId
             );
         }

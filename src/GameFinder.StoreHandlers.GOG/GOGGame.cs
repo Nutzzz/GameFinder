@@ -21,6 +21,7 @@ namespace GameCollector.StoreHandlers.GOG;
 /// <param name="InstallDate"></param>
 /// <param name="LastPlayedDate"></param>
 /// <param name="IsInstalled"></param>
+/// <param name="IsOwned"></param>
 /// <param name="IsHidden"></param>
 /// <param name="Tags"></param>
 /// <param name="MyRating"></param>
@@ -41,6 +42,7 @@ public record GOGGame(GOGGameId Id,
                       DateTime? InstallDate = null,
                       DateTime? LastPlayedDate = null,
                       bool IsInstalled = true,
+                      bool IsOwned = true,
                       bool IsHidden = false,
                       IList<string>? Tags = null,
                       ushort? MyRating = null,
@@ -61,6 +63,7 @@ public record GOGGame(GOGGameId Id,
              InstallDate: InstallDate,
              LastRunDate: LastPlayedDate,
              IsInstalled: IsInstalled,
+             IsOwned: IsOwned,
              IsHidden: IsHidden,
              Tags: Tags,
              MyRating: MyRating,
