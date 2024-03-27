@@ -71,10 +71,11 @@ public abstract class AHandler<TGame, TId> : AHandler
     /// </summary>
     /// <param name="installedOnly"></param>
     /// <param name="baseOnly"></param>
+    /// <param name="ownedOnly"></param>
     /// <returns></returns>
     [MustUseReturnValue]
     [System.Diagnostics.Contracts.Pure]
-    public abstract IEnumerable<OneOf<TGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false);
+    public abstract IEnumerable<OneOf<TGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true);
 
     /// <summary>
     /// Calls <see cref="FindAllGames"/> and converts the result into a dictionary where

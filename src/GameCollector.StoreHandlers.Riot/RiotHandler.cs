@@ -18,11 +18,13 @@ namespace GameCollector.StoreHandlers.Riot;
 
 /// <summary>
 /// Handler for finding games installed with the Riot Client.
+/// </summary>
+/// <remarks>
 /// Uses json file:
 ///   %ProgramData%\Riot Games\RiotClientInstalls.json
 /// and yaml files:
 ///   %ProgramData%\Riot Games\Metadata\*\*settings.yaml
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class RiotHandler : AHandler<RiotGame, RiotGameId>
 {
@@ -77,9 +79,7 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
             // could also get client path from HKEY_CLASSES_ROOT\riotclient\shell\open\command\(Default)
             // or just use protocol "riotclient://"
 
-            var clientFile = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-                .Combine("Riot Games")
-                .Combine("RiotClientInstalls.json");
+            var clientFile = GetRiotPath().Combine("RiotClientInstalls.json");
 
             using var stream = clientFile.Read();
             var client = JsonSerializer.Deserialize<ClientInstallFile>(stream, JsonSerializerOptions);
@@ -100,14 +100,10 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<RiotGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<RiotGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
-        var clientFile = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .Combine("Riot Games")
-            .Combine("RiotClientInstalls.json");
-        var metaDir = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .Combine("Riot Games")
-            .Combine("Metadata");
+        var clientFile = GetRiotPath().Combine("RiotClientInstalls.json");
+        var metaDir = GetRiotPath().Combine("Metadata");
         if (!clientFile.FileExists)
         {
             yield return new ErrorMessage($"The client install file {clientFile.GetFullPath()} does not exist!");
@@ -214,5 +210,11 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
         {
             return new ErrorMessage(e, $"Unable to deserialize file {settingsFile.GetFullPath()}");
         }
+    }
+
+    public AbsolutePath GetRiotPath()
+    {
+        return _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
+                .Combine("Riot Games");
     }
 }

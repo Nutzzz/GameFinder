@@ -81,9 +81,9 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<MAMEGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<MAMEGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
-        return FindAllGames(installedOnly, baseOnly);
+        return FindAllGames(installedOnly, baseOnly, ownedOnly);
     }
 
     /// <summary>
@@ -92,12 +92,14 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     /// </summary>
     /// <param name="availableOnly">ROM file exists (and if doVerify is true, ROM is correct)</param>
     /// <param name="parentsOnly">Do not add clones</param>
+    /// <param name="allGames">Include all games, whether or not the ROM is present</param>
     /// <param name="doVerify">Verify ROM is correct for MAME version (this is very slow)</param>
     /// <param name="minimumStatus">Minimum emulation status (from "good", "imperfect", or "preliminary")</param>
     /// <returns></returns>
     public IEnumerable<OneOf<MAMEGame, ErrorMessage>> FindAllGames(
         bool availableOnly,
         bool parentsOnly,
+        bool allGames,
         bool doVerify = false,
         MachineStatus minimumStatus = MachineStatus.Imperfect)
     {
@@ -121,7 +123,8 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
                 var displayRotation = "";
                 var players = "";
                 var driverStatus = "";
-                var hasProblem = false;
+                var failedToVerify = false;
+                var statusNotMet = false;
                 var gameCategory1 = "";
                 var gameCategory2 = "";
                 var gameCategory3 = "";
@@ -138,7 +141,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
                         if (game.IsVerified)
                             isInstalled = true;
                         else if (!string.IsNullOrEmpty(game.Path))
-                            hasProblem = true;
+                            failedToVerify = true;
                     }
                 }
 
@@ -165,10 +168,9 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
                 else
                     continue; // this should have already been checked
 
-                // minimumStatus was already checked, but HasProblem flag should be set regardless
                 if (!string.IsNullOrEmpty(driverStatus) &&
                     ToMachineStatus(driverStatus) < MachineStatus.Imperfect)
-                    hasProblem = true;
+                    statusNotMet = true;
 
                 if (game.Category is not null)
                 {
@@ -178,6 +180,12 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
                     isMature = game.Category.Mature;
                 }
 
+                List<Problem> problems = new();
+                if (statusNotMet)
+                    problems.Add(Problem.DoesNotMeetRequirements);
+                if (failedToVerify)
+                    problems.Add(Problem.FailedToVerify);
+
                 yield return new MAMEGame(
                     Name: MAMEGameId.From(game.Name),
                     Description: game.Machine.Description,
@@ -186,7 +194,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
                     CommandLineArgs: commandLineArgs,
                     Icon: _fileSystem.FromUnsanitizedFullPath(_mamePath.Directory).Combine("icons").Combine($"{game.Name}.ico"),
                     IsAvailable: isInstalled,
-                    HasProblem: hasProblem,
+                    Problems: problems,
                     Parent: parent,
                     Year: game.Machine.Year,
                     Manufacturer: game.Machine.Manufacturer,

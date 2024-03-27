@@ -94,7 +94,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<EGSGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<EGSGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         List<OneOf<EGSGame, ErrorMessage>> allGames = new();
         var manifestDir = GetManifestDir();
@@ -126,7 +126,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                 }
                 catch (Exception e)
                 {
-                    installedDict.Add(EGSGameId.From(installedDict.Count.ToString()), new ErrorMessage(e, $"Exception adding \"{game.AsT0.GameName}\" [{game.AsT0.CatalogItemId}]"));
+                    installedDict.TryAdd(EGSGameId.From(installedDict.Count.ToString()), new ErrorMessage(e, $"Exception adding \"{game.AsT0.GameName}\" [{game.AsT0.CatalogItemId}]"));
                 }
                 continue;
             }

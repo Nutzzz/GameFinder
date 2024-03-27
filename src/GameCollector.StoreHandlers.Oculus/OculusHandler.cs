@@ -4,7 +4,6 @@ using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.ServiceProcess;
 using System.Text.Json;
 using System.Text;
@@ -14,13 +13,16 @@ using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
-using static System.Environment;
 
 namespace GameCollector.StoreHandlers.Oculus;
 
 /// <summary>
 /// Handler for finding games installed with Oculus.
 /// </summary>
+/// <remarks>
+/// Uses SQLite database:
+///   %AppData%\Oculus\sessions\_oaf\data.sqlite
+/// </remarks>
 [PublicAPI]
 public class OculusHandler : AHandler<OculusGame, OculusGameId>
 {
@@ -77,7 +79,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<OculusGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<OculusGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         List<OneOf<OculusGame, ErrorMessage>> games = new();
 
@@ -198,7 +200,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                 var strLaunch = "";
 
                 var url = "";
-                var hasProblem = false;
+                var expired = false;
                 /*
                 var exePath = "", exePath2d = "", exeParams = "", exeParams2d = "";
                 var state = "", time = "";
@@ -271,7 +273,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                             time = ParseBlob(strVal4, "expiration_time", "grant_reason");
                             CLogger.LogDebug($"expiry: {state} {time}");
                             //if (!...expired)
-                            hasProblem = true;
+                            expired = true;
                         }
                     }
                 }
@@ -289,7 +291,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                         InstallPath: Path.IsPathRooted(launch.Directory) ? _fileSystem.FromUnsanitizedFullPath(launch.Directory) : new(),
                         LaunchFile: launch,
                         IsInstalled: true,
-                        HasProblem: hasProblem,
+                        IsExpired: expired,
                         Description: strDescription,
                         Genres: genres,
                         CanonicalName: name

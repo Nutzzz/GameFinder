@@ -17,6 +17,11 @@ namespace GameCollector.StoreHandlers.Paradox;
 /// <summary>
 /// Handler for finding games installed with Paradox Launcher.
 /// </summary>
+/// <remarks>
+/// Uses json files:
+///   %AppData%\Paradox Interactive\launcher-v2\userSettings.json
+///   %AppData%\Paradox Interactive\launcher-v2\game-metadata\game-metadata
+/// </remarks>
 [PublicAPI]
 public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
 {
@@ -83,7 +88,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
     "Trimming",
     "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
     Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<ParadoxGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<ParadoxGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var pdxPath = GetParadoxV2Path();
         var userFile = pdxPath.Combine("userSettings.json");
@@ -141,14 +146,14 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
                     strLogo = game.ThemeSettings.Logo ?? "";
                 }
 
-                if (id is not null && instPaths.ContainsKey(id))
+                if (id is not null && instPaths.TryGetValue(id, out var instPath))
                 {
-                    strPath = instPaths[id] ?? "";
-                    if (runDates.ContainsKey(id))
-                        lastLaunch = runDates[id];
+                    strPath = instPath ?? "";
+                    if (runDates.TryGetValue(id, out var runDate))
+                        lastLaunch = runDate;
                 }
-                else if (instPaths.ContainsKey("default"))
-                    strPath = instPaths["default"] ?? "";
+                else if (instPaths.TryGetValue("default", out var instPathDefault))
+                    strPath = instPathDefault ?? "";
 
                 AbsolutePath path = new();
                 if (!string.IsNullOrEmpty(strPath))

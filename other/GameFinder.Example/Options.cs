@@ -138,4 +138,7 @@ public class Options
 
     [Option('p', "parent", HelpText = "Only retrieve base games (no DLCs or clones)")]
     public bool Parent { get; set; } = false;
+
+    [Option('u', "unowned", HelpText = "Retrieve all games, whether owned or not")]
+    public bool Unowned { get; set; } = false;
 }

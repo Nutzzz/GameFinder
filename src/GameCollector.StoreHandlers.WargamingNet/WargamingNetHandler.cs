@@ -16,6 +16,10 @@ namespace GameCollector.StoreHandlers.WargamingNet;
 /// <summary>
 /// Handler for finding games installed with Wargaming.net Game Center.
 /// </summary>
+/// <remarks>
+/// Uses files:
+///   %ProgramData%\Wargaming.net\GameCenter\apps\
+/// </remarks>
 [PublicAPI]
 public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId>
 {
@@ -88,24 +92,18 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
             }
         }
 
-        return _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .Combine("Wargaming.net")
-            .Combine("GameCenter")
-            .Combine("wgc.exe");
+        return GetGameCenterPath().Combine("wgc.exe");
     }
 
     /// <inheritdoc/>
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code")]
-    public override IEnumerable<OneOf<WargamingNetGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<WargamingNetGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         List<string> appPaths = new();
 
-        var appData = _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
-            .Combine("Wargaming.net")
-            .Combine("GameCenter")
-            .Combine("apps");
+        var appData = GetGameCenterPath().Combine("apps");
         var appFiles = appData.EnumerateFiles(Extension.None, recursive: true).ToArray();
         foreach (var appFile in appFiles)
         {
@@ -310,5 +308,12 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
             VersionPolicy.Ignore => (null, false),
             _ => throw new ArgumentOutOfRangeException(nameof(versionPolicy), versionPolicy, message: null),
         };
+    }
+
+    public AbsolutePath GetGameCenterPath()
+    {
+        return _fileSystem.GetKnownPath(KnownPath.CommonApplicationDataDirectory)
+                    .Combine("Wargaming.net")
+                    .Combine("GameCenter");
     }
 }

@@ -75,9 +75,9 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
-        return FindAllGames(installedOnly, baseOnly, 0);
+        return FindAllGames(installedOnly, baseOnly, ownedOnly, 0);
     }
 
     /// <summary>
@@ -85,8 +85,9 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
     /// </summary>
     /// <param name="installedOnly"></param>
     /// <param name="baseOnly"></param>
+    /// <param name="ownedOnly"></param>
     /// <param name="userId"></param>
-    public IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, ulong userId = 0)
+    public IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true, ulong userId = 0)
     {
         List<OneOf<SteamGame, ErrorMessage>> allGames = new();
         Dictionary<AppId, OneOf<SteamGame, ErrorMessage>> installedGames = new();

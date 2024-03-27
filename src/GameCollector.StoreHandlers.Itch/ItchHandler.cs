@@ -16,9 +16,11 @@ namespace GameCollector.StoreHandlers.Itch;
 
 /// <summary>
 /// Handler for finding games installed with itch.
+/// </summary>
+/// <remarks>
 /// Uses SQLite database:
 ///   %AppData%\itch\db\butler.db
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class ItchHandler : AHandler<ItchGame, ItchGameId>
 {
@@ -91,7 +93,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<ItchGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<ItchGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var database = GetDatabaseFilePath(_fileSystem);
         if (!database.FileExists)

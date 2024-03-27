@@ -16,11 +16,13 @@ namespace GameCollector.StoreHandlers.Humble;
 
 /// <summary>
 /// Handler for finding games installed with Humble App.
+/// </summary>
+/// <remarks>
 /// Uses json file:
 ///   %AppData%\Humble App\config.json
 /// and Registry key:
 ///   HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
 {
@@ -92,7 +94,7 @@ public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<HumbleGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<HumbleGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var configFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
             .Combine("Humble App")

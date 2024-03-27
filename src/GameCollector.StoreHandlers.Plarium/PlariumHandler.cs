@@ -18,6 +18,10 @@ namespace GameCollector.StoreHandlers.Plarium;
 /// <summary>
 /// Handler for finding games installed with Plarium Play.
 /// </summary>
+/// <remarks>
+/// Uses json file:
+///   %LocalAppData%\PlariumPlay\gamestorage.gsfn
+/// </remarks>
 [PublicAPI]
 public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
 {
@@ -87,7 +91,7 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
     "Trimming",
     "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
     Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<PlariumGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<PlariumGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var jsonFile = GetPlariumPlayPath().Combine("gamestorage.gsfn");
         using var stream = jsonFile.Read();
@@ -181,12 +185,12 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
     public AbsolutePath GetPlariumPlayPath()
     {
         // The path changed slightly between versions, and the registry isn't always right, so we'll look in both places
-        var jsonFile = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
+        var path = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
             .Combine("PlariumPlay");
-        if (!jsonFile.DirectoryExists())
-            jsonFile = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
+        if (!path.DirectoryExists())
+            path = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
             .Combine("Plarium")
             .Combine("PlariumPlay");
-        return jsonFile;
+        return path;
     }
 }

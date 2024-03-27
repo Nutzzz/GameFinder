@@ -74,7 +74,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> allGames = new();
 

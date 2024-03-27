@@ -16,10 +16,12 @@ namespace GameCollector.StoreHandlers.IGClient;
 
 /// <summary>
 /// Handler for finding games installed with Indiegala IGClient.
+/// </summary>
+/// <remarks>
 /// Uses json files:
 ///   %AppData%\IGClient\storage\installed.json
 ///   %AppData%\IGClient\config.json
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
 {
@@ -89,7 +91,7 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<IGClientGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<IGClientGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         List<OneOf<IGClientGame, ErrorMessage>> games = new();
         var installFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)

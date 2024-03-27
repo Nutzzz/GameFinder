@@ -13,11 +13,13 @@ namespace GameCollector.StoreHandlers.Arc;
 
 /// <summary>
 /// Handler for finding games installed with Arc.
+/// </summary>
+/// <remarks>
 /// Uses Registry key:
 ///   HKLM32\SOFTWARE\Perfect World Entertainment\Core
 ///     or
 ///   HKCU\Software\Arc\Core
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class ArcHandler : AHandler<ArcGame, ArcGameId>
 {
@@ -80,7 +82,7 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<ArcGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<ArcGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         IRegistryKey localMachine;
         if (_registry is not null)

@@ -15,9 +15,11 @@ namespace GameCollector.StoreHandlers.RobotCache;
 
 /// <summary>
 /// Handler for finding games installed with the Robot Cache Client.
+/// </summary>
+/// <remarks>
 /// Uses json file:
 ///   %AppDataLocal%\RobotCache\RobotCacheClient\config\appConfig.json
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class RobotCacheHandler : AHandler<RobotCacheGame, RobotCacheGameId>
 {
@@ -74,7 +76,7 @@ public class RobotCacheHandler : AHandler<RobotCacheGame, RobotCacheGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<RobotCacheGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<RobotCacheGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var configFile = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
             .Combine("RobotCache")

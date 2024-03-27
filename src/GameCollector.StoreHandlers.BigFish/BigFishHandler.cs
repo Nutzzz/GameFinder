@@ -15,9 +15,11 @@ namespace GameCollector.StoreHandlers.BigFish;
 
 /// <summary>
 /// Handler for finding games installed with Big Fish Game Manager.
+/// </summary>
+/// <remarks>
 /// Uses Registry key:
 ///   HKLM32\SOFTWARE\Big Fish Games\Persistence
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class BigFishHandler : AHandler<BigFishGame, BigFishGameId>
 {
@@ -72,7 +74,7 @@ public class BigFishHandler : AHandler<BigFishGame, BigFishGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<BigFishGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<BigFishGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 

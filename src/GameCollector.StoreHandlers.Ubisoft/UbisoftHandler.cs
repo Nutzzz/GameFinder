@@ -16,11 +16,13 @@ namespace GameCollector.StoreHandlers.Ubisoft;
 
 /// <summary>
 /// Handler for finding games installed with Ubisoft Connect.
+/// </summary>
+/// <remarks>
 /// Uses registry:
 ///   HKLM32\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
 /// And yaml file:
 ///   .\cache\configuration\configurations
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
 {
@@ -87,7 +89,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<UbisoftGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<UbisoftGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 

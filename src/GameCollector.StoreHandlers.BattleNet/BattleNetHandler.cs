@@ -17,12 +17,14 @@ namespace GameCollector.StoreHandlers.BattleNet;
 
 /// <summary>
 /// Handler for finding games installed with Blizzard Battle.net.
+/// </summary>
+/// <remarks>
 /// Uses Protobuf database:
 ///   %ProgramData%\Battle.net\Agent\product.db
 /// and json files:
 ///   %ProgramData%\Battle.net\Agent\data\cache\??\??\*.
 ///   %AppData%\Battle.net\Battle.net.config
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class BattleNetHandler : AHandler<BattleNetGame, BattleNetGameId>
 {
@@ -90,7 +92,7 @@ public class BattleNetHandler : AHandler<BattleNetGame, BattleNetGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<BattleNetGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<BattleNetGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var dataPath = GetBattleNetPath()
             .Combine("Agent").Combine("data").Combine("cache");

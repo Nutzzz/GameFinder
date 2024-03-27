@@ -18,12 +18,14 @@ namespace GameCollector.StoreHandlers.Amazon;
 
 /// <summary>
 /// Handler for finding games installed with Amazon Games.
+/// </summary>
+/// <remarks>
 /// Uses SQLite databases:
 ///   %LocalAppData%\Amazon Games\Data\Games\Sql\GameProductInfo.sqlite
 ///   %LocalAppData%\Amazon Games\Data\Games\Sql\GameInstallInfo.sqlite
 /// and Registry key:
 ///   HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
 {
@@ -77,7 +79,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<AmazonGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<AmazonGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var prodDb = GetDatabasePath(_fileSystem).Combine("GameProductInfo.sqlite");
         var instDb = GetDatabasePath(_fileSystem).Combine("GameInstallInfo.sqlite");
@@ -197,7 +199,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                 var strId = install.Id;
                 if (strId is null)
                 {
-                    installDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                    installDict.TryAdd(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
                         new ErrorMessage($"Value for \"ProductIdStr\" does not exist in file {db}"));
                     continue;
                 }
@@ -210,7 +212,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                 {
                     if (installedOnly)
                     {
-                        installDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                        installDict.TryAdd(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
                             new ErrorMessage($"Value for \"InstallDirectory\" does not exist in file {db}"));
                         continue;
                     }
@@ -232,7 +234,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     }
                 }
 
-                installDict.Add(id, new AmazonGame(
+                installDict.TryAdd(id, new AmazonGame(
                     ProductId: id,
                     ProductTitle: install.ProductTitle,
                     InstallDirectory: path,
@@ -261,7 +263,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                 var strId = product.ProductIdStr;
                 if (strId is null)
                 {
-                    ownedDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                    ownedDict.TryAdd(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
                         new ErrorMessage($"Value for \"ProductIdStr\" does not exist in file {db}"));
                     continue;
                 }
@@ -272,12 +274,12 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
 
                 if (ownedDict.ContainsKey(id))
                 {
-                    ownedDict.Add(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
+                    ownedDict.TryAdd(AmazonGameId.From(i.ToString(CultureInfo.InvariantCulture)),
                         new ErrorMessage($"Item with value \"ProductIdStr\" already exists"));
                     continue;
                 }
 
-                ownedDict.Add(id, new AmazonGame(
+                ownedDict.TryAdd(id, new AmazonGame(
                     ProductId: id,
                     ProductTitle: product.ProductTitle,
                     InstallDirectory: default,

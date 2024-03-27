@@ -14,6 +14,11 @@ namespace GameCollector.StoreHandlers.Rockstar;
 /// <summary>
 /// Handler for finding games installed with Rockstar Games Launcher.
 /// </summary>
+/// <remarks>
+/// Uses registry keys:
+///   HKLM32\SOFTWARE\Rockstar Games
+///   HKLM32\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+/// </remarks>
 [PublicAPI]
 public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
 {
@@ -68,7 +73,7 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<RockstarGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<RockstarGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 

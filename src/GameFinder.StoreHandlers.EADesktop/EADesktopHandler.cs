@@ -99,7 +99,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<EADesktopGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<EADesktopGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var dataFolder = GetDataFolder(_fileSystem);
         if (!_fileSystem.DirectoryExists(dataFolder))

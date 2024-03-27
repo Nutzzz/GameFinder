@@ -52,7 +52,7 @@ public class XboxHandler : AHandler<XboxGame, XboxGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<XboxGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<XboxGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
         var (paths, errors) = GetAppFolders(_fileSystem);
         foreach (var error in errors)
