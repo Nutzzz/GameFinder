@@ -15,6 +15,9 @@ namespace GameCollector.StoreHandlers.Legacy;
 /// <param name="ExePath"></param>
 /// <param name="DisplayIcon"></param>
 /// <param name="UninstallString"></param>
+/// <param name="IsInstalled"></param>
+/// <param name="IsOwned"></param>
+/// <param name="NotFoundOnDisk"></param>
 /// <param name="Description"></param>
 /// <param name="Publisher"></param>
 /// <param name="Genre"></param>
@@ -26,21 +29,27 @@ public record LegacyGame(LegacyGameId InstallerUuid,
                        AbsolutePath ExePath = new(),
                        AbsolutePath DisplayIcon = new(),
                        AbsolutePath UninstallString = new(),
+                       bool IsInstalled = false,
+                       bool IsOwned = true,
+                       bool NotFoundInData = false,
                        string? Description = "",
                        string? Publisher = "",
-                       Genre? Genre = (Genre)(-1),
+                       Genre? Genre = Genre.Unknown,
                        string? CoverArtUrl = "") :
-    GameData(Handler: Handlers.StoreHandler_Legacy,
+    GameData(Handler: Handler.StoreHandler_Legacy,
              GameId: InstallerUuid.ToString(),
              GameName: ProductName,
              GamePath: InstDir,
              Launch: ExePath,
              Icon: DisplayIcon == default ? ExePath : DisplayIcon,
              Uninstall: UninstallString,
+             IsInstalled: IsInstalled,
+             IsOwned: IsOwned,
+             Problems: NotFoundInData ? new List<Problem> { Problem.NotFoundInData } : null,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "", },
                  ["Publishers"] = new() { Publisher ?? "", },
-                 ["Genres"] = new() { Genre == (Genre)(-1) ? "" : Genre.ToString() ?? "", },
+                 ["Genres"] = new() { Genre == Legacy.Genre.Unknown ? "" : Genre.ToString() ?? "", },
                  ["ImageUrl"] = new() { CoverArtUrl ?? "", },
              });

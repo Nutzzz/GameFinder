@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using GameCollector.Common;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
@@ -15,11 +17,13 @@ namespace GameCollector.StoreHandlers.Legacy;
 
 /// <summary>
 /// Handler for finding games installed with Legacy Games Launcher.
-/// Uses Json file:
+/// </summary>
+/// <remarks>
+/// Uses json file:
 ///   %AppData%\legacy-games-launcher\app-state.json
 /// and Registry key:
 ///   HKCU\Software\Legacy Games
-/// </summary>
+/// </remarks>
 [PublicAPI]
 public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
 {
@@ -86,75 +90,221 @@ public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<LegacyGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false)
+    public override IEnumerable<OneOf<LegacyGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
     {
-        return ParseRegistry();
+        List<OneOf<LegacyGame, ErrorMessage >> games = new();
+        var regDict = ParseRegistry();
+        var jsonDict = ParseJsonFile(regDict.Keys);
+        var instDirs = new List<AbsolutePath>();
+
+        foreach (var regGame in regDict)
+        {
+            if (regGame.Value.IsT1)
+            {
+                games.Add(regGame.Value.AsT1);
+                continue;
+            }
+
+            var game = regGame.Value.AsT0;
+            if (jsonDict.TryGetValue(regGame.Key, out var jsonGame) && jsonGame.IsT0)
+            {
+                games.Add(new LegacyGame(
+                    game.InstallerUuid,
+                    game.ProductName,
+                    game.InstDir,
+                    game.ExePath,
+                    game.DisplayIcon,
+                    game.UninstallString,
+                    IsInstalled: true,
+                    IsOwned: true,
+                    Description: jsonGame.AsT0.Description,
+                    Publisher: game.Publisher,
+                    Genre: jsonGame.AsT0.Genre,
+                    CoverArtUrl: jsonGame.AsT0.CoverArtUrl));
+                if (game.InstDir != default)
+                    instDirs.Add(game.InstDir);
+                continue;
+            }
+
+            games.Add(game);
+            if (game.InstDir != default)
+                instDirs.Add(game.InstDir);
+        }
+
+        foreach (var jsonGame in jsonDict)
+        {
+            if (!regDict.ContainsKey(jsonGame.Key))
+            {
+                if (jsonGame.Value.IsT1)
+                {
+                    games.Add(jsonGame.Value.AsT1);
+                    continue;
+                }
+
+                var game = jsonGame.Value.AsT0;
+                if (instDirs.Contains(game.InstDir))
+                    continue;
+
+                games.Add(game);
+            }
+        }
+
+        return games;
     }
 
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private (string descr, string url, Genre genre) ParseJsonFile(string uuid)
+    private Dictionary<LegacyGameId, OneOf<LegacyGame, ErrorMessage>> ParseJsonFile(Dictionary<LegacyGameId, OneOf<LegacyGame, ErrorMessage>>.KeyCollection searchIds, bool unowned = false)
     {
-        //List<string> libPaths = new();
+        Dictionary<LegacyGameId, OneOf<LegacyGame, ErrorMessage>> gameDict = new();
+
         var jsonFile = GetLegacyJsonFile();
         if (!jsonFile.FileExists)
-            return ("", "", (Genre)(-1));
+            return gameDict;
+        List<AbsolutePath> libraryPaths = new();
 
         try
         {
             using var stream = jsonFile.Read();
             var appState = JsonSerializer.Deserialize<AppStateFile>(stream, JsonSerializerOptions);
-            if (appState is null || appState.SiteData is null || appState.SiteData.Catalog is null)
-                return ("", "", (Genre)(-1));
+            if (appState is null)
+                return gameDict;
+
+            if (appState.SiteData is null || appState.SiteData.Catalog is null)
+                return gameDict;
 
             foreach (var item in appState.SiteData.Catalog)
             {
-                var genre = (Genre)(-1);
-                if (item.Categories is not null)
-                {
-                    foreach (var category in item.Categories)
-                    {
-                        foreach (var val in Enum.GetValues<Genre>())
-                        {
-                            if (category.Id is not null && ((Genre)category.Id).Equals(val))
-                                genre = val;
-                        }
-                    }
-                }
-
                 if (item.Games is null)
                     continue;
 
-                foreach (var game in item.Games)
+                foreach (var catalogGame in item.Games)
                 {
-                    if (game.InstallerUuid is not null && uuid.Equals(game.InstallerUuid, StringComparison.OrdinalIgnoreCase))
-                        return (game.GameDescription ?? "", game.GameCoverart ?? "", genre);
+                    var isOwned = true;
+                    var id = LegacyGameId.From(catalogGame.InstallerUuid ?? "");
+                    if (!searchIds.Contains(id))
+                    {
+                        if (!unowned)
+                            continue;
+                        isOwned = false;
+                    }
+
+                    var genre = Genre.Unknown;
+                    if (item.Categories is not null)
+                    {
+                        foreach (var category in item.Categories)
+                        {
+                            foreach (var val in Enum.GetValues<Genre>())
+                            {
+                                if (category.Id is not null && ((Genre)category.Id).Equals(val))
+                                {
+                                    genre = val;
+                                    break;
+                                }
+                            }
+                            if (genre == Genre.Unknown)
+                                break;
+                        }
+                    }
+
+                    gameDict.TryAdd(id, new LegacyGame(
+                        id,
+                        catalogGame.GameName ?? "",
+                        InstDir: default,
+                        IsInstalled: false,
+                        IsOwned: isOwned,
+                        Description: catalogGame.GameDescription ?? "",
+                        Genre: genre,
+                        CoverArtUrl: catalogGame.GameCoverart ?? ""));
                 }
             }
 
             if (appState.SiteData.GiveawayCatalog is null)
-                return ("", "", (Genre)(-1));
+                return gameDict;
 
-            foreach (var item in appState.SiteData.GiveawayCatalog)
+            foreach (var giveaway in appState.SiteData.GiveawayCatalog)
             {
-                if (item.Games is null)
+                if (giveaway.Games is null)
                     continue;
 
-                foreach (var game in item.Games)
+                foreach (var giveawayGame in giveaway.Games)
                 {
-                    if (game.InstallerUuid is not null && uuid.Equals(game.InstallerUuid, StringComparison.OrdinalIgnoreCase))
-                        return (game.GameDescription ?? "", game.GameCoverart ?? "", (Genre)(-1));
+                    var id = LegacyGameId.From(giveawayGame.InstallerUuid ?? "");
+                    gameDict.TryAdd(id, new LegacyGame(
+                        id,
+                        giveawayGame.GameName ?? "",
+                        InstDir: default,
+                        IsInstalled: false,
+                        Description: giveawayGame.GameDescription ?? "",
+                        Genre: Genre.Unknown,
+                        CoverArtUrl: giveawayGame.GameCoverart ?? ""));
                 }
             }
 
-            return ("", "", (Genre)(-1));
+            if (appState.Settings is not null)
+            {
+                foreach (var path in appState.Settings.GameLibraryPath.EnumerateArray())
+                {
+                    libraryPaths.Add(_fileSystem.FromUnsanitizedFullPath(path.ToString()));
+                }
+            }
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return ("", "", (Genre)(-1));
+            gameDict.TryAdd(LegacyGameId.From(""), new ErrorMessage(e, $"Exception parsing Legacy Games json file {jsonFile}"));
         }
+
+        var i = 0;
+        foreach (var game in GetInstalledGames(libraryPaths))
+        {
+            if (game.IsT1)
+            {
+                i++;
+                gameDict.Add(LegacyGameId.From($"i{i.ToString(CultureInfo.InvariantCulture)}"), game);
+                continue;
+            }
+
+            gameDict.Add(game.AsT0.InstallerUuid, game);
+        }
+
+        return gameDict;
+    }
+
+    private List<OneOf<LegacyGame, ErrorMessage>> GetInstalledGames(List<AbsolutePath> libPaths)
+    {
+        List<OneOf<LegacyGame, ErrorMessage>> games = new();
+
+        foreach (var lib in libPaths)
+        {
+            try
+            {
+                foreach (var path in lib.EnumerateDirectories(recursive: false))
+                {
+                    var strPath = path.FileName;
+                    var id = LegacyGameId.From(strPath);
+                    if (strPath.Equals("Legacy Games Launcher", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var exe = Utils.FindExe(path, _fileSystem);
+                    games.Add(new LegacyGame(
+                        id,
+                        path.FileName,
+                        path,
+                        exe,
+                        IsInstalled: true,
+                        IsOwned: true,
+                        NotFoundInData: true));
+                }
+            }
+            catch (Exception e)
+            {
+                games.Add(new ErrorMessage(e, $"Exception parsing Legacy Games library {lib.GetFullPath()}"));
+            }
+        }
+
+        return games;
     }
 
     private (string icon, string uninst, string pub) ParseUninstall(string subKeyName)
@@ -214,22 +364,17 @@ public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
             }
 
             var (icon, uninstall, publisher) = ParseUninstall(name);
-            var (description, imageUrl, genre) = ParseJsonFile(id);
 
-            var game = new LegacyGame(
+            return new LegacyGame(
                 InstallerUuid: LegacyGameId.From(id),
                 ProductName: name,
                 InstDir: instDir,
                 ExePath: exePath,
                 DisplayIcon: Path.IsPathRooted(icon) ? _fileSystem.FromUnsanitizedFullPath(icon) : exePath,
                 UninstallString: Path.IsPathRooted(uninstall) ? _fileSystem.FromUnsanitizedFullPath(uninstall) : new(),
-                Description: description,
-                Publisher: publisher,
-                Genre: genre,
-                CoverArtUrl: imageUrl
+                IsInstalled: true,
+                Publisher: publisher
             );
-
-            return game;
         }
         catch (Exception e)
         {
@@ -237,12 +382,14 @@ public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
         }
     }
 
-    private IEnumerable<OneOf<LegacyGame, ErrorMessage>> ParseRegistry()
+    private Dictionary<LegacyGameId, OneOf<LegacyGame, ErrorMessage>> ParseRegistry()
     {
         if (_registry is null)
         {
-            return new OneOf<LegacyGame, ErrorMessage>[] { new ErrorMessage("Unable to open registry"), };
+            return new() { [LegacyGameId.From("")] = new ErrorMessage("Unable to open registry"), };
         }
+
+        Dictionary<LegacyGameId, OneOf<LegacyGame, ErrorMessage>> gameDict = new();
 
         try
         {
@@ -251,26 +398,32 @@ public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
             using var legKey = currentUser.OpenSubKey(LegacyRegKey);
             if (legKey is null)
             {
-                return new OneOf<LegacyGame, ErrorMessage>[]
-                {
-                    new ErrorMessage($"Unable to open HKEY_CURRENT_USER\\{LegacyRegKey}"),
-                };
+                return new() { [LegacyGameId.From("")] = new ErrorMessage($"Unable to open HKEY_CURRENT_USER\\{LegacyRegKey}"), };
             }
 
             var subKeyNames = legKey.GetSubKeyNames().ToArray();
             if (subKeyNames.Length == 0)
             {
-                return new OneOf<LegacyGame, ErrorMessage>[] { new ErrorMessage($"Registry key {legKey.GetName()} has no sub-keys"), };
+                return new() { [LegacyGameId.From("")] = new ErrorMessage($"Registry key {legKey.GetName()} has no sub-keys"), };
             }
 
-            return subKeyNames
-                .Select(subKeyName => ParseSubKey(legKey, subKeyName))
-                .ToArray();
+            var i = 0;
+            foreach (var subKey in subKeyNames.Select(subKeyName => ParseSubKey(legKey, subKeyName)).ToArray())
+            {
+                if (subKey.IsT1)
+                {
+                    i++;
+                    gameDict.TryAdd(LegacyGameId.From($"r{i.ToString(CultureInfo.InvariantCulture)}"), subKey);
+                }
+                gameDict.TryAdd(subKey.AsT0.InstallerUuid, subKey);
+            }
         }
         catch (Exception e)
         {
-            return new OneOf<LegacyGame, ErrorMessage>[] { new ErrorMessage(e, "Exception looking for Legacy games in registry") };
+            gameDict.TryAdd(LegacyGameId.From(""), new ErrorMessage(e, "Exception looking for Legacy games in registry"));
         }
+
+        return gameDict;
     }
 
     public AbsolutePath GetLegacyJsonFile()
