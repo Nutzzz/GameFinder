@@ -20,7 +20,7 @@ public record RockstarGame(RockstarGameId Id,
                       AbsolutePath Launch = new(),
                       AbsolutePath Uninstall = new(),
                       string UninstallArgs = "") :
-    GameData(Handler: Handlers.StoreHandler_Rockstar,
+    GameData(Handler: Handler.StoreHandler_Rockstar,
              GameId: Id.ToString(),
              GameName: Name,
              GamePath: InstallFolder,

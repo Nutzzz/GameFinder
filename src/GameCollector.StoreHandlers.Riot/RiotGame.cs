@@ -22,7 +22,7 @@ public record RiotGame(RiotGameId ProductId,
                        string LaunchArgs,
                        AbsolutePath Icon,
                        string UninstallArgs) :
-    GameData(Handler: Handlers.StoreHandler_Riot,
+    GameData(Handler: Handler.StoreHandler_Riot,
              GameId: ProductId.ToString(),
              GameName: Name,
              GamePath: ProductInstallPath,

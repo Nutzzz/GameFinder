@@ -33,7 +33,7 @@ public record BigFishGame(BigFishGameId ProductId,
                          bool IsInstalled = true,
                          bool IsExpired = false,
                          string? ImageUrl = "") :
-    GameData(Handler: Handlers.StoreHandler_BigFish,
+    GameData(Handler: Handler.StoreHandler_BigFish,
              GameId: ProductId.ToString(),
              GameName: Name,
              GamePath: Path,
@@ -43,7 +43,7 @@ public record BigFishGame(BigFishGameId ProductId,
              LastRunDate: LastActionTime,
              NumRuns: PlayCount ?? 0,
              IsInstalled: IsInstalled,
-             HasProblem: IsExpired,
+             Problems: IsExpired ? new List<Problem>() { Problem.ExpiredTrial } : null,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ImageUrl"] = new() { ImageUrl ?? "", },

@@ -17,7 +17,7 @@ namespace GameCollector.EmuHandlers.MAME;
 /// <param name="CommandLineArgs"></param>
 /// <param name="Icon"></param>
 /// <param name="IsAvailable"></param>
-/// <param name="HasProblem"></param>
+/// <param name="Problems"></param>
 /// <param name="Parent"></param>
 /// <param name="Year"></param>
 /// <param name="Manufacturer"></param>
@@ -36,7 +36,7 @@ public record MAMEGame(MAMEGameId Name,
                        string CommandLineArgs = "",
                        AbsolutePath Icon = new(),
                        bool IsAvailable = true,
-                       bool HasProblem = false,
+                       IList<Problem>? Problems = null,
                        string? Parent = null,
                        string? Year = null,
                        string? Manufacturer = null,
@@ -47,7 +47,7 @@ public record MAMEGame(MAMEGameId Name,
                        string? DisplayType = null,
                        string? DisplayRotation = null,
                        string? VersionAdded = null) :
-    GameData(Handler: Handlers.EmuHandler_MAME,
+    GameData(Handler: Handler.EmuHandler_MAME,
              GameId: Name.ToString() ?? "",
              GameName: Description,
              GamePath: Path,
@@ -55,7 +55,7 @@ public record MAMEGame(MAMEGameId Name,
              LaunchArgs: (Name.ToString() ?? "") + (string.IsNullOrEmpty(CommandLineArgs) ? "" : " " + CommandLineArgs),
              Icon: Icon,
              IsInstalled: IsAvailable,
-             HasProblem: HasProblem,
+             Problems: Problems,
              BaseGame: Parent,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {

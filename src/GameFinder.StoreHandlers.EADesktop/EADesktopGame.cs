@@ -33,7 +33,7 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
                             string Publisher = "",
                             string BaseSlug = "",
                             IList<string>? ContentIDs = null) :
-    GameData(Handler: Handlers.StoreHandler_EADesktop,
+    GameData(Handler: Handler.StoreHandler_EADesktop,
              GameId: EADesktopGameId.ToString() ?? "",
              GameName: Name,
              GamePath: BaseInstallPath,

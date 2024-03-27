@@ -41,7 +41,7 @@ public record HumbleGame(HumbleGameId HumbleGameId,
                          string? MachineName = null,
                          IList<string>? Developers = null,
                          IList<string>? Publishers = null) :
-    GameData(Handler: Handlers.StoreHandler_Humble,
+    GameData(Handler: Handler.StoreHandler_Humble,
              GameId: HumbleGameId.ToString(),
              GameName: GameName,
              GamePath: FilePath,
@@ -51,7 +51,7 @@ public record HumbleGame(HumbleGameId HumbleGameId,
              UninstallUrl: UninstallUrl,
              LastRunDate: LastPlayed,
              IsInstalled: IsInstalled,
-             HasProblem: IsExpired,
+             Problems: IsExpired ? new List<Problem>() { Problem.ExpiredTrial } : null,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { DescriptionText ?? "", },

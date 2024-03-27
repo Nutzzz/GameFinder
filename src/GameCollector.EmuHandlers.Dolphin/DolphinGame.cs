@@ -31,7 +31,7 @@ public record DolphinGame(DolphinGameId DolphinGameId,
                          string? Publisher = "",
                          DolphinSystem? System = (DolphinSystem)(-1),
                          DolphinRegion? Region = (DolphinRegion)(-1)) :
-    GameData(Handler: Handlers.EmuHandler_Dolphin,
+    GameData(Handler: Handler.EmuHandler_Dolphin,
              GameId: DolphinGameId.ToString(),
              GameName: Title,
              GamePath: Path,

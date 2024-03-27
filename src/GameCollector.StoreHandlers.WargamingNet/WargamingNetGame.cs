@@ -24,7 +24,7 @@ public record WargamingNetGame(WargamingNetGameId AppId,
                       AbsolutePath Uninstall = new(),
                       string UninstallArgs = "",
                       bool IsInstalled = true) :
-    GameData(Handler: Handlers.StoreHandler_WargamingNet,
+    GameData(Handler: Handler.StoreHandler_WargamingNet,
              GameId: AppId.ToString(),
              GameName: Name,
              GamePath: InstallLocation,

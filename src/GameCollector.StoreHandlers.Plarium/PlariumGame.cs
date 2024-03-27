@@ -27,7 +27,7 @@ public record PlariumGame(PlariumGameId ProductId,
                       string? GameId = null,
                       string? GameName = null,
                       string? CompanyName = null) :
-    GameData(Handler: Handlers.StoreHandler_Plarium,
+    GameData(Handler: Handler.StoreHandler_Plarium,
              GameId: ProductId.ToString(),
              GameName: ProductName,
              GamePath: InstallationPath,

@@ -26,7 +26,7 @@ public record BattleNetGame(BattleNetGameId ProductId,
                       string UninstallArgs = "",
                       DateTime? LastPlayed = null,
                       string? AppDescription = "") :
-    GameData(Handler: Handlers.StoreHandler_BattleNet,
+    GameData(Handler: Handler.StoreHandler_BattleNet,
              GameId: ProductId.ToString(),
              GameName: DirName,
              GamePath: InstallPath,

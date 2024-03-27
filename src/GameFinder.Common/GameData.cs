@@ -25,14 +25,15 @@ namespace GameFinder.Common;
 /// <param name="NumRuns"></param>
 /// <param name="RunTime"></param>
 /// <param name="IsInstalled"></param>
+/// <param name="IsOwned"></param>
 /// <param name="IsHidden"></param>
-/// <param name="HasProblem"></param>
+/// <param name="Problems"></param>
 /// <param name="Tags"></param>
 /// <param name="MyRating"></param>
 /// <param name="BaseGame"></param>
 /// <param name="Metadata"></param>
 [PublicAPI]
-public record GameData(Handlers Handler,
+public record GameData(Handler Handler,
                        string GameId,
                        string GameName,
                        AbsolutePath GamePath,
@@ -49,8 +50,9 @@ public record GameData(Handlers Handler,
                        uint NumRuns = 0,
                        TimeSpan? RunTime = null,
                        bool IsInstalled = true,
+                       bool IsOwned = true,
                        bool IsHidden = false,
-                       bool HasProblem = false,
+                       IList<Problem>? Problems = null,
                        IList<string>? Tags = null,
                        ushort? MyRating = null,
                        string? BaseGame = null,

@@ -86,7 +86,7 @@ The TGame implementations of GameCollector's handlers inherit a generic GameData
   - `TimeSpan? RunTime`
   - `bool IsInstalled`
   - `bool IsHidden`
-  - `bool HasProblem`
+  - `List<Problem>? Problem`
   - `List<string>? Tags`
   - `ushort? MyRating`
   - `string? BaseGame`

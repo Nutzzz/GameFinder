@@ -37,7 +37,7 @@ public record EGSGame(EGSGameId CatalogItemId,
                       IList<string>? Categories = null,
                       string Namespace = "",
                       string AppId = "") :
-    GameData(Handler: Handlers.StoreHandler_EGS,
+    GameData(Handler: Handler.StoreHandler_EGS,
              GameId: CatalogItemId.ToString(),
              GameName: DisplayName,
              GamePath: InstallLocation,

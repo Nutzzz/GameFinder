@@ -14,7 +14,7 @@ namespace GameCollector.StoreHandlers.Oculus;
 /// <param name="InstallPath"></param>
 /// <param name="LaunchFile"></param>
 /// <param name="IsInstalled"></param>
-/// <param name="HasProblem"></param>
+/// <param name="IsExpired"></param>
 /// <param name="Description"></param>
 /// <param name="Genres"></param>
 /// <param name="CanonicalName"></param>
@@ -24,18 +24,18 @@ public record OculusGame(OculusGameId HashKey,
                       AbsolutePath InstallPath = new(),
                       AbsolutePath LaunchFile = new(),
                       bool IsInstalled = true,
-                      bool HasProblem = false,
+                      bool IsExpired = false,
                       string? Description = null,
                       List<string>? Genres = null,
                       string? CanonicalName = null) :
-    GameData(Handler: Handlers.StoreHandler_Oculus,
+    GameData(Handler: Handler.StoreHandler_Oculus,
              GameId: HashKey.ToString(),
              GameName: DisplayName,
              GamePath: InstallPath,
              Launch: LaunchFile,
              Icon: LaunchFile,
              IsInstalled: IsInstalled,
-             HasProblem: HasProblem,
+             Problems: IsExpired ? new List<Problem>() { Problem.ExpiredTrial } : null,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "", },

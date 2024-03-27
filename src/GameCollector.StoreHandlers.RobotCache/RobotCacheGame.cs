@@ -20,7 +20,7 @@ public record RobotCacheGame(RobotCacheGameId Id,
                        string ExecutionPath,
                        string ExecutionParams,
                        AbsolutePath Icon) :
-    GameData(Handler: Handlers.StoreHandler_RobotCache,
+    GameData(Handler: Handler.StoreHandler_RobotCache,
              GameId: Id.ToString(),
              GameName: Title,
              GamePath: InstallPath,

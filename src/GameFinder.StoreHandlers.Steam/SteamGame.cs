@@ -27,7 +27,7 @@ public sealed record SteamGame(AbsolutePath SteamPath,
                         LibraryFolder? LibraryFolder,
                         OwnedGameModel? OwnedGame,
                         bool IsInstalled) :
-    GameData(Handler: Handlers.StoreHandler_Steam,
+    GameData(Handler: Handler.StoreHandler_Steam,
              GameId: AppManifest is not null ? AppManifest.AppId.ToString() :
                 (OwnedGame is not null ? OwnedGame.AppId.ToString() : ""),
              GameName: AppManifest is not null ? AppManifest.Name :

@@ -48,7 +48,7 @@ public record AmazonGame(AmazonGameId ProductId,
                          EsrbRating EsrbRating = (EsrbRating)(-1),
                          string? GameModes = "",
                          string? Genres = "") :
-    GameData(Handler: Handlers.StoreHandler_Amazon,
+    GameData(Handler: Handler.StoreHandler_Amazon,
              GameId: ProductId.ToString(),
              GameName: ProductTitle ?? "",
              GamePath: InstallDirectory,

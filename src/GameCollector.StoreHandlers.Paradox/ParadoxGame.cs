@@ -32,7 +32,7 @@ public record ParadoxGame(ParadoxGameId Id,
                       AbsolutePath AppTaskbarIcon = new(),
                       AbsolutePath Background = new(),
                       AbsolutePath Logo = new()) :
-    GameData(Handler: Handlers.StoreHandler_Paradox,
+    GameData(Handler: Handler.StoreHandler_Paradox,
              GameId: Id.ToString(),
              GameName: Name,
              GamePath: InstallationPath,

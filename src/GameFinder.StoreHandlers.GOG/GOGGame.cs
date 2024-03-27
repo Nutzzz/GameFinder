@@ -49,7 +49,7 @@ public record GOGGame(GOGGameId Id,
                       string BoxArtUrl = "",
                       string LogoUrl = "",
                       string IconUrl = "") :
-    GameData(Handler: Handlers.StoreHandler_GOG,
+    GameData(Handler: Handler.StoreHandler_GOG,
              GameId: Id.ToString() ?? "",
              GameName: Name,
              GamePath: Path,

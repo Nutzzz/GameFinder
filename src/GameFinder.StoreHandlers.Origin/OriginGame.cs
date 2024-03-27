@@ -12,7 +12,7 @@ namespace GameCollector.StoreHandlers.Origin;
 [PublicAPI]
 public record OriginGame(OriginGameId Id,
                          AbsolutePath InstallPath) :
-    GameData(Handler: Handlers.StoreHandler_Origin,
+    GameData(Handler: Handler.StoreHandler_Origin,
              GameId: Id.ToString(),
              GameName: InstallPath.GetFileNameWithoutExtension(),
              GamePath: InstallPath);

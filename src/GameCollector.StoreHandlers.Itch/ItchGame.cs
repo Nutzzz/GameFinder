@@ -30,7 +30,7 @@ public record ItchGame(ItchGameId Id,
                       bool IsInstalled = true,
                       string? ShortText = null,
                       string? Classification = null) :
-    GameData(Handler: Handlers.StoreHandler_Itch,
+    GameData(Handler: Handler.StoreHandler_Itch,
              GameId: Id.ToString(),
              GameName: Title,
              GamePath: Path,

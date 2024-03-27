@@ -28,7 +28,7 @@ public record UbisoftGame(UbisoftGameId GameCode,
                        string UninstallArgs = "",
                        bool IsInstalled = true,
                        bool IsDLC = false) :
-    GameData(Handler: Handlers.StoreHandler_Ubisoft,
+    GameData(Handler: Handler.StoreHandler_Ubisoft,
              GameId: GameCode.ToString(),
              GameName: DisplayName,
              GamePath: InstallPath,

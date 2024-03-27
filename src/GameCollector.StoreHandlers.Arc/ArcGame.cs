@@ -18,7 +18,7 @@ public record ArcGame(ArcGameId AppId,
                       AbsolutePath InstallPath,
                       AbsolutePath LauncherPath = new(),
                       AbsolutePath Icon = new()) :
-    GameData(Handler: Handlers.StoreHandler_Arc,
+    GameData(Handler: Handler.StoreHandler_Arc,
              GameId: AppId.ToString(),
              GameName: Name,
              GamePath: InstallPath,

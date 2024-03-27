@@ -22,7 +22,7 @@ public record XboxGame(XboxGameId Id,
                        AbsolutePath Logo = new(),
                        string? Description = null,
                        string? Publisher = null) :
-    GameData(Handler: Handlers.StoreHandler_Xbox,
+    GameData(Handler: Handler.StoreHandler_Xbox,
              GameId: Id.ToString(),
              GameName: DisplayName,
              GamePath: Path,

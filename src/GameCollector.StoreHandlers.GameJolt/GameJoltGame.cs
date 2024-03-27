@@ -26,7 +26,7 @@ public record GameJoltGame(GameJoltGameId Id,
                       string? ImageUrl = null,
                       string? HeaderUrl = null,
                       ulong? PackageId = null) :
-    GameData(Handler: Handlers.StoreHandler_GameJolt,
+    GameData(Handler: Handler.StoreHandler_GameJolt,
              GameId: Id.ToString(),
              GameName: Title,
              GamePath: InstallDir,

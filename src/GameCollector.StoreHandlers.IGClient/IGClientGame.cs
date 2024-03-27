@@ -42,7 +42,7 @@ public record IGClientGame(IGClientGameId IdKeyName,
                          IList<string>? Categories = null,
                          IList<string>? Tags = null,
                          decimal AvgRating = 0m) :
-    GameData(Handler: Handlers.StoreHandler_IGClient,
+    GameData(Handler: Handler.StoreHandler_IGClient,
              GameId: IdKeyName.ToString(),
              GameName: ItemName,
              GamePath: Path,
