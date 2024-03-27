@@ -173,55 +173,64 @@ public static class Utils
                 exe = exes[0];
             else
             {
-                var j = 0;
-                foreach (var file in exes)
+                for (var i = exes.Count - 1; i >= 0; i--)
                 {
-                    j++;
-                    var tmpFile = file.FileName;
+                    var bad = false;
+                    var good = false;
+                    var filename = exes[i].FileName;
+
                     List<string> badNames = new()
-                {
-                    "unins", "install", "patch", "redist", "prereq", "dotnet", "setup", "config", "w9xpopen", "edit", "help",
-                    "python", "server", "service", "cleanup", "anticheat", "touchup", "error", "crash", "report", "helper", "handler",
-                };
+                    {
+                        "unins", "install", "patch", "redist", "prereq", "dotnet", "setup", "config", "w9xpopen", "edit", "help",
+                        "python", "server", "service", "cleanup", "anticheat", "touchup", "error", "crash", "report", "handler",
+                    };
                     List<string> goodNames = new()
                     {
                         //"launch", "scummvm",
                     };
+
                     foreach (var badName in badNames)
                     {
-                        if (tmpFile.Contains(badName, StringComparison.OrdinalIgnoreCase))
-                            continue;
-                    }
-
-                    if (!string.IsNullOrEmpty(name))
-                    {
-                        var nameSanitized = string.Concat(name.Split(Path.GetInvalidFileNameChars()));
-                        var nameAlphanum = name.Where(c => c == 32 || (char.IsLetterOrDigit(c) && c < 128)).ToString();
-                        if (tmpFile.Contains(nameSanitized, StringComparison.OrdinalIgnoreCase) ||
-                            tmpFile.Contains(nameSanitized.Replace(' ', '-'), StringComparison.OrdinalIgnoreCase) ||
-                            tmpFile.Contains(nameSanitized.Replace(' ', '_'), StringComparison.OrdinalIgnoreCase) ||
-                            tmpFile.Contains(nameSanitized.Remove(' '), StringComparison.OrdinalIgnoreCase) ||
-                            (nameAlphanum is not null &&
-                            (tmpFile.Contains(nameAlphanum, StringComparison.OrdinalIgnoreCase) ||
-                            tmpFile.Contains(nameAlphanum.Replace(' ', '-'), StringComparison.OrdinalIgnoreCase) ||
-                            tmpFile.Contains(nameAlphanum.Replace(' ', '_'), StringComparison.OrdinalIgnoreCase) ||
-                            tmpFile.Contains(nameAlphanum.Remove(' '), StringComparison.OrdinalIgnoreCase))))
+                        if (filename.Contains(badName, StringComparison.OrdinalIgnoreCase))
                         {
-                            exe = file;
+                            bad = true;
                             break;
                         }
                     }
                     foreach (var goodName in goodNames)
                     {
-                        if (tmpFile.Contains(goodName, StringComparison.OrdinalIgnoreCase))
+                        if (filename.Contains(goodName, StringComparison.OrdinalIgnoreCase))
                         {
-                            exe = file;
+                            good = true;
                             break;
                         }
                     }
-                    exe = file;
+                    if (!good && bad)
+                        exes.RemoveAt(i);
+
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        var nameSanitized = string.Concat(name.Split(Path.GetInvalidFileNameChars()));
+                        var nameAlphanum = name.Where(c => c == 32 || (char.IsLetterOrDigit(c) && c < 128)).ToString();
+                        if (filename.Contains(nameSanitized, StringComparison.OrdinalIgnoreCase) ||
+                            filename.Contains(nameSanitized.Replace(' ', '-'), StringComparison.OrdinalIgnoreCase) ||
+                            filename.Contains(nameSanitized.Replace(' ', '_'), StringComparison.OrdinalIgnoreCase) ||
+                            filename.Contains(nameSanitized.Remove(' '), StringComparison.OrdinalIgnoreCase) ||
+                            (nameAlphanum is not null &&
+                            (filename.Contains(nameAlphanum, StringComparison.OrdinalIgnoreCase) ||
+                            filename.Contains(nameAlphanum.Replace(' ', '-'), StringComparison.OrdinalIgnoreCase) ||
+                            filename.Contains(nameAlphanum.Replace(' ', '_'), StringComparison.OrdinalIgnoreCase) ||
+                            filename.Contains(nameAlphanum.Remove(' '), StringComparison.OrdinalIgnoreCase))))
+                        {
+                            exe = exes[i];
+                            break;
+                        }
+                    }
                 }
             }
+            if (exe == default)
+                exe = exes.FirstOrDefault();
+
             return exe;
         }
         catch (Exception) { }
