@@ -74,7 +74,7 @@ public class OriginHandler : AHandler<OriginGame, OriginGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<OriginGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<OriginGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var manifestDir = GetManifestDir(_fileSystem);
 

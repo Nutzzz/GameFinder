@@ -91,7 +91,7 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<IGClientGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<IGClientGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         List<OneOf<IGClientGame, ErrorMessage>> games = new();
         var installFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
@@ -117,7 +117,7 @@ public class IGClientHandler : AHandler<IGClientGame, IGClientGameId>
         }
 
         games = ParseInstallFile(installFile);
-        if (!installedOnly)
+        if (settings?.InstalledOnly != true)
         {
             var ownedGames = ParseConfigFile(configFile, games);
             games.AddRange(ownedGames);

@@ -75,19 +75,17 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
-        return FindAllGames(installedOnly, baseOnly, ownedOnly, 0);
+        return FindAllGames(settings, 0);
     }
 
     /// <summary>
     /// Finds all Steam games
     /// </summary>
-    /// <param name="installedOnly"></param>
-    /// <param name="baseOnly"></param>
-    /// <param name="ownedOnly"></param>
+    /// <param name="settings"></param>
     /// <param name="userId"></param>
-    public IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true, ulong userId = 0)
+    public IEnumerable<OneOf<SteamGame, ErrorMessage>> FindAllGames(Settings? settings = null, ulong userId = 0)
     {
         List<OneOf<SteamGame, ErrorMessage>> allGames = new();
         Dictionary<AppId, OneOf<SteamGame, ErrorMessage>> installedGames = new();
@@ -156,7 +154,7 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
             }
         }
 
-        if (installedOnly || _apiKey is null)
+        if (settings?.InstalledOnly == true || _apiKey is null)
             return installedGames.Values;
 
         return FindOwnedGamesFromAPI(installedGames, userId);

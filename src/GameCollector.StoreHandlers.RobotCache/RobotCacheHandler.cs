@@ -76,7 +76,7 @@ public class RobotCacheHandler : AHandler<RobotCacheGame, RobotCacheGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<RobotCacheGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<RobotCacheGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var configFile = _fileSystem.GetKnownPath(KnownPath.LocalApplicationDataDirectory)
             .Combine("RobotCache")

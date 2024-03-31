@@ -81,9 +81,9 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<MAMEGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<MAMEGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
-        return FindAllGames(installedOnly, baseOnly, ownedOnly);
+        return FindAllGames(settings?.InstalledOnly ?? false, settings?.BaseOnly ?? false);
     }
 
     /// <summary>
@@ -92,14 +92,12 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     /// </summary>
     /// <param name="availableOnly">ROM file exists (and if doVerify is true, ROM is correct)</param>
     /// <param name="parentsOnly">Do not add clones</param>
-    /// <param name="allGames">Include all games, whether or not the ROM is present</param>
     /// <param name="doVerify">Verify ROM is correct for MAME version (this is very slow)</param>
     /// <param name="minimumStatus">Minimum emulation status (from "good", "imperfect", or "preliminary")</param>
     /// <returns></returns>
     public IEnumerable<OneOf<MAMEGame, ErrorMessage>> FindAllGames(
-        bool availableOnly,
-        bool parentsOnly,
-        bool allGames,
+        bool? availableOnly = false,
+        bool? parentsOnly = false,
         bool doVerify = false,
         MachineStatus minimumStatus = MachineStatus.Imperfect)
     {
@@ -224,7 +222,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code")]
-    private List<ROMData> GetGameList(Action<int> progressCallback, bool availableOnly, bool parentsOnly, bool doVerify, MachineStatus minimumStatus)
+    private List<ROMData> GetGameList(Action<int> progressCallback, bool? availableOnly, bool? parentsOnly, bool doVerify, MachineStatus minimumStatus)
     {
         CancellationToken cancelToken = new();
         var gameList = new List<ROMData>();
@@ -243,7 +241,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
             _logger?.LogInformation("MAME {build}", build[..build.IndexOf(' ', StringComparison.Ordinal)]);
 
         var romFiles = GetROMFiles();
-        if (availableOnly && romFiles.Count == 0)
+        if (availableOnly == true && romFiles.Count == 0)
         {
             _logger?.LogDebug("No ROM files available.");
             return new();
@@ -274,7 +272,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
                 }
             }
 
-            if (availableOnly && string.IsNullOrEmpty(path))
+            if (availableOnly == true && string.IsNullOrEmpty(path))
             {
                 _logger?.LogInformation("{name} not added to game list because a zip file could not be found", name);
                 continue;
@@ -283,7 +281,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
             {
                 if (verifiedGames.Contains(game.Name, StringComparer.Ordinal))
                     isVerified = true;
-                else if (availableOnly)
+                else if (availableOnly == true)
                 {
                     _logger?.LogInformation("{name} not added to game list because its files could not be verified", name);
                     continue;
@@ -305,7 +303,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     /// <param name="machine">Class based on elements from MAME's <c>-listxml</c> output</param>
     /// <param name="parentsOnly">Do not add clones</param>
     /// <param name="minimumStatus">Minimum emulation status (from "good", "imperfect", or "preliminary")</param>
-    private bool IsGameValid(Machine machine, bool parentsOnly, MachineStatus minimumStatus)
+    private bool IsGameValid(Machine machine, bool? parentsOnly, MachineStatus minimumStatus)
     {
         if (!string.IsNullOrEmpty(machine.IsDevice) &&
             machine.IsDevice.Equals("yes", StringComparison.Ordinal))
@@ -353,7 +351,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
         }
 
         // Skip clones if parentsOnly flag
-        if (parentsOnly && !string.IsNullOrEmpty(machine.CloneOf))
+        if (parentsOnly == true && !string.IsNullOrEmpty(machine.CloneOf))
         {
             _logger?.LogInformation("{name} not added to game list as it is a clone of {parent}", machine.Name, machine.CloneOf);
             return false;
@@ -367,7 +365,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
     ///     verified to work. Only the ones marked as good are returned. The clone names
     ///     are returned in the value of the dictionary while the name is used as the key.
     /// </summary>
-    private async Task<Dictionary<string, string>> GetVerifiedSets(Action<int> progressCallback, List<(string, string)> romFiles, bool availableOnly, bool doVerify)
+    private async Task<Dictionary<string, string>> GetVerifiedSets(Action<int> progressCallback, List<(string, string)> romFiles, bool? availableOnly, bool doVerify)
     {
         var verifiedROMs = new Dictionary<string, string>(StringComparer.Ordinal);
         if (!doVerify)
@@ -378,7 +376,7 @@ public partial class MAMEHandler : AHandler<MAMEGame, MAMEGameId>
         var filesProcessed = 0;
 
         List<string> filesToVerify;
-        while ((filesToVerify = romFiles.Select(n => n.Item1).ToList().Skip(index).Take(ROMsPerBatch).ToList()).Any())
+        while ((filesToVerify = romFiles.Select(n => n.Item1).ToList().Skip(index).Take(ROMsPerBatch).ToList()).Count != 0)
         {
             var arguments = new List<string> { "-verifyroms" }.Concat(filesToVerify).ToArray();
             using (var stream = MAMERunner.Run(_fileSystem, _mamePath, arguments).StandardOutput)

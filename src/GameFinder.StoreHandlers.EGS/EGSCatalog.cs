@@ -19,7 +19,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private static List<OneOf<EGSGame, ErrorMessage>> ParseCatCacheFile(IFileSystem fileSystem, bool baseOnly = false)
+    private static List<OneOf<EGSGame, ErrorMessage>> ParseCatCacheFile(IFileSystem fileSystem, Settings? settings)
     {
         List<OneOf<EGSGame, ErrorMessage>> games = new();
         var catalogPath = Path.Combine(GetFolderPath(SpecialFolder.CommonApplicationData),
@@ -71,7 +71,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
 
                     if (game.MainGameItem is not null && !string.IsNullOrEmpty(game.MainGameItem.Id))
                     {
-                        if (baseOnly)
+                        if (settings?.BaseOnly == true)
                         {
                             games.Add(new ErrorMessage($"\"{title}\" is a DLC of {game.MainGameItem.Id}"));
                             continue;
@@ -87,13 +87,20 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                     List<string> genres = new();
                     if (game.Categories is not null)
                     {
+                        var isGame = false;
                         var audience = false;
                         var engines = false;
+
                         foreach (var category in game.Categories)
                         {
-                            // skip "audience" and "engines" categories (but "games", "software", "applications", etc. OK)
+                            // skip "audience" and "engines" categories (but "games" are OK, and possibly "software", "applications", etc.)
                             if (category is not null && category.Path is not null)
                             {
+                                if (category.Path.Equals("games", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    isGame = true;
+                                    break;
+                                }
                                 if (category.Path.Equals("audience", StringComparison.OrdinalIgnoreCase))
                                 {
                                     audience = true;
@@ -107,9 +114,13 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                                 genres.Add(category?.Name ?? "");
                             }
                         }
+                        if (settings?.GamesOnly == true && !isGame)
+                        {
+                            games.Add(new ErrorMessage($"\"{title}\" is not a game (e.g., a software or application)"));
+                            continue;
+                        }
                         if (audience)
                             continue;
-
                         if (engines)
                         {
                             games.Add(new ErrorMessage($"\"{title}\" is game engine-related"));
@@ -166,14 +177,13 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
     private static List<OneOf<EGSGame, ErrorMessage>> GetOwnedGames(
         Dictionary<EGSGameId, OneOf<EGSGame, ErrorMessage>> installedDict,
         IFileSystem fileSystem,
-        bool installedOnly = false,
-        bool baseOnly = false)
+        Settings? settings)
     {
         List<OneOf<EGSGame, ErrorMessage>> ownedList = new();
         List<OneOf<EGSGame, ErrorMessage>> installedList = new();
         Dictionary<string, EGSGameId> namespaces = new(StringComparer.OrdinalIgnoreCase);
 
-        var ownedGames = ParseCatCacheFile(fileSystem, baseOnly);
+        var ownedGames = ParseCatCacheFile(fileSystem, settings);
         foreach (var game in ownedGames)
         {
             if (game.IsT0)
@@ -193,11 +203,11 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                 if (string.IsNullOrEmpty(mainGame) && namespaces.TryGetValue(game.AsT0.Namespace, out var value) && !id.Equals(value))
                 {
                     ownedList.Add(new ErrorMessage($"\"{game.AsT0.DisplayName}\" is a DLC or alternate install of {value}"));
-                    if (baseOnly)
+                    if (settings?.BaseOnly == true)
                         continue;
                     mainGame = value.ToString();
                 }
-                if (!installedOnly)
+                if (settings?.InstalledOnly != true)
                     ownedList.Add(game);
                 continue;
             }

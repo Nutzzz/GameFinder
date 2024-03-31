@@ -64,7 +64,7 @@ public partial class DolphinHandler : AHandler<DolphinGame, DolphinGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<DolphinGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<DolphinGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         // All games 
         if (!_dolphinPath.FileExists)

@@ -89,7 +89,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<UbisoftGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<UbisoftGame, ErrorMessage>> FindAllGames(GameFinder.Common.Settings? settings = null)
     {
         var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 
@@ -123,7 +123,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             yield break;
         }
 
-        if (installedOnly) yield break;
+        if (settings?.InstalledOnly == true) yield break;
 
         // Get owned but not-installed games
 
@@ -184,7 +184,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
                 }
                 if (parse)
                 {
-                    yield return ParseConfigFile(string.Join('\n', input), launcherPath, _fileSystem, _registry, ubiIds, baseOnly);
+                    yield return ParseConfigFile(string.Join('\n', input), launcherPath, _fileSystem, _registry, ubiIds, settings?.BaseOnly);
                 }
                 input = new();
                 if (line is not null &&
@@ -198,7 +198,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
         }
     }
 
-    private static OneOf<UbisoftGame, ErrorMessage> ParseConfigFile(string input, string launcherPath, IFileSystem fileSystem, IRegistry registry, List<string> ubiIds, bool baseOnly = false)
+    private static OneOf<UbisoftGame, ErrorMessage> ParseConfigFile(string input, string launcherPath, IFileSystem fileSystem, IRegistry registry, List<string> ubiIds, bool? baseOnly = false)
     {
         ConfigFile config;
         var id = "";
@@ -274,7 +274,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
                 (config.Root.OptionalAddonEnabledByDefault is not null &&
                 ToBool(config.Root.OptionalAddonEnabledByDefault)))
             {
-                if (baseOnly)
+                if (baseOnly == true)
                     return new ErrorMessage($"\"{name}\" is not a base game!");
                 isDLC = true;
             }
@@ -295,7 +295,7 @@ public class UbisoftHandler : AHandler<UbisoftGame, UbisoftGameId>
             }
             if (string.IsNullOrEmpty(id))
             {
-                if (baseOnly)
+                if (baseOnly == true)
                     return new ErrorMessage($"\"{name}\" does not have an ID!");
 
                 if (string.IsNullOrEmpty(name))

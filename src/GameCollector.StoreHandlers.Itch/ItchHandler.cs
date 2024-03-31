@@ -93,7 +93,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<ItchGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<ItchGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var database = GetDatabaseFilePath(_fileSystem);
         if (!database.FileExists)
@@ -102,13 +102,13 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
             yield break;
         }
 
-        foreach (var game in ParseDatabase(database, installedOnly))
+        foreach (var game in ParseDatabase(database, settings))
         {
             yield return game;
         }
     }
 
-    private IEnumerable<OneOf<ItchGame, ErrorMessage>> ParseDatabase(AbsolutePath database, bool installedOnly = false)
+    private IEnumerable<OneOf<ItchGame, ErrorMessage>> ParseDatabase(AbsolutePath database, Settings? settings)
     {
         var games = SQLiteHelpers.GetDataTable(database, "SELECT * FROM games;").ToList<ButlerGames>();
         var caves = SQLiteHelpers.GetDataTable(database, "SELECT * FROM caves;").ToList<ButlerCaves>();
@@ -128,9 +128,14 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
             }
             var name = game.Title ?? "";
             var type = game.Classification ?? "";
+            if (settings?.GamesOnly == true && !type.Equals("game", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return new ErrorMessage($"\"{name}\" is not a game (e.g., an asset or tool)!");
+                continue;
+            }
             if (type.Equals("assets", StringComparison.OrdinalIgnoreCase))  // no "assets", just "game" or "tool"
             {
-                yield return new ErrorMessage($"\"{name}\" is an asset (not a game)!");
+                yield return new ErrorMessage($"\"{name}\" is an asset (not a game or tool)!");
                 continue;
             }
 
@@ -147,7 +152,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
                 var result = ParseCavesForId(caves.ToList(), id, name);
                 if (result.IsError())
                 {
-                    if (installedOnly)
+                    if (settings?.InstalledOnly == true)
                     {
                         yield return result.AsError();
                         continue;

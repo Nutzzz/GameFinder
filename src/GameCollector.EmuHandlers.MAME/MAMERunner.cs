@@ -22,7 +22,7 @@ public class MAMERunner
     /// <summary>
     ///     Kills a MAME process.
     /// </summary>
-    public void Stop(Process process)
+    public static void Stop(Process process)
     {
         if (process == null || process.HasExited) return;
 

@@ -7,12 +7,12 @@ namespace GameCollector.StoreHandlers.Legacy;
 
 [UsedImplicitly]
 internal record AppStateFile(
-    Settings? Settings,
+    AppSettings? Settings,
     SiteData? SiteData
 );
 
 [UsedImplicitly]
-internal record Settings(
+internal record AppSettings(
     JsonElement GameLibraryPath
 );
 

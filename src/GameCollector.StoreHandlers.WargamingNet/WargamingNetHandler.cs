@@ -99,7 +99,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code")]
-    public override IEnumerable<OneOf<WargamingNetGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<WargamingNetGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         List<string> appPaths = new();
 

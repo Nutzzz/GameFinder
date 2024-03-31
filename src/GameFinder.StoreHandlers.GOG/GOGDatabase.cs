@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text.Json;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
@@ -15,10 +14,7 @@ namespace GameCollector.StoreHandlers.GOG;
 public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
 {
     internal IDictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> FindGamesFromDatabase(
-        Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> regGames,
-        bool installedOnly = false,
-        bool baseOnly = false,
-        bool ownedOnly = true)
+        Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> regGames, Settings? settings)
     {
         /*
         productId from ProductAuthorizations
@@ -122,7 +118,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                             if (document3.RootElement.TryGetProperty("parentGrk", out var jParent))
                             {
                                 parent = jParent.GetString() ?? "";
-                                if (baseOnly && !string.IsNullOrEmpty(parent))
+                                if (settings?.BaseOnly == true && !string.IsNullOrEmpty(parent))
                                 {
                                     isDlc = true;
                                     break;
@@ -141,7 +137,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                             else if (document3.RootElement.TryGetProperty("myRating", out var jRating) && jRating.ValueKind != JsonValueKind.Null)
                                 jRating.TryGetUInt16(out myRating);
                         }
-                        if (isDlc && baseOnly)
+                        if (isDlc && settings?.BaseOnly == true)
                         {
                             i++;
                             games.TryAdd(GOGGameId.From(i), new ErrorMessage($"{gogId} is a DLC"));
@@ -308,7 +304,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                     }
 
                     // Add not-installed games
-                    if (!installedOnly && string.IsNullOrEmpty(launch))
+                    if (settings?.InstalledOnly != true && string.IsNullOrEmpty(launch))
                     {
                         games.TryAdd(id, new GOGGame(
                             Id: id,
@@ -325,7 +321,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 }
 
                 // Add unowned games
-                if (!ownedOnly)
+                if (settings?.OwnedOnly != true)
                 {
                     games.TryAdd(id, new GOGGame(
                         Id: id,

@@ -91,7 +91,7 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
     "Trimming",
     "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
     Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<PlariumGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<PlariumGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var jsonFile = GetPlariumPlayPath().Combine("gamestorage.gsfn");
         using var stream = jsonFile.Read();
@@ -147,11 +147,11 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
                         if (settingsFile.FileExists)
                         {
                             using var settingsStream = settingsFile.Read();
-                            var settings = JsonSerializer.Deserialize<Settings>(settingsStream);
-                            if (settings is not null)
+                            var gameSettings = JsonSerializer.Deserialize<GameSettings>(settingsStream);
+                            if (gameSettings is not null)
                             {
-                                company = settings.CompanyName;
-                                name = settings.ProductName;
+                                company = gameSettings.CompanyName;
+                                name = gameSettings.ProductName;
                             }
                         }
                         if (string.IsNullOrEmpty(name) && appInfoFile.FileExists)

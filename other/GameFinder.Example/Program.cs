@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -113,17 +112,7 @@ public static class Program
 
         logger.LogInformation("Operating System: {OSDescription}", RuntimeInformation.OSDescription);
 
-        var i = false;
-        if (options.Installed)
-            i = true;
-
-        var p = false;
-        if (options.Parent || options.Base)
-            p = true;
-
-        var o = true;
-        if (options.Unowned) // reversed logic
-            o = false;
+        var settings = new Settings(options.Installed, options.Parent || options.Base, options.Games, !options.Unowned);
 
         if (options.All) // Enable all emulator and handlers
         {
@@ -158,13 +147,13 @@ public static class Program
         if (OperatingSystem.IsWindows())
         {
             var windowsRegistry = WindowsRegistry.Shared;
-            if (options.Steam) RunSteamHandler(realFileSystem, windowsRegistry, options.SteamAPI, i, p, o);
-            //if (options.Steam) tasks.Add(Task.Run(() => RunSteamHandler(realFileSystem, windowsRegistry, options.SteamAPI, i, p, o), cancelToken));
-            if (options.GOG) tasks.Add(Task.Run(() => RunGOGHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Epic || options.EGS) RunEGSHandler(windowsRegistry, realFileSystem, i, p, o);
-            //if (options.Epic || options.EGS) tasks.Add(Task.Run(() => RunEGSHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Origin) tasks.Add(Task.Run(() => RunOriginHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.Xbox) tasks.Add(Task.Run(() => RunXboxHandler(realFileSystem, i, p, o), cancelToken));
+            if (options.Steam) RunSteamHandler(settings, realFileSystem, windowsRegistry, options.SteamAPI);
+            //if (options.Steam) tasks.Add(Task.Run(() => RunSteamHandler(settings, realFileSystem, windowsRegistry, options.SteamAPI), cancelToken));
+            if (options.GOG) tasks.Add(Task.Run(() => RunGOGHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Epic || options.EGS) RunEGSHandler(settings, windowsRegistry, realFileSystem);
+            //if (options.Epic || options.EGS) tasks.Add(Task.Run(() => RunEGSHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Origin) tasks.Add(Task.Run(() => RunOriginHandler(settings, realFileSystem), cancelToken));
+            if (options.Xbox) tasks.Add(Task.Run(() => RunXboxHandler(settings, realFileSystem), cancelToken));
             if (options.EA || options.EADesktop)
             {
                 tasks.Add(Task.Run(() =>
@@ -175,26 +164,26 @@ public static class Program
                     var sDecryptionKey = Convert.ToHexString(decryptionKey).ToLower(CultureInfo.InvariantCulture);
                     logger.LogDebug("EA Decryption Key: {DecryptionKey}", sDecryptionKey);
 
-                    RunEADesktopHandler(realFileSystem, windowsRegistry, hardwareInfoProvider, i, p, o);
+                    RunEADesktopHandler(settings, realFileSystem, windowsRegistry, hardwareInfoProvider);
                 }, cancelToken));
             }
-            if (options.Amazon) tasks.Add(Task.Run(() => RunAmazonHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Arc) tasks.Add(Task.Run(() => RunArcHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.BattleNet || options.Blizzard) tasks.Add(Task.Run(() => RunBattleNetHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.BigFish) tasks.Add(Task.Run(() => RunBigFishHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.GameJolt) tasks.Add(Task.Run(() => RunGameJoltHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.Humble) tasks.Add(Task.Run(() => RunHumbleHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.IG || options.Indiegala || options.IGClient) tasks.Add(Task.Run(() => RunIGClientHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.Itch) tasks.Add(Task.Run(() => RunItchHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.Legacy) tasks.Add(Task.Run(() => RunLegacyHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Oculus) tasks.Add(Task.Run(() => RunOculusHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Paradox) tasks.Add(Task.Run(() => RunParadoxHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Plarium) tasks.Add(Task.Run(() => RunPlariumHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.Riot) tasks.Add(Task.Run(() => RunRiotHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.RobotCache) tasks.Add(Task.Run(() => RunRobotCacheHandler(realFileSystem, i, p, o), cancelToken));
-            if (options.Rockstar) tasks.Add(Task.Run(() => RunRockstarHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Ubisoft || options.Uplay) tasks.Add(Task.Run(() => RunUbisoftHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
-            if (options.Wargaming || options.WargamingNet) tasks.Add(Task.Run(() => RunWargamingNetHandler(windowsRegistry, realFileSystem, i, p, o), cancelToken));
+            if (options.Amazon) tasks.Add(Task.Run(() => RunAmazonHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Arc) tasks.Add(Task.Run(() => RunArcHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.BattleNet || options.Blizzard) tasks.Add(Task.Run(() => RunBattleNetHandler(settings, realFileSystem), cancelToken));
+            if (options.BigFish) tasks.Add(Task.Run(() => RunBigFishHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.GameJolt) tasks.Add(Task.Run(() => RunGameJoltHandler(settings, realFileSystem), cancelToken));
+            if (options.Humble) tasks.Add(Task.Run(() => RunHumbleHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.IG || options.Indiegala || options.IGClient) tasks.Add(Task.Run(() => RunIGClientHandler(settings, realFileSystem), cancelToken));
+            if (options.Itch) tasks.Add(Task.Run(() => RunItchHandler(settings, realFileSystem), cancelToken));
+            if (options.Legacy) tasks.Add(Task.Run(() => RunLegacyHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Oculus) tasks.Add(Task.Run(() => RunOculusHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Paradox) tasks.Add(Task.Run(() => RunParadoxHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Plarium) tasks.Add(Task.Run(() => RunPlariumHandler(settings, realFileSystem), cancelToken));
+            if (options.Riot) tasks.Add(Task.Run(() => RunRiotHandler(settings, realFileSystem), cancelToken));
+            if (options.RobotCache) tasks.Add(Task.Run(() => RunRobotCacheHandler(settings, realFileSystem), cancelToken));
+            if (options.Rockstar) tasks.Add(Task.Run(() => RunRockstarHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Ubisoft || options.Uplay) tasks.Add(Task.Run(() => RunUbisoftHandler(settings, windowsRegistry, realFileSystem), cancelToken));
+            if (options.Wargaming || options.WargamingNet) tasks.Add(Task.Run(() => RunWargamingNetHandler(settings, windowsRegistry, realFileSystem), cancelToken));
 
             if (options.Dolphin is not null)
             {
@@ -203,7 +192,7 @@ public static class Program
                     if (Path.IsPathRooted(options.Dolphin))
                     {
                         var path = realFileSystem.FromUnsanitizedFullPath(options.Dolphin);
-                        RunDolphinHandler(windowsRegistry, realFileSystem, path, i, p, o);
+                        RunDolphinHandler(settings, windowsRegistry, realFileSystem, path);
                     }
                     else
                         logger.LogError("Bad Dolphin path {DolphinPath}", options.Dolphin);
@@ -217,7 +206,7 @@ public static class Program
                     if (Path.IsPathRooted(options.MAME))
                     {
                         var path = realFileSystem.FromUnsanitizedFullPath(options.MAME);
-                        RunMAMEHandler(realFileSystem, path, i, p, o);
+                        RunMAMEHandler(settings, realFileSystem, path);
                     }
                     else
                         logger.LogError("Bad MAME path {MAMEPath}", options.MAME);
@@ -227,7 +216,7 @@ public static class Program
 
         if (OperatingSystem.IsLinux())
         {
-            if (options.Steam) tasks.Add(Task.Run(() => RunSteamHandler(realFileSystem, registry: null, options.SteamAPI), cancelToken));
+            if (options.Steam) tasks.Add(Task.Run(() => RunSteamHandler(settings, realFileSystem, registry: null, options.SteamAPI), cancelToken));
 
             tasks.Add(Task.Run(() =>
             {
@@ -249,10 +238,10 @@ public static class Program
                     var wineFileSystem = winePrefix.CreateOverlayFileSystem(realFileSystem);
                     var wineRegistry = winePrefix.CreateRegistry(realFileSystem);
 
-                    if (options.GOG) RunGOGHandler(wineRegistry, wineFileSystem, i, p, o);
-                    if (options.Epic) RunEGSHandler(wineRegistry, wineFileSystem, i, p, o);
-                    if (options.Origin) RunOriginHandler(wineFileSystem, i, p, o);
-                    if (options.Xbox) RunXboxHandler(wineFileSystem, i, p, o);
+                    if (options.GOG) RunGOGHandler(settings, wineRegistry, wineFileSystem);
+                    if (options.Epic) RunEGSHandler(settings, wineRegistry, wineFileSystem);
+                    if (options.Origin) RunOriginHandler(settings, wineFileSystem);
+                    if (options.Xbox) RunXboxHandler(settings, wineFileSystem);
                 }
             }, cancelToken));
         }
@@ -260,10 +249,10 @@ public static class Program
         if (OperatingSystem.IsMacOS())
         {
             if (options.Steam)
-                RunSteamHandler(realFileSystem, registry: null, options.SteamAPI, i, p, o);
+                RunSteamHandler(settings, realFileSystem, registry: null, options.SteamAPI);
         }
 
-        //if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(realFileSystem, options.TheGamesDBAPI, i, p, o), cancelToken));
+        //if (options.TheGamesDB) tasks.Add(Task.Run(() => RunTheGamesDbHandler(settings, realFileSystem, options.TheGamesDBAPI), cancelToken));
 
         Task.WaitAll(tasks.ToArray(), cancelToken);
 
@@ -278,62 +267,58 @@ public static class Program
         logger.LogInformation($"{nameof(Program)} complete");
     }
 
-    private static void RunGOGHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunGOGHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(GOGHandler));
         var handler = new GOGHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunEGSHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunEGSHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(EGSHandler));
         var handler = new EGSHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunOriginHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunOriginHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(OriginHandler));
         var handler = new OriginHandler(fileSystem, registry: null);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
     private static void RunEADesktopHandler(
+        Settings settings,
         IFileSystem fileSystem,
         IRegistry registry,
-        IHardwareInfoProvider hardwareInfoProvider,
-        bool installed = false,
-        bool baseOnly = false,
-        bool ownedOnly = true)
+        IHardwareInfoProvider hardwareInfoProvider)
     {
         var logger = _provider.CreateLogger(nameof(EADesktopHandler));
         var handler = new EADesktopHandler(fileSystem, registry, hardwareInfoProvider);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:RequiresUnreferencedCodeAttribute",
         Justification = "Required types are preserved using TrimmerRootDescriptor file.")]
-    private static void RunXboxHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunXboxHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(XboxHandler));
         var handler = new XboxHandler(fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
     private static void RunSteamHandler(
+        Settings settings,
         IFileSystem fileSystem,
         IRegistry? registry = null,
-        string? steamAPI = null,
-        bool installed = false,
-        bool baseOnly = false,
-        bool ownedOnly = true)
+        string? steamAPI = null)
     {
         var logger = _provider.CreateLogger(nameof(SteamHandler));
         var handler = new SteamHandler(fileSystem, registry, steamAPI);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger, game =>
+        LogGamesAndErrors(handler.FindAllGames(settings), logger, game =>
         {
             if (!OperatingSystem.IsLinux()) return;
             var protonPrefix = game.GetProtonPrefix();
@@ -342,146 +327,146 @@ public static class Program
         });
     }
 
-    private static void RunAmazonHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunAmazonHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(AmazonHandler));
         var handler = new AmazonHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunArcHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunArcHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(ArcHandler));
         var handler = new ArcHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunBattleNetHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunBattleNetHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(BattleNetHandler));
         var handler = new BattleNetHandler(fileSystem, null);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunBigFishHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunBigFishHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(BigFishHandler));
         var handler = new BigFishHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunGameJoltHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunGameJoltHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(GameJoltHandler));
         var handler = new GameJoltHandler(fileSystem, registry: null);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunHumbleHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunHumbleHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(HumbleHandler));
         var handler = new HumbleHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunIGClientHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunIGClientHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(IGClientHandler));
         var handler = new IGClientHandler(fileSystem, registry: null);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunItchHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunItchHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(ItchHandler));
         var handler = new ItchHandler(fileSystem, registry: null);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunLegacyHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunLegacyHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(LegacyHandler));
         var handler = new LegacyHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunOculusHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunOculusHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(OculusHandler));
         var handler = new OculusHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunParadoxHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunParadoxHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(ParadoxHandler));
         var handler = new ParadoxHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunPlariumHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunPlariumHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(PlariumHandler));
         var handler = new PlariumHandler(fileSystem, registry: null);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunRiotHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunRiotHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(RiotHandler));
         var handler = new RiotHandler(fileSystem, registry: null);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunRobotCacheHandler(IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunRobotCacheHandler(Settings settings, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(RobotCacheHandler));
         var handler = new RobotCacheHandler(fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunRockstarHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunRockstarHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(RockstarHandler));
         var handler = new RockstarHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunUbisoftHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunUbisoftHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(UbisoftHandler));
         var handler = new UbisoftHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunWargamingNetHandler(IRegistry registry, IFileSystem fileSystem, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunWargamingNetHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(WargamingNetHandler));
         var handler = new WargamingNetHandler(registry, fileSystem);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunDolphinHandler(IRegistry registry, IFileSystem fileSystem, AbsolutePath path, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunDolphinHandler(Settings settings, IRegistry registry, IFileSystem fileSystem, AbsolutePath path)
     {
         var logger = _provider.CreateLogger(nameof(DolphinHandler));
         var handler = new DolphinHandler(registry, fileSystem, path); //, logger);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    private static void RunMAMEHandler(IFileSystem fileSystem, AbsolutePath path, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static void RunMAMEHandler(Settings settings, IFileSystem fileSystem, AbsolutePath path)
     {
         var logger = _provider.CreateLogger(nameof(MAMEHandler));
         var handler = new MAMEHandler(fileSystem, path, registry: null); //, logger);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
     /*
-    private static async void RunTheGamesDbHandler(IFileSystem fileSystem, string? tgdbApi, bool installed = false, bool baseOnly = false, bool ownedOnly = true)
+    private static async void RunTheGamesDbHandler(IFileSystem fileSystem, string? tgdbApi, Settings settings)
     {
         var logger = _provider.CreateLogger(nameof(TheGamesDbHandler));
         //var handler = new TheGamesDbHandler(fileSystem, tgdbApi, registry: null, logger);
         var handler = new TheGamesDbHandler(fileSystem, registry: null, logger);
-        LogGamesAndErrors(handler.FindAllGames(installed, baseOnly, ownedOnly), logger);
+        LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
     */
 

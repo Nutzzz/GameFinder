@@ -79,7 +79,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<OculusGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<OculusGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         List<OneOf<OculusGame, ErrorMessage>> games = new();
 
@@ -155,40 +155,31 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
         {
             CultureInfo ci = new("en-US");
             var ti = ci.TextInfo;
-            //ulong userId = 0;
+            ulong userId = 0;
+            var userName = "";
 
             using SQLiteConnection con = new($"Data Source={database.GetFullPath()}");
             con.DefaultTimeout = 5;
             con.Open();
 
             // Get the user ID to check entitlements for expired trials
-            /*
             using (SQLiteCommand cmdU = new("SELECT hashkey, value FROM Objects WHERE typename = 'User'", con))
             {
-                using SQLiteDataReader rdrU = cmdU.ExecuteReader();
+                using var rdrU = cmdU.ExecuteReader();
                 while (rdrU.Read())
                 {
-                    byte[] valU = new byte[rdrU.GetBytes(1, 0, null, 0, int.MaxValue) - 1];
+                    var valU = new byte[rdrU.GetBytes(1, 0, null, 0, int.MaxValue) - 1];
                     rdrU.GetBytes(1, 0, valU, 0, valU.Length);
-                    string strValU = Encoding.Default.GetString(valU);
+                    var strValU = Encoding.Default.GetString(valU);
 
-                    string alias = ParseBlob(strValU, "alias", "app_entitlements");
-                    if (string.IsNullOrEmpty(userName) || userName.Equals("skipped"))
+                    var alias = ParseBlob(strValU, "alias", "app_entitlements");
+                    if (ulong.TryParse(rdrU.GetString(0), out userId))
                     {
-                        if (ulong.TryParse(rdrU.GetString(0), out userId))
-                        {
-                            userName = alias;
-                            break;
-                        }
-                    }
-                    else if (userName.Equals(alias, CDock.IGNORE_CASE))
-                    {
-                        ulong.TryParse(rdrU.GetString(0), out userId);
+                        userName = alias;
                         break;
                     }
                 }
             }
-            */
 
             using SQLiteCommand cmd = new("SELECT hashkey, value FROM Objects WHERE typename = 'Application'", con);
             using var rdr = cmd.ExecuteReader();
@@ -256,28 +247,28 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                         exeParams2d = ParseBlob(strVal3, "launch_parameters_2d", "manifest_signature");
                     }
                 }
+                */
 
-                if (userId > 0)
+                using SQLiteCommand cmd4 = new($"SELECT value FROM Objects WHERE hashkey = '{userId}:{id}'", con);
+                using var rdr4 = cmd4.ExecuteReader();
+                while (rdr4.Read())
                 {
-                    // TODO: If this is an expired trial, count it as not-installed
-                    using SQLiteCommand cmd4 = new($"SELECT value FROM Objects WHERE hashkey = '{userId}:{id}'", con);
-                    using var rdr4 = cmd4.ExecuteReader();
-                    while (rdr4.Read())
+                    var val4 = new byte[rdr4.GetBytes(0, 0, null, 0, int.MaxValue) - 1];
+                    rdr4.GetBytes(0, 0, val4, 0, val4.Length);
+                    var strVal4 = Encoding.Default.GetString(val4);
+                    var state = ParseBlob(strVal4, "active_state", "expiration_time");
+                    if (!state.Equals("PERMANENT", StringComparison.OrdinalIgnoreCase))
                     {
-                        var val4 = new byte[rdr4.GetBytes(0, 0, null, 0, int.MaxValue) - 1];
-                        rdr4.GetBytes(0, 0, val4, 0, val4.Length);
-                        var strVal4 = Encoding.Default.GetString(val4);
-                        state = ParseBlob(strVal4, "active_state", "expiration_time");
-                        if (!state.Equals("PERMANENT"))
-                        {
-                            time = ParseBlob(strVal4, "expiration_time", "grant_reason");
-                            CLogger.LogDebug($"expiry: {state} {time}");
-                            //if (!...expired)
-                            expired = true;
-                        }
+                        var expTime = ParseBlob(strVal4, "expiration_time", "grant_reason");
+
+                        // TODO: Figure out time format
+                        games.Add(new ErrorMessage($"{displayName} Expiration Time: {expTime}"));
+
+                        //var t = DateTimeOffset.FromUnixTimeSeconds(expTime).UtcDateTime;
+                        //if (DateTime.TryParse(expTime, CultureInfo.InvariantCulture, out var date) && DateTime.Now > date)
+                        //    expired = true;
                     }
                 }
-                */
 
                 if (exePaths.ContainsKey(id.ToString()))
                 {

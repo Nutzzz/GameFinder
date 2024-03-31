@@ -3,6 +3,6 @@ using JetBrains.Annotations;
 namespace GameCollector.StoreHandlers.Plarium;
 
 [UsedImplicitly]
-internal record Settings(
+internal record GameSettings(
     string? CompanyName,
     string? ProductName);

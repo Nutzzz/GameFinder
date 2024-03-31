@@ -74,7 +74,7 @@ public class BigFishHandler : AHandler<BigFishGame, BigFishGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<BigFishGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<BigFishGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 
@@ -145,7 +145,11 @@ public class BigFishHandler : AHandler<BigFishGame, BigFishGameId>
                         _ = int.TryParse(tmp.ToString(), CultureInfo.InvariantCulture, out timeLeft);
 
                     if (activated != 1 && (timeLeft > 0 || daysLeft > 0))  // expired trial
+                    {
+                        if (settings?.OwnedOnly != false)
+                            continue;
                         isExpired = true;
+                    }
 
                     if (!found && subDb.TryGetString("ExecutablePath", out var exe) && Path.IsPathRooted(exe))
                     {

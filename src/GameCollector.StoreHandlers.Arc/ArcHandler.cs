@@ -82,7 +82,7 @@ public class ArcHandler : AHandler<ArcGame, ArcGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<ArcGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<ArcGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         IRegistryKey localMachine;
         if (_registry is not null)

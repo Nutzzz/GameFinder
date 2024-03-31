@@ -74,7 +74,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> games = new();
 
@@ -103,14 +103,14 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
             Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> installedGames = new();
             foreach (var subKeyName in subKeyNames)
             {
-                var reg = ParseSubKey(gogKey, subKeyName, baseOnly);
+                var reg = ParseSubKey(gogKey, subKeyName, settings?.BaseOnly);
                 GOGGameId id = default;
                 if (reg.IsT0)
                     id = reg.AsT0.Id;
                 _ = installedGames.TryAdd(id, reg);
             }
 
-            foreach (var owned in FindGamesFromDatabase(installedGames, installedOnly, baseOnly, ownedOnly).ToDictionary())
+            foreach (var owned in FindGamesFromDatabase(installedGames, settings).ToDictionary())
             {
                 if (owned.Value.IsT0)
                 {
@@ -168,7 +168,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
         }
     }
 
-    private OneOf<GOGGame, ErrorMessage> ParseSubKey(IRegistryKey gogKey, string subKeyName, bool baseOnly)
+    private OneOf<GOGGame, ErrorMessage> ParseSubKey(IRegistryKey gogKey, string subKeyName, bool? baseOnly)
     {
         try
         {
@@ -203,7 +203,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
             subKey.TryGetString("dependsOn", out var sParent);
             if (!string.IsNullOrEmpty(sParent))
             {
-                if (baseOnly)
+                if (baseOnly == true)
                     return new ErrorMessage($"{subKey.GetName()} is a DLC");
 
                 if (long.TryParse(sParent, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lParent))

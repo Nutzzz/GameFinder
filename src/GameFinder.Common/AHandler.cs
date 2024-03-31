@@ -69,13 +69,11 @@ public abstract class AHandler<TGame, TId> : AHandler
     /// <summary>
     /// Finds all games installed with this store.
     /// </summary>
-    /// <param name="installedOnly"></param>
-    /// <param name="baseOnly"></param>
-    /// <param name="ownedOnly"></param>
+    /// <param name="settings"></param>
     /// <returns></returns>
     [MustUseReturnValue]
     [System.Diagnostics.Contracts.Pure]
-    public abstract IEnumerable<OneOf<TGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true);
+    public abstract IEnumerable<OneOf<TGame, ErrorMessage>> FindAllGames(Settings? settings = null);
 
     /// <summary>
     /// Calls <see cref="FindAllGames"/> and converts the result into a dictionary where

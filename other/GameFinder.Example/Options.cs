@@ -136,6 +136,9 @@ public class Options
     [Option("base", HelpText = "Only retrieve base games (no DLCs or clones)", Hidden = true)]
     public bool Base { get; set; } = false;
 
+    [Option('g', "games", HelpText = "Retrieve only games, not software")]
+    public bool Games { get; set; } = false;
+
     [Option('p', "parent", HelpText = "Only retrieve base games (no DLCs or clones)")]
     public bool Parent { get; set; } = false;
 

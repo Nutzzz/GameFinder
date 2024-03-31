@@ -92,7 +92,7 @@ public class BattleNetHandler : AHandler<BattleNetGame, BattleNetGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<BattleNetGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<BattleNetGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var dataPath = GetBattleNetPath()
             .Combine("Agent").Combine("data").Combine("cache");

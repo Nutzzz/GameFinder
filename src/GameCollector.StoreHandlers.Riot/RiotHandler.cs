@@ -100,7 +100,7 @@ public class RiotHandler : AHandler<RiotGame, RiotGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<RiotGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<RiotGame, ErrorMessage>> FindAllGames(GameFinder.Common.Settings? settings = null)
     {
         var clientFile = GetRiotPath().Combine("RiotClientInstalls.json");
         var metaDir = GetRiotPath().Combine("Metadata");

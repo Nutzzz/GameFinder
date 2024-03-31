@@ -88,7 +88,7 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
     "Trimming",
     "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
     Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<ParadoxGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<ParadoxGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var pdxPath = GetParadoxV2Path();
         var userFile = pdxPath.Combine("userSettings.json");
@@ -169,13 +169,13 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
                 {
                     var settingsFile = path.Combine("launcher-settings.json");
                     using var settingsStream = settingsFile.Read();
-                    var settings = JsonSerializer.Deserialize<LauncherSettings>(settingsStream, JsonSerializerOptions);
-                    if (settings is not null && settings.ExePath is not null)
+                    var launchSettings = JsonSerializer.Deserialize<LauncherSettings>(settingsStream, JsonSerializerOptions);
+                    if (launchSettings is not null && launchSettings.ExePath is not null)
                     {
-                        exe = path.Combine(settings.ExePath);
-                        if (settings.GameDataPath is not null)
+                        exe = path.Combine(launchSettings.ExePath);
+                        if (launchSettings.GameDataPath is not null)
                         {
-                            var strDataPath = settings.GameDataPath.Replace("%USER_DOCUMENTS%",
+                            var strDataPath = launchSettings.GameDataPath.Replace("%USER_DOCUMENTS%",
                                 _fileSystem.GetKnownPath(KnownPath.MyDocumentsDirectory).GetFullPath(), StringComparison.Ordinal);
                             dataPath = _fileSystem.FromUnsanitizedFullPath(strDataPath);
                         }

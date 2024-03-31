@@ -99,7 +99,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<EADesktopGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<EADesktopGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var dataFolder = GetDataFolder(_fileSystem);
         if (!_fileSystem.DirectoryExists(dataFolder))
@@ -123,7 +123,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         }
 
         var plaintext = decryptionResult.AsT0;
-        foreach (var result in ParseInstallInfoFile(plaintext, installInfoFile, SchemaPolicy, baseOnly))
+        foreach (var result in ParseInstallInfoFile(plaintext, installInfoFile, SchemaPolicy, settings))
         {
             yield return result;
         }
@@ -163,11 +163,11 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         }
     }
 
-    internal IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFile(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, bool baseOnly = false)
+    internal IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFile(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, Settings? settings)
     {
         try
         {
-            return ParseInstallInfoFileInner(plaintext, installInfoFile, schemaPolicy, baseOnly);
+            return ParseInstallInfoFileInner(plaintext, installInfoFile, schemaPolicy, settings);
         }
         catch (Exception e)
         {
@@ -183,7 +183,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFileInner(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, bool installedOnly = false, bool baseOnly = false)
+    private IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFileInner(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, Settings? settings)
     {
         var installInfoFileContents = JsonSerializer.Deserialize<InstallInfoFile>(plaintext, JsonSerializerOptions);
 
@@ -217,7 +217,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
 
         for (var i = 0; i < installInfos.Count; i++)
         {
-            yield return InstallInfoToGame(_registry, _fileSystem, installInfos[i], i, installInfoFile, installedOnly, baseOnly);
+            yield return InstallInfoToGame(_registry, _fileSystem, installInfos[i], i, installInfoFile, settings);
         }
     }
 
@@ -310,7 +310,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     }
 
     [RequiresUnreferencedCode("Calls GameCollector.StoreHandlers.EADesktop.EADesktopHandler.ParseInstallerDataFile(IFileSystem, String, out IList<String>)")]
-    internal static OneOf<EADesktopGame, ErrorMessage> InstallInfoToGame(IRegistry registry, IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath, bool installedOnly = false, bool baseOnly = false)
+    internal static OneOf<EADesktopGame, ErrorMessage> InstallInfoToGame(IRegistry registry, IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath, Settings? settings)
     {
         var isInstalled = true;
         var num = i.ToString(CultureInfo.InvariantCulture);
@@ -327,21 +327,21 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         // only catches some DLC
         if (!string.IsNullOrEmpty(installInfo.DLCSubPath))
         {
-            if (baseOnly)
+            if (settings?.BaseOnly == true)
                 return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" is a DLC");
             isDLC = true;
         }
 
         if (string.IsNullOrEmpty(installInfo.BaseInstallPath))
         {
-            if (installedOnly)
+            if (settings?.InstalledOnly == true)
                 return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" does not have the value \"baseInstallPath\"");
             isInstalled = false;
         }
 
         if (string.IsNullOrEmpty(installInfo.ExecutableCheck) && string.IsNullOrEmpty(installInfo.ExecutablePath))
         {
-            if (installedOnly)
+            if (settings?.InstalledOnly == true)
                 return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" does not have the value \"executableCheck\" or \"executablePath\"");
             isInstalled = false;
         }
@@ -400,7 +400,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
                 // only catches some DLC
                 if (j == 1)
                 {
-                    if (baseOnly)
+                    if (settings?.BaseOnly == true)
                         return new ErrorMessage($"InstallInfo #{num} for \"{baseSlug}\" is a DLC");
                     isDLC = true;
                 }

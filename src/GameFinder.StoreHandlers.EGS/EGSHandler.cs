@@ -94,7 +94,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<EGSGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<EGSGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         List<OneOf<EGSGame, ErrorMessage>> allGames = new();
         var manifestDir = GetManifestDir();
@@ -117,7 +117,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
         Dictionary<EGSGameId, OneOf<EGSGame, ErrorMessage>> installedDict = new();
         foreach (var itemFile in itemFiles)
         {
-            var game = DeserializeGame(itemFile, FormatPolicy, baseOnly);
+            var game = DeserializeGame(itemFile, FormatPolicy, settings?.BaseOnly);
             if (game.IsT0)
             {
                 try
@@ -133,14 +133,14 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             installedDict.TryAdd(EGSGameId.From(installedDict.Count.ToString()), game);
         }
 
-        return GetOwnedGames(installedDict, _fileSystem, installedOnly, baseOnly);
+        return GetOwnedGames(installedDict, _fileSystem, settings);
     }
 
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private OneOf<EGSGame, ErrorMessage> DeserializeGame(AbsolutePath itemFile, FormatPolicy formatPolicy, bool baseOnly = false)
+    private OneOf<EGSGame, ErrorMessage> DeserializeGame(AbsolutePath itemFile, FormatPolicy formatPolicy, bool? baseOnly = false)
     {
         using var stream = _fileSystem.ReadFile(itemFile);
 
@@ -192,7 +192,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
             AbsolutePath launch = new();
             if (string.IsNullOrEmpty(exe))
             {
-                if (baseOnly)
+                if (baseOnly == true)
                     return new ErrorMessage($"\"{title}\" [{id}] Manifest {itemFile.GetFullPath()} is a DLC or has no LaunchExecutable");
                 isDLC = true;
             }

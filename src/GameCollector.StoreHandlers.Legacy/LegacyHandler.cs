@@ -90,7 +90,7 @@ public class LegacyHandler : AHandler<LegacyGame, LegacyGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<LegacyGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<LegacyGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         List<OneOf<LegacyGame, ErrorMessage>> games = new();
         var regDict = ParseRegistry();

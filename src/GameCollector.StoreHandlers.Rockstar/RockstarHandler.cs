@@ -73,7 +73,7 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<RockstarGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<RockstarGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var localMachine32 = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
 

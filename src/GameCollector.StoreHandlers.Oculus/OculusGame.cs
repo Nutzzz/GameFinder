@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -26,7 +27,7 @@ public record OculusGame(OculusGameId HashKey,
                       bool IsInstalled = true,
                       bool IsExpired = false,
                       string? Description = null,
-                      List<string>? Genres = null,
+                      IList<string>? Genres = null,
                       string? CanonicalName = null) :
     GameData(Handler: Handler.StoreHandler_Oculus,
              GameId: HashKey.ToString(),
@@ -39,6 +40,6 @@ public record OculusGame(OculusGameId HashKey,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Description"] = new() { Description ?? "", },
-                 ["Genres"] = Genres ?? new(),
+                 ["Genres"] = Genres is null ? new List<string>() : Genres.ToList<string>(),
                  ["CanonicalName"] = new() { CanonicalName ?? "", },
              });
