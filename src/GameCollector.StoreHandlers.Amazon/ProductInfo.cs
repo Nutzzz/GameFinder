@@ -12,6 +12,10 @@ internal record ProductInfo
 
     public string? ProductTitle { get; init; }
 
+    public string? ScreenshotsJson { get; init; }
+
+    public string? VideosJson { get; init; }
+
     public string? DevelopersJson { get; init; }
 
     public string? EsrbRating { get; init; }

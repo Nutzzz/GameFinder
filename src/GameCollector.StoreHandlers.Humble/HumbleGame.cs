@@ -18,10 +18,13 @@ namespace GameCollector.StoreHandlers.Humble;
 /// <param name="UninstallUrl"></param>
 /// <param name="LastPlayed"></param>
 /// <param name="IsInstalled"></param>
+/// <param name="CanInstall"></param>
 /// <param name="IsExpired"></param>
 /// <param name="DescriptionText"></param>
 /// <param name="IconPath"></param>
 /// <param name="ImagePath"></param>
+/// <param name="Screenshots"></param>
+/// <param name="YouTubeLink"></param>
 /// <param name="MachineName"></param>
 /// <param name="Developers"></param>
 /// <param name="Publishers"></param>
@@ -34,10 +37,13 @@ public record HumbleGame(HumbleGameId HumbleGameId,
                          string UninstallUrl = "",
                          DateTime? LastPlayed = null,
                          bool IsInstalled = true,
+                         bool CanInstall = true,
                          bool IsExpired = false,
                          string? DescriptionText = null,
                          string? IconPath = null,
                          string? ImagePath = null,
+                         IList<string>? Screenshots = null,
+                         string? YouTubeLink = null,
                          string? MachineName = null,
                          IList<string>? Developers = null,
                          IList<string>? Publishers = null) :
@@ -57,6 +63,8 @@ public record HumbleGame(HumbleGameId HumbleGameId,
                  ["Description"] = new() { DescriptionText ?? "", },
                  ["ImageUrl"] = new() { IconPath ?? "", },
                  ["ImageWideUrl"] = new() { ImagePath ?? "", },
+                 ["Screenshots"] = Screenshots?.ToList<string>() ?? new List<string>(),
+                 ["Videos"] = new() { YouTubeLink ?? "" },
                  ["MachineName"] = new() { MachineName ?? "", },
                  ["Developers"] = Developers?.ToList<string>() ?? new List<string>(),
                  ["Publishers"] = Publishers?.ToList<string>() ?? new List<string>(),

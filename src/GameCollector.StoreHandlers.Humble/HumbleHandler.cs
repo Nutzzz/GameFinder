@@ -94,7 +94,7 @@ public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    public override IEnumerable<OneOf<HumbleGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<HumbleGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var configFile = _fileSystem.GetKnownPath(KnownPath.ApplicationDataDirectory)
             .Combine("Humble App")
@@ -116,9 +116,9 @@ public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
         var isPaused = false;
         if (config.User is not null)
         {
-            if (config.User.OwnsActiveContent is not null &&
-                (bool)config.User.OwnsActiveContent)
-                hasChoice = true; // TODO: Confirm this is right (vs. checking .HasPerks)
+            if (config.User.HasPerks is not null &&
+                (bool)config.User.HasPerks)
+                hasChoice = true;
             if (config.User.IsPaused is not null &&
                 (bool)config.User.IsPaused)
                 isPaused = true;
@@ -130,28 +130,53 @@ public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
                 AbsolutePath launch = new();
                 var isInstalled = false;
                 var isExpired = false;
+                var canInstall = true;
                 var machineName = "";
-
-                if (game.IsAvailable is not null &&
-                    !(bool)game.IsAvailable) // must be downloaded from the website and installed manually
-                    continue;
-                if (game.MachineName is not null)
-                {
-                    machineName = game.MachineName;
-                    if (machineName.EndsWith("_collection", StringComparison.OrdinalIgnoreCase) && // Humble Choice
-                        (!hasChoice || isPaused))
-                        isExpired = true;
-                }
-                if (game.Status is not null &&
-                    (game.Status.Equals("downloaded", StringComparison.OrdinalIgnoreCase) ||
-                    game.Status.Equals("installed", StringComparison.OrdinalIgnoreCase)))
-                    isInstalled = true;
-                if (!isInstalled && installedOnly)
-                    continue;
 
                 var id = game.DownloadMachineName;
                 if (string.IsNullOrEmpty(id))
                     id = game.Gamekey ?? "";
+                var name = game.GameName ?? "";
+
+                if (id.EndsWith("_source", StringComparison.OrdinalIgnoreCase)) // skip source code
+                {
+                    yield return new ErrorMessage($"\"{game.GameName}\" is source code (not a game)!");
+                    continue;
+                }
+                if (game.IsAvailable is not null &&
+                    !(bool)game.IsAvailable) // must be downloaded from the website and installed manually
+                {
+                    if (settings?.OwnedOnly == true)
+                        continue;
+                    canInstall = false;
+                }
+                if (game.Status is not null &&
+                    (game.Status.Equals("downloaded", StringComparison.OrdinalIgnoreCase) ||
+                    game.Status.Equals("installed", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (settings?.InstalledOnly == true)
+                        continue;
+                    isInstalled = true;
+                }
+                if (game.MachineName is not null)
+                {
+                    machineName = game.MachineName;
+                    if (machineName.EndsWith("_collection", StringComparison.OrdinalIgnoreCase) && // Has DRM; can only run/install during Choice subscription
+                        (!hasChoice || isPaused))
+                    {
+                        if (settings?.OwnedOnly == true)
+                            continue;
+                        isExpired = true;
+                    }
+                    else if (machineName.EndsWith("_trove", StringComparison.OrdinalIgnoreCase) && // DRM-free; install only during Choice sub, but runs always
+                        !isInstalled && (!hasChoice || isPaused))
+                    {
+                        if (settings?.OwnedOnly == true)
+                            continue;
+                        isExpired = true;
+                    }
+                }
+
                 AbsolutePath path = new();
                 if (Path.IsPathRooted(game.FilePath))
                 {
@@ -166,6 +191,16 @@ public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
                     if (long.TryParse(game.LastPlayed, CultureInfo.InvariantCulture, out var unixTime) &&
                         unixTime > 0)
                         lastRunDate = DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
+                }
+
+                var youtube = "";
+                if (!string.IsNullOrEmpty(game.YoutubeLink))
+                    youtube = game.YoutubeLink;
+                else if (game.CarouselContent is not null &&
+                    game.CarouselContent.YoutubeLink is not null &&
+                    game.CarouselContent.YoutubeLink.Count > 0)
+                {
+                    youtube = game.CarouselContent.YoutubeLink[0];
                 }
 
                 List<string> publishers = new();
@@ -190,17 +225,20 @@ public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
 
                 yield return new HumbleGame(
                     HumbleGameId: HumbleGameId.From(id),
-                    GameName: game.GameName ?? "",
+                    GameName: name,
                     FilePath: path,
                     ExecutablePath: launch,
                     LaunchUrl: $"humble://launch/{id}",
                     UninstallUrl: $"humble://uninstall/{id}",
                     LastPlayed: lastRunDate,
                     IsInstalled: isInstalled,
+                    CanInstall: canInstall,
                     IsExpired: isExpired,
                     DescriptionText: game.DescriptionText ?? "",
                     IconPath: game.IconPath ?? "",
                     ImagePath: game.ImagePath ?? "",
+                    Screenshots: game.CarouselContent?.Screenshot,
+                    YouTubeLink: string.IsNullOrEmpty(youtube) ? null : $"https://www.youtube.com/watch?v={youtube}",
                     MachineName: machineName,
                     Developers: developers,
                     Publishers: publishers

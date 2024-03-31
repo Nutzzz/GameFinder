@@ -11,8 +11,6 @@ using GameCollector.SQLiteUtils;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameCollector.StoreHandlers.Amazon;
 
@@ -79,7 +77,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
     }
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<AmazonGame, ErrorMessage>> FindAllGames(bool installedOnly = false, bool baseOnly = false, bool ownedOnly = true)
+    public override IEnumerable<OneOf<AmazonGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var prodDb = GetDatabasePath(_fileSystem).Combine("GameProductInfo.sqlite");
         var instDb = GetDatabasePath(_fileSystem).Combine("GameInstallInfo.sqlite");
@@ -94,7 +92,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
             yield break;
         }
 
-        foreach (var game in ParseDatabase(prodDb, instDb, installedOnly))
+        foreach (var game in ParseDatabase(prodDb, instDb, settings?.InstalledOnly ?? false))
         {
             if (game.IsGame())
             {
@@ -131,6 +129,8 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     ProductDescription: ownedGame?.ProductDescription,
                     ProductIconUrl: ownedGame?.ProductIconUrl,
                     ProductLogoUrl: ownedGame?.ProductLogoUrl,
+                    Screenshots: ownedGame?.Screenshots,
+                    Videos: ownedGame?.Videos,
                     Developers: ownedGame?.Developers,
                     ProductPublisher: ownedGame?.ProductPublisher,
                     EsrbRating: ownedGame?.EsrbRating ?? EsrbRating.NO_RATING,
@@ -160,6 +160,8 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                         ProductDescription: game.ProductDescription,
                         ProductIconUrl: game.ProductIconUrl,
                         ProductLogoUrl: game.ProductLogoUrl,
+                        Screenshots: game.Screenshots,
+                        Videos: game.Videos,
                         Developers: game.Developers,
                         ProductPublisher: game.ProductPublisher,
                         EsrbRating: game.EsrbRating,
@@ -287,6 +289,8 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     ProductDescription: product.ProductDescription,
                     ProductIconUrl: product.ProductIconUrl,
                     ProductLogoUrl: product.ProductLogoUrl,
+                    Screenshots: product.ScreenshotsJson ?? "",
+                    Videos: product.VideosJson ?? "",
                     Developers: product.DevelopersJson ?? "",
                     ProductPublisher: product.ProductPublisher,
                     EsrbRating: ageRating,

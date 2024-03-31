@@ -31,20 +31,22 @@ internal record ConfigUser(
 internal record ConfigGame(
     string? MachineName,
     string? GameName,
+    string? Gamekey,
     string? ImagePath,
     string? Status,
     string? LastPlayed,
     List<ConfigPub>? Publishers,
     List<ConfigDev>? Developers,
     string? DescriptionText,
+    ConfigCarousel CarouselContent,
     bool? IsAvailable,
-    string? DownloadMachineName,
-    string? Gamekey,
     string? IconPath,
-    string? FilePath,
-    string? ExecutablePath,
+    string? DownloadMachineName,
+    string? YoutubeLink,
     string? TroveCategory,
-    bool? IsOwned
+    bool? IsOwned,
+    string? FilePath,
+    string? ExecutablePath
 );
 
 [UsedImplicitly]
@@ -61,4 +63,14 @@ internal record ConfigDev(
     string? DeveloperName,
     [property: JsonPropertyName("developer-url")]
     string? DeveloperUrl
+);
+
+[UsedImplicitly]
+internal record ConfigCarousel(
+    [property: JsonPropertyName("asm-demo-machine-name")]
+    List<string>? AsmDemoMachineName,
+    [property: JsonPropertyName("youtube-link")]
+    List<string>? YoutubeLink,
+    List<string>? Thumbnail,
+    List<string>? Screenshot
 );
