@@ -18,6 +18,31 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
+### Added
+
+- Unowned games are supported for some handlers by adding `Settings.OwnedOnly` and `bool IsOwned` to GameData
+- Non-game software can be hidden for some handlers with `Settings.GamesOnly`
+- Amazon: Add InstallDate
+- Amazon, Humble: Add screenshot and video URLs
+- Big Fish, Humble: Set expired trials/subscriptions as IsOwned=false
+- EGS: Add Categories to Genres metadata
+- EGS, IGClient: Add ability to only collect games (not software)
+- GOG, Legacy: Add ability to gather unowned games
+- Riot, WargamingNet: Add getters for data directories
+
+### Changed
+
+- Upstream: Update dependencies
+- Move new and existing FindAllGames() flags into a new Settings class
+- Rename Handlers enum to Handler; expand ability to report problems by changing GameData `bool HasProblem` to `IList<Problem>? Problems`
+
+### Fixed
+
+- GameCollector.Common: Fix to Utils.FindExe()
+- Amazon: Fix to add a few missing games (that aren't in the GameProductInfo database for some reason)
+- Amazon, Paradox: Use Dictionary.TryAdd() and Dictionary.TryGetValue() where available
+- Legacy: Add a workaround for installed games going missing from the launcher
+
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
 ## [4.2.0-7](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...v4.2.0.7) - 2024-03-12
