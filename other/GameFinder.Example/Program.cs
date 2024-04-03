@@ -112,7 +112,7 @@ public static class Program
 
         logger.LogInformation("Operating System: {OSDescription}", RuntimeInformation.OSDescription);
 
-        var settings = new Settings(options.Installed, options.Parent || options.Base, options.Games, !options.Unowned);
+        var settings = new Settings(options.Installed, options.Parent || options.Base, options.Owned, options.Games);
 
         if (options.All) // Enable all emulator and handlers
         {
