@@ -103,23 +103,23 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
             Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> installedGames = new();
             foreach (var subKeyName in subKeyNames)
             {
-                var reg = ParseSubKey(gogKey, subKeyName, settings?.BaseOnly);
+                var regGame = ParseSubKey(gogKey, subKeyName, settings?.BaseOnly);
                 GOGGameId id = default;
-                if (reg.IsT0)
-                    id = reg.AsT0.Id;
-                _ = installedGames.TryAdd(id, reg);
+                if (regGame.IsT0)
+                    id = regGame.AsT0.Id;
+                _ = installedGames.TryAdd(id, regGame);
             }
 
-            foreach (var owned in FindGamesFromDatabase(installedGames, settings).ToDictionary())
+            foreach (var dbGame in FindGamesFromDatabase(settings).ToDictionary())
             {
-                if (owned.Value.IsT0)
+                if (dbGame.Value.IsT0)
                 {
-                    var reg = owned.Value.AsT0;
-                    if (installedGames.TryGetValue(owned.Key, out var installed))
+                    var reg = dbGame.Value.AsT0;
+                    if (installedGames.TryGetValue(dbGame.Key, out var installed))
                     {
                         var db = installed.AsT0;
-                        games.Add(owned.Key, new GOGGame(
-                            Id: owned.Key,
+                        games.Add(dbGame.Key, new GOGGame(
+                            Id: dbGame.Key,
                             Name: db.Name,
                             Path: db.Path == default ? reg.Path : db.Path,
                             Launch: db.Launch == default ? (reg.Exe.FileExists ? reg.Exe : new()) : db.Launch,
@@ -140,10 +140,10 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                             IconUrl: db.IconUrl));
                     }
                     else
-                        games.Add(owned.Key, owned.Value);
+                        games.Add(dbGame.Key, dbGame.Value);
                 }
                 else
-                    _ = games.TryAdd(default, owned.Value);
+                    _ = games.TryAdd(default, dbGame.Value);
             }
 
             foreach (var installed in installedGames)

@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using GameCollector.SQLiteUtils;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
 using NexusMods.Paths;
@@ -13,8 +16,21 @@ namespace GameCollector.StoreHandlers.GOG;
 
 public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
 {
-    internal IDictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> FindGamesFromDatabase(
-        Dictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> regGames, Settings? settings)
+    private readonly JsonSerializerOptions JsonSerializerOptions =
+        new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true,
+            AllowTrailingCommas = true,
+            NumberHandling = JsonNumberHandling.Strict,
+            TypeInfoResolver = SourceGenerationContext.Default,
+        };
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
+    internal IDictionary<GOGGameId, OneOf<GOGGame, ErrorMessage>> FindGamesFromDatabase(Settings? settings)
     {
         /*
         productId from ProductAuthorizations
@@ -48,299 +64,323 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
             }
         }
 
+        var i = 100;
         try
         {
-            using SQLiteConnection con = new($"Data Source={database}");
-            con.Open();
-
-            var i = 0;
-
             // Get installed, owned not-installed, and unowned games
 
-            using SQLiteCommand cmdLtdDetails = new($"SELECT links, images, productId, title FROM LimitedDetails;", con);
-            using var rdrLtdDetails = cmdLtdDetails.ExecuteReader();
-            while (rdrLtdDetails.Read())
+            var ltdDetails = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM LimitedDetails;").ToList<LimitedDetails>();
+            var userRelProps = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM UserReleaseProperties;").ToList<UserReleaseProperties>();
+            var userRelTags = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM UserReleaseTags;").ToList<UserReleaseTags>();
+            var prodsToRelKeys = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM ProductsToReleaseKeys;").ToList<ProductsToReleaseKeys>();
+            var gamePieces = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM GamePieces;").ToList<GamePieces>();
+            var builds = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM Builds;").ToList<Builds>();
+            var instBaseProds = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM InstalledBaseProducts;").ToList<InstalledBaseProducts>();
+            var playTasks = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM PlayTasks;").ToList<PlayTasks>();
+            var playTaskParams = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM PlayTaskLaunchParameters;").ToList<PlayTaskLaunchParameters>();
+            var lastPlayed = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM LastPlayedDates;").ToList<LastPlayedDates>();
+            var details = SQLiteHelpers.GetDataTable(database,
+                "SELECT * FROM Details;").ToList<Details>();
+
+            if (ltdDetails is null || builds is null)
             {
-                var linksJson = rdrLtdDetails.GetString(0);
-                var imagesJson = rdrLtdDetails.GetString(1);
-                var iId = rdrLtdDetails.GetInt32(2);
-                var name = rdrLtdDetails.GetString(3);
+                i++;
+                _ = games.TryAdd(GOGGameId.From(i), new ErrorMessage("Malformed GOG database output!"));
+                return games;
+            }
+            foreach (var game in ltdDetails)
+            {
+                i++;
 
-                var gogId = $"gog_{iId.ToString(CultureInfo.InvariantCulture)}";
-                var id = GOGGameId.From(iId);
+                if (game.ProductId is null)
+                    continue;
 
+                var sId = game.ProductId;
+                GOGGameId id;
+                if (long.TryParse(sId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var iId))
+                    id = GOGGameId.From(iId);
+                else
+                    continue;
+                var key = string.IsNullOrEmpty(sId) ? "" : $"gog_{sId}";
+                var name = game.Title;
                 var imageUrl = "";
                 var imageWideUrl = "";
                 var iconUrl = "";
+                var isHidden = false;
+                List<string> tags = new();
 
-                using (var document = JsonDocument.Parse(@linksJson, new() { AllowTrailingCommas = true, }))
+                if (!string.IsNullOrEmpty(game.Links))
                 {
-                    if (document.RootElement.TryGetProperty("logo", out var logo) && logo.TryGetProperty("href", out var url))
-                        imageWideUrl = url.GetString() ?? "";
-                    if (document.RootElement.TryGetProperty("boxArtImage", out var boxart) && boxart.TryGetProperty("href", out var url2))
-                        imageUrl = url2.GetString() ?? "";
-                    if (document.RootElement.TryGetProperty("iconSquare", out var icon) && icon.TryGetProperty("href", out var url3))
-                        iconUrl = url3.GetString() ?? "";
+                    var links = JsonSerializer.Deserialize<LinksJson>(game.Links, JsonSerializerOptions);
+                    imageWideUrl = links?.Logo?.Href;
+                    imageUrl = links?.BoxArtImage?.Href;
+                    iconUrl = links?.IconSquare?.Href;
                 }
-                using (var document2 = JsonDocument.Parse(@imagesJson, new() { AllowTrailingCommas = true, }))
+                if (string.IsNullOrEmpty(imageWideUrl))
                 {
-                    if (string.IsNullOrEmpty(imageWideUrl) && document2.RootElement.TryGetProperty("logo2x", out var url))
-                        imageWideUrl = url.GetString() ?? "";
-                }
-
-                using SQLiteCommand cmdBuilds = new("SELECT productId FROM Builds " +
-                    $"WHERE productId = {iId.ToString(CultureInfo.InvariantCulture)};", con);
-                using var rdrBuilds = cmdBuilds.ExecuteReader();
-                while (rdrBuilds.Read())
-                {
-                    using SQLiteCommand cmdKeys = new("SELECT releaseKey FROM ProductsToReleaseKeys " +
-                        $"WHERE gogId = {iId.ToString(CultureInfo.InvariantCulture)};", con);
-                    using var rdrKeys = cmdKeys.ExecuteReader();
-                    while (rdrKeys.Read())
+                    if (!string.IsNullOrEmpty(game.Images))
                     {
-                        gogId = rdrKeys.GetString(0);
+                        var images = JsonSerializer.Deserialize<ImagesJson>(game.Images, JsonSerializerOptions);
+                        imageWideUrl = images?.Logo2x;
+                    }
+                }
+
+                // grab hidden status
+                if (userRelProps is not null)
+                {
+                    foreach (var prop in userRelProps.Where(p => string.Equals(p.ReleaseKey, key, StringComparison.Ordinal)))
+                    {
+                        if (ushort.TryParse(prop.IsHidden, out var iHidden) && iHidden == 1)
+                            isHidden = true;
                         break;
                     }
+                }
 
-                    GOGGameId parentId = default;
-                    var parent = "";
-                    var isDlc = false;
-                    ushort myRating = 0;
-
-                    // grab the DLC status and user's rating
-                    using (SQLiteCommand cmdPieces = new($"SELECT value FROM GamePieces WHERE releaseKey = '{gogId}';", con))
-                    using (var rdrPieces = cmdPieces.ExecuteReader())
+                // grab user tags (can be multiple)
+                if (userRelTags is not null)
+                {
+                    foreach (var tag in userRelTags.Where(t => string.Equals(t.ReleaseKey, key, StringComparison.Ordinal)))
                     {
-                        while (rdrPieces.Read())
+                        if (!string.IsNullOrEmpty(tag.Tag))
+                            tags.Add(tag.Tag);
+                    }
+                }
+
+                if (prodsToRelKeys is not null)
+                {
+                    foreach (var relKey in prodsToRelKeys.Where(k =>
+                        !string.IsNullOrEmpty(k.GogId) &&
+                        k.GogId.Equals(sId, StringComparison.Ordinal)))
+                    {
+                        key = relKey.ReleaseKey;
+                        break;
+                    }
+                }
+
+                GOGGameId? parentId = null;
+                var isDlc = false;
+                ushort? myRating = null;
+
+                // grab the DLC parent or user's rating
+                if (gamePieces is not null)
+                {
+                    foreach (var piece in gamePieces.Where(p => string.Equals(p.ReleaseKey, key, StringComparison.Ordinal)))
+                    {
+                        if (!string.IsNullOrEmpty(piece.Value))
                         {
-                            var pieces = rdrPieces.GetString(0);
-                            using var document3 = JsonDocument.Parse(@pieces, new() { AllowTrailingCommas = true, });
-                            if (document3.RootElement.TryGetProperty("parentGrk", out var jParent))
+                            var value = JsonSerializer.Deserialize<ValueJson>(piece.Value, JsonSerializerOptions);
+                            var parent = value?.ParentGrk;
+                            if (!string.IsNullOrEmpty(parent))
                             {
-                                parent = jParent.GetString() ?? "";
-                                if (settings?.BaseOnly == true && !string.IsNullOrEmpty(parent))
+                                if (settings?.BaseOnly == true)
                                 {
                                     isDlc = true;
-                                    break;
                                 }
                                 if (parent.StartsWith("gog_", StringComparison.Ordinal))
-                                    parent = parent[4..];
-                                if (!string.IsNullOrEmpty(parent) && long.TryParse(
-                                    parent,
-                                    NumberStyles.Integer,
-                                    CultureInfo.InvariantCulture,
-                                    out var lParent))
                                 {
-                                    parentId = GOGGameId.From(lParent);
+                                    parent = parent[4..];
+                                    if (long.TryParse(parent, NumberStyles.Integer, CultureInfo.InvariantCulture, out var iParent))
+                                    {
+                                        parentId = GOGGameId.From(iParent);
+                                    }
                                 }
                             }
-                            else if (document3.RootElement.TryGetProperty("myRating", out var jRating) && jRating.ValueKind != JsonValueKind.Null)
-                                jRating.TryGetUInt16(out myRating);
+
+                            var sRating = value?.Rating;
+                            if (string.IsNullOrEmpty(sRating))
+                            {
+                                if (ushort.TryParse(sRating, NumberStyles.Integer, CultureInfo.InvariantCulture, out var iRating))
+                                    myRating = iRating;
+                            }
                         }
-                        if (isDlc && settings?.BaseOnly == true)
+                    }
+                }
+                if (isDlc) // Only flagged if DLC is not allowed
+                {
+                    i++;
+                    _ = games.TryAdd(GOGGameId.From(i), new ErrorMessage($"\"{name}\" is a DLC"));
+                    continue;
+                }
+
+                // Ensure this is an owned GOG game
+                if (!builds.Any(b => !string.IsNullOrEmpty(b.ProductId) && b.ProductId.Equals(sId, StringComparison.Ordinal)))
+                {
+                    if (settings?.OwnedOnly == true)
+                        continue;
+
+                    // Add unowned games
+                    _ = games.TryAdd(id, new GOGGame(
+                        Id: id,
+                        Name: name ?? (key ?? ""),
+                        Path: new(),
+                        LaunchUrl: $"goggalaxy://openGameView/{sId}",
+                        IsInstalled: false,
+                        IsOwned: false,
+                        IsHidden: isHidden,
+                        Tags: tags,
+                        MyRating: myRating,
+                        ParentId: parentId,
+                        BoxArtUrl: imageUrl ?? "",
+                        LogoUrl: imageWideUrl ?? "",
+                        IconUrl: iconUrl ?? ""));
+
+                    continue;
+                }
+
+                var launch = "";
+                var launchParam = "";
+                var exe = "";
+                string? path = null;
+                var installDate = DateTime.MinValue;
+                var lastRun = DateTime.MinValue;
+                var releaseDate = DateTime.MinValue;
+
+                if (instBaseProds is not null)
+                {
+                    // can be multiple
+                    foreach (var prod in instBaseProds.Where(p =>
+                        !string.IsNullOrEmpty(p.ProductId) &&
+                        p.ProductId.Equals(sId, StringComparison.Ordinal)))
+                    {
+                        path = prod.InstallationPath;
+
+                        DateTime.TryParseExact(
+                            prod.InstallationDate,
+                            "yyyy-MM-dd HH:mm:ss",
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal,
+                            out installDate);
+                        break;
+                    }
+                    if (path is null)
+                    {
+                        // Add not-installed games
+                        if (settings?.InstalledOnly != true)
                         {
-                            i++;
-                            games.TryAdd(GOGGameId.From(i), new ErrorMessage($"{gogId} is a DLC"));
+                            _ = games.TryAdd(id, new GOGGame(
+                                Id: id,
+                                Name: name ?? (key ?? ""),
+                                Path: new(),
+                                LaunchUrl: $"goggalaxy://openGameView/{sId}",
+                                IsInstalled: false,
+                                IsOwned: true,
+                                IsHidden: isHidden,
+                                Tags: tags,
+                                MyRating: myRating,
+                                ParentId: parentId,
+                                BoxArtUrl: imageUrl ?? "",
+                                LogoUrl: imageWideUrl ?? "",
+                                IconUrl: iconUrl ?? ""));
                             continue;
                         }
                     }
+                }
 
-                    var launch = "";
-                    var launchParam = "";
-                    var exe = "";
-                    var path = "";
-                    DateTime? installDate = null;
-                    var isHidden = false;
-                    List<string> tags = new();
-                    var lastRun = DateTime.MinValue;
-                    DateTime? releaseDate = null;
-
-                    using (SQLiteCommand cmdInstBase = new(
-                        "SELECT installationPath, installationDate FROM InstalledBaseProducts " +
-                        $"WHERE productId = {iId.ToString(CultureInfo.InvariantCulture)};", con))
-                    using (var rdrInstBase = cmdInstBase.ExecuteReader())
+                if (playTasks is not null && playTaskParams is not null)
+                {
+                    foreach (var task in playTasks.Where(t => string.Equals(t.GameReleaseKey, key, StringComparison.Ordinal)))
                     {
-                        while (rdrInstBase.Read())
+                        var taskId = task.Id;
+                        foreach (var par in playTaskParams.Where(p =>
+                            !string.IsNullOrEmpty(p.PlayTaskId) &&
+                            p.PlayTaskId.Equals(taskId, StringComparison.Ordinal)))
                         {
-                            path = rdrInstBase.GetString(0);
-                            if (DateTime.TryParseExact(
-                                rdrInstBase.GetString(1),
-                                "yyyy-MM-dd HH:mm:ss",
-                                CultureInfo.InvariantCulture,
-                                DateTimeStyles.AssumeUniversal,
-                                out var dtInstallDate))
+                            exe = par.ExecutablePath;
+                            if (string.IsNullOrEmpty(launcherPath))
                             {
-                                installDate = dtInstallDate;
+                                launch = exe;
+                                launch = $"\"{launch}\" {par.CommandLineArgs}";
                             }
-                            using SQLiteCommand cmdPlayTasks = new(
-                                $"SELECT id FROM PlayTasks WHERE gameReleaseKey = '{gogId}';", con);
-                            using var rdrPlayTasks = cmdPlayTasks.ExecuteReader();
-                            while (rdrPlayTasks.Read())
+                            else
                             {
-                                var task = rdrPlayTasks.GetInt32(0);
-
-                                using SQLiteCommand cmdPlayParams = new(
-                                    "SELECT executablePath, commandLineArgs FROM PlayTaskLaunchParameters " +
-                                    $"WHERE playTaskId = {task.ToString(CultureInfo.InvariantCulture)};", con);
-                                using var rdrPlayParams = cmdPlayParams.ExecuteReader();
-                                while (rdrPlayParams.Read())
-                                {
-                                    // Add installed games
-                                    exe = rdrPlayParams.GetString(0);
-                                    if (string.IsNullOrEmpty(launcherPath))
-                                    {
-                                        launch = exe;
-                                        launch = rdrPlayParams.GetString(1);
-                                    }
-                                    else
-                                    {
-                                        launch = launcherPath;
-                                        launchParam = "/command=runGame /gameId=" + iId.ToString(CultureInfo.InvariantCulture) +
-                                            " /path=" + "\"" + Path.GetDirectoryName(exe) + "\"";
-                                        if (launch.Length + launchParam.Length > 8190)
-                                            launchParam = "/command=runGame /gameId=" + iId.ToString(CultureInfo.InvariantCulture);
-                                    }
-
-                                    // grab hidden status
-                                    using (SQLiteCommand cmdUserProps = new("SELECT isHidden FROM UserReleaseProperties " +
-                                        $"WHERE releaseKey = '{gogId}';", con))
-                                    using (var rdrUserProps = cmdUserProps.ExecuteReader())
-                                    {
-                                        while (rdrUserProps.Read())
-                                        {
-                                            isHidden = rdrUserProps.GetBoolean(0);
-                                            break;
-                                        }
-                                    }
-
-                                    // grab user tags
-                                    using (SQLiteCommand cmdUserTags = new(
-                                        $"SELECT tag FROM UserReleaseTags WHERE releaseKey = '{gogId}';", con))
-                                    using (var rdrUserTags = cmdUserTags.ExecuteReader())
-                                    {
-                                        while (rdrUserTags.Read())
-                                        {
-                                            tags.Add(rdrUserTags.GetString(0));
-                                        }
-                                    }
-
-                                    // grab last run date
-                                    using (SQLiteCommand cmdLastPlayed = new("SELECT lastPlayedDate FROM LastPlayedDates " +
-                                        $"WHERE gameReleaseKey = '{gogId}';", con))
-                                    using (var rdrLastPlayed = cmdLastPlayed.ExecuteReader())
-                                    {
-                                        while (rdrLastPlayed.Read())
-                                        {
-                                            if (!rdrLastPlayed.IsDBNull(0))
-                                            {
-                                                _ = DateTime.TryParseExact(rdrLastPlayed.GetString(0), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out lastRun);
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    // Details table only applies to installed GOG games
-                                    using (SQLiteCommand cmdDetails = new("SELECT releaseDate FROM Details " +
-                                        $"WHERE limitedDetailsId = '{iId.ToString(CultureInfo.InvariantCulture)}';", con))
-                                    using (var rdrDetails = cmdDetails.ExecuteReader())
-                                    {
-                                        while (rdrDetails.Read())
-                                        {
-                                            if (!rdrDetails.IsDBNull(0))
-                                            {
-                                                if (DateTime.TryParseExact(
-                                                    rdrDetails.GetString(0),
-                                                    "yyyy-MM-dd'T'HH:mm:ss'+0300'",
-                                                    CultureInfo.InvariantCulture,
-                                                    DateTimeStyles.AssumeUniversal,
-                                                    out var dtReleaseDate))
-                                                {
-                                                    releaseDate = dtReleaseDate;
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    AbsolutePath launchPath = new();
-                                    AbsolutePath exePath = new();
-                                    AbsolutePath installPath = new();
-                                    if (Path.IsPathRooted(launch))
-                                        launchPath = _fileSystem.FromUnsanitizedFullPath(launch);
-                                    if (Path.IsPathRooted(path))
-                                        installPath = _fileSystem.FromUnsanitizedFullPath(path);
-                                    if (Path.IsPathRooted(exe))
-                                    {
-                                        exePath = _fileSystem.FromUnsanitizedFullPath(exe);
-                                        if (installPath == default && !string.IsNullOrEmpty(exePath.Directory))
-                                            installPath = _fileSystem.FromUnsanitizedFullPath(exePath.Directory);
-                                    }
-
-                                    games.TryAdd(id, new GOGGame(
-                                        Id: id,
-                                        Name: name,
-                                        Path: installPath,
-                                        Launch: launchPath,
-                                        LaunchParam: launchParam,
-                                        Exe: exePath,
-                                        InstallDate: installDate,
-                                        LastPlayedDate: lastRun,
-                                        IsInstalled: true,
-                                        IsOwned: true,
-                                        IsHidden: isHidden,
-                                        Tags: tags,
-                                        MyRating: myRating,
-                                        ParentId: parentId,
-                                        ReleaseDate: releaseDate,
-                                        BoxArtUrl: imageUrl,
-                                        LogoUrl: imageWideUrl,
-                                        IconUrl: iconUrl));
-                                }
-                                if (isDlc) break;
+                                launch = launcherPath;
+                                launchParam = $"/command=runGame /gameId={sId} /path=\"" + Path.GetDirectoryName(exe) + "\"";
+                                if (launch?.Length + launchParam.Length > 8190)
+                                    launchParam = $"/command=runGame /gameId={sId}";
                             }
-                            if (isDlc) break;
                         }
-                        if (isDlc) break;
-                    }
-
-                    // Add not-installed games
-                    if (settings?.InstalledOnly != true && string.IsNullOrEmpty(launch))
-                    {
-                        games.TryAdd(id, new GOGGame(
-                            Id: id,
-                            Name: name,
-                            Path: new(),
-                            LaunchUrl: $"goggalaxy://openGameView/{iId.ToString(CultureInfo.InvariantCulture)}",
-                            IsInstalled: false,
-                            IsOwned: true,
-                            BoxArtUrl: imageUrl,
-                            LogoUrl: imageWideUrl,
-                            IconUrl: iconUrl));
                         break;
                     }
                 }
 
-                // Add unowned games
-                if (settings?.OwnedOnly != true)
+                // grab last run date
+                if (lastPlayed is not null)
                 {
-                    games.TryAdd(id, new GOGGame(
-                        Id: id,
-                        Name: name,
-                        Path: new(),
-                        IsInstalled: false,
-                        IsOwned: false,
-                        BoxArtUrl: imageUrl,
-                        LogoUrl: imageWideUrl,
-                        IconUrl: iconUrl));
+                    foreach (var last in lastPlayed.Where(l => string.Equals(l.GameReleaseKey, key, StringComparison.Ordinal)))
+                    {
+                        if (DateTime.TryParseExact(last.LastPlayedDate, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var tmpLastRun))
+                            lastRun = tmpLastRun;
+                        break;
+                    }
                 }
+
+                // Details table only applies to some installed GOG games
+                if (details is not null)
+                {
+                    foreach (var detail in details.Where(d => d.Equals(iId)))
+                    {
+                        _ = DateTime.TryParseExact(
+                            detail.ReleaseDate,
+                            "yyyy-MM-dd'T'HH:mm:sszz00'",
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal,
+                            out releaseDate);
+                        break;
+                    }
+                }
+
+                AbsolutePath launchPath = new();
+                AbsolutePath exePath = new();
+                AbsolutePath installPath = new();
+                if (Path.IsPathRooted(launch))
+                    launchPath = _fileSystem.FromUnsanitizedFullPath(launch);
+                if (Path.IsPathRooted(path))
+                    installPath = _fileSystem.FromUnsanitizedFullPath(path);
+                if (Path.IsPathRooted(exe))
+                {
+                    exePath = _fileSystem.FromUnsanitizedFullPath(exe);
+                    if (installPath == default && !string.IsNullOrEmpty(exePath.Directory))
+                        installPath = _fileSystem.FromUnsanitizedFullPath(exePath.Directory);
+                }
+
+                // Add installed games
+                _ = games.TryAdd(id, new GOGGame(
+                    Id: id,
+                    Name: name ?? (key ?? ""),
+                    Path: installPath,
+                    Launch: launchPath,
+                    LaunchParam: launchParam,
+                    Exe: exePath,
+                    InstallDate: installDate,
+                    LastPlayedDate: lastRun,
+                    IsInstalled: true,
+                    IsOwned: true,
+                    IsHidden: isHidden,
+                    Tags: tags,
+                    MyRating: myRating,
+                    ParentId: parentId,
+                    ReleaseDate: releaseDate,
+                    BoxArtUrl: imageUrl ?? "",
+                    LogoUrl: imageWideUrl ?? "",
+                    IconUrl: iconUrl ?? ""));
             }
 
-            con.Close();
             return games;
         }
         catch (Exception e)
         {
-            games.TryAdd(default, new ErrorMessage(e, "Malformed GOG database output!"));
+            i++;
+            _ = games.TryAdd(GOGGameId.From(i), new ErrorMessage(e, "Malformed GOG database output!"));
             return games;
         }
     }

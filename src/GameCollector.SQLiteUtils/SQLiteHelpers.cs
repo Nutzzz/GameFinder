@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using JetBrains.Annotations;
 using NexusMods.Paths;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 namespace GameCollector.SQLiteUtils;
 

@@ -35,6 +35,7 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 - Upstream: Update dependencies
 - Move new and existing FindAllGames() flags into a new Settings class
 - Rename Handlers enum to Handler; expand ability to report problems by changing GameData `bool HasProblem` to `IList<Problem>? Problems`
+- GOG: Simplify database deserialization
 
 ### Fixed
 
