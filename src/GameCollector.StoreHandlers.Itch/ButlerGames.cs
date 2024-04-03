@@ -8,14 +8,14 @@ internal record ButlerGames
 
     public string? Title { get; init; }
 
-    [property: SqlColNameAttribute("short_text")]
+    [property: SqlColName("short_text")]
     public string? ShortText { get; init; }
 
     public string? Classification { get; init; }
 
-    [property: SqlColNameAttribute("cover_url")]
+    [property: SqlColName("cover_url")]
     public string? CoverUrl { get; init; }
 
-    [property: SqlColNameAttribute("still_cover_url")]
+    [property: SqlColName("still_cover_url")]
     public string? StillCoverUrl { get; init; }
 }

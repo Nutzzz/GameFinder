@@ -168,7 +168,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                 using var rdrU = cmdU.ExecuteReader();
                 while (rdrU.Read())
                 {
-                    var valU = new byte[rdrU.GetBytes(1, 0, null, 0, int.MaxValue) - 1];
+                    var valU = new byte[rdrU.GetBytes(1, 0, buffer: null, 0, int.MaxValue) - 1];
                     rdrU.GetBytes(1, 0, valU, 0, valU.Length);
                     var strValU = Encoding.Default.GetString(valU);
 
@@ -200,7 +200,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                 if (!ulong.TryParse(rdr.GetString(0), out var id) || id == 3082125255194578) // Rift
                     continue;
 
-                var val = new byte[rdr.GetBytes(1, 0, null, 0, int.MaxValue) - 1];
+                var val = new byte[rdr.GetBytes(1, 0, buffer: null, 0, int.MaxValue) - 1];
                 rdr.GetBytes(1, 0, val, 0, val.Length);
                 var strVal = Encoding.Default.GetString(val);
 
@@ -224,7 +224,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                     using var rdr2 = cmd2.ExecuteReader();
                     while (rdr2.Read())
                     {
-                        var val2 = new byte[rdr2.GetBytes(0, 0, null, 0, int.MaxValue) - 1];
+                        var val2 = new byte[rdr2.GetBytes(0, 0, buffer: null, 0, int.MaxValue) - 1];
                         rdr2.GetBytes(0, 0, val2, 0, val2.Length);
                         var strVal2 = Encoding.Default.GetString(val2);
                         url = ParseBlob(strVal2, "uri", "version_code", strStart1: "size");
@@ -238,7 +238,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                     using var rdr3 = cmd3.ExecuteReader();
                     while (rdr3.Read())
                     {
-                        var val3 = new byte[rdr3.GetBytes(0, 0, null, 0, int.MaxValue) - 1];
+                        var val3 = new byte[rdr3.GetBytes(0, 0, buffer: null, 0, int.MaxValue) - 1];
                         rdr3.GetBytes(0, 0, val3, 0, val3.Length);
                         var strVal3 = Encoding.Default.GetString(val3);
                         exePath = ParseBlob(strVal3, "launch_file", "launch_file_2d");
@@ -253,7 +253,7 @@ public class OculusHandler : AHandler<OculusGame, OculusGameId>
                 using var rdr4 = cmd4.ExecuteReader();
                 while (rdr4.Read())
                 {
-                    var val4 = new byte[rdr4.GetBytes(0, 0, null, 0, int.MaxValue) - 1];
+                    var val4 = new byte[rdr4.GetBytes(0, 0, buffer: null, 0, int.MaxValue) - 1];
                     rdr4.GetBytes(0, 0, val4, 0, val4.Length);
                     var strVal4 = Encoding.Default.GetString(val4);
                     var state = ParseBlob(strVal4, "active_state", "expiration_time");

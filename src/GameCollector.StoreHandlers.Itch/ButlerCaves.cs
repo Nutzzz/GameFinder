@@ -5,20 +5,20 @@ namespace GameCollector.StoreHandlers.Itch;
 
 internal record ButlerCaves
 {
-    [property: SqlColNameAttribute("id")]
+    [property: SqlColName("id")]
     public string? Id { get; init; }
 
-    [property: SqlColNameAttribute("game_id")]
+    [property: SqlColName("game_id")]
     public string? GameId { get; init; }
 
-    [property: SqlColNameAttribute("installed_at")]
+    [property: SqlColName("installed_at")]
     public DateTime? InstalledAt { get; init; }
 
-    [property: SqlColNameAttribute("seconds_run")]
+    [property: SqlColName("seconds_run")]
     public ulong? SecondsRun { get; init; }
 
     public string? Verdict { get; init; }
 
-    [property: SqlColNameAttribute("install_folder_name")]
+    [property: SqlColName("install_folder_name")]
     public string? InstallFolderName { get; init; }
 }
