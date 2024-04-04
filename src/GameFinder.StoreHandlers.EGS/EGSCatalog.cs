@@ -114,16 +114,16 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
                                 genres.Add(category?.Name ?? "");
                             }
                         }
-                        if (settings?.GamesOnly == true && !isGame)
-                        {
-                            games.Add(new ErrorMessage($"\"{title}\" is not a game (e.g., a software or application)"));
-                            continue;
-                        }
                         if (audience)
                             continue;
                         if (engines)
                         {
                             games.Add(new ErrorMessage($"\"{title}\" is game engine-related"));
+                            continue;
+                        }
+                        if (settings?.GamesOnly == true && !isGame)
+                        {
+                            games.Add(new ErrorMessage($"\"{title}\" is not a game (e.g., an application or software)"));
                             continue;
                         }
                     }

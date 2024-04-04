@@ -127,16 +127,14 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
                 continue;
             }
             var name = game.Title ?? "";
-            var type = game.Classification ?? "";
-            if (settings?.GamesOnly == true && !type.Equals("game", StringComparison.OrdinalIgnoreCase))
+            var type = game.Classification ?? ""; // "game", "tool", or "assets"
+            if (settings?.GamesOnly == true)
             {
-                yield return new ErrorMessage($"\"{name}\" is not a game (e.g., an asset or tool)!");
-                continue;
-            }
-            if (type.Equals("assets", StringComparison.OrdinalIgnoreCase))  // no "assets", just "game" or "tool"
-            {
-                yield return new ErrorMessage($"\"{name}\" is an asset (not a game or tool)!");
-                continue;
+                if (!type.Equals("game", StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new ErrorMessage($"\"{name}\" is not a game (e.g., an asset or tool)!");
+                    continue;
+                }
             }
 
             DateTime? installDate = null;

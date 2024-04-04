@@ -140,14 +140,21 @@ public class HumbleHandler : AHandler<HumbleGame, HumbleGameId>
 
                 if (id.EndsWith("_source", StringComparison.OrdinalIgnoreCase)) // skip source code
                 {
-                    yield return new ErrorMessage($"\"{game.GameName}\" is source code (not a game)!");
-                    continue;
+                    if (settings?.GamesOnly == true)
+                    {
+                        yield return new ErrorMessage($"\"{game.GameName}\" is source code (not a game)!");
+                        continue;
+                    }
+                    canInstall = false;
                 }
                 if (game.IsAvailable is not null &&
                     !(bool)game.IsAvailable) // must be downloaded from the website and installed manually
                 {
-                    if (settings?.OwnedOnly == true)
+                    if (settings?.GamesOnly == true)
+                    {
+                        yield return new ErrorMessage($"\"{game.GameName}\" must be downloaded from the website and installed manually.");
                         continue;
+                    }
                     canInstall = false;
                 }
                 if (game.Status is not null &&
