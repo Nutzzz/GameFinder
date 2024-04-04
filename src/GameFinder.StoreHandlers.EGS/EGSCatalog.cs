@@ -19,7 +19,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private static List<OneOf<EGSGame, ErrorMessage>> ParseCatCacheFile(IFileSystem fileSystem, Settings? settings)
+    private static List<OneOf<EGSGame, ErrorMessage>> ParseCatCacheFile(IFileSystem fileSystem, Settings? settings = null)
     {
         List<OneOf<EGSGame, ErrorMessage>> games = new();
         var catalogPath = Path.Combine(GetFolderPath(SpecialFolder.CommonApplicationData),
@@ -177,7 +177,7 @@ public partial class EGSHandler : AHandler<EGSGame, EGSGameId>
     private static List<OneOf<EGSGame, ErrorMessage>> GetOwnedGames(
         Dictionary<EGSGameId, OneOf<EGSGame, ErrorMessage>> installedDict,
         IFileSystem fileSystem,
-        Settings? settings)
+        Settings? settings = null)
     {
         List<OneOf<EGSGame, ErrorMessage>> ownedList = new();
         List<OneOf<EGSGame, ErrorMessage>> installedList = new();

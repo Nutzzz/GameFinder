@@ -108,7 +108,7 @@ public class ItchHandler : AHandler<ItchGame, ItchGameId>
         }
     }
 
-    private IEnumerable<OneOf<ItchGame, ErrorMessage>> ParseDatabase(AbsolutePath database, Settings? settings)
+    private IEnumerable<OneOf<ItchGame, ErrorMessage>> ParseDatabase(AbsolutePath database, Settings? settings = null)
     {
         var games = SQLiteHelpers.GetDataTable(database, "SELECT * FROM games;").ToList<ButlerGames>();
         var caves = SQLiteHelpers.GetDataTable(database, "SELECT * FROM caves;").ToList<ButlerCaves>();

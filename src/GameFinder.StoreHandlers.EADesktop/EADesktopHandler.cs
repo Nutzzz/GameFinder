@@ -163,7 +163,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         }
     }
 
-    internal IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFile(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, Settings? settings)
+    internal IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFile(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, Settings? settings = null)
     {
         try
         {
@@ -183,7 +183,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
         "Trimming",
         "IL2026:Members annotated with \'RequiresUnreferencedCodeAttribute\' require dynamic access otherwise can break functionality when trimming application code",
         Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
-    private IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFileInner(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, Settings? settings)
+    private IEnumerable<OneOf<EADesktopGame, ErrorMessage>> ParseInstallInfoFileInner(string plaintext, AbsolutePath installInfoFile, SchemaPolicy schemaPolicy, Settings? settings = null)
     {
         var installInfoFileContents = JsonSerializer.Deserialize<InstallInfoFile>(plaintext, JsonSerializerOptions);
 
@@ -310,7 +310,7 @@ public class EADesktopHandler : AHandler<EADesktopGame, EADesktopGameId>
     }
 
     [RequiresUnreferencedCode("Calls GameCollector.StoreHandlers.EADesktop.EADesktopHandler.ParseInstallerDataFile(IFileSystem, String, out IList<String>)")]
-    internal static OneOf<EADesktopGame, ErrorMessage> InstallInfoToGame(IRegistry registry, IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath, Settings? settings)
+    internal static OneOf<EADesktopGame, ErrorMessage> InstallInfoToGame(IRegistry registry, IFileSystem fileSystem, InstallInfo installInfo, int i, AbsolutePath installInfoFilePath, Settings? settings = null)
     {
         var isInstalled = true;
         var num = i.ToString(CultureInfo.InvariantCulture);
