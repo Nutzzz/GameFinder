@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com).
 
 Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used.
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.7...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...HEAD)
 
 **TODO**:
 
@@ -18,22 +18,26 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
+## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+## [4.2.0-8](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.7...v4.2.0.8) - 2024-04-15
+
 ### Added
 
-- Unowned games are supported for some handlers by adding `Settings.OwnedOnly` and `bool IsOwned` to GameData
-- Non-game software can be hidden for some handlers with `Settings.GamesOnly`
+- Add a new Settings class instead of relying on multiple FindAllGames() flags
+- Unowned games can be gathered with addition of `bool IsOwned` to GameData, and can be hidden with `Settings.OwnedOnly`
+- Non-game software can be hidden with `Settings.GamesOnly`
 - Amazon: Add InstallDate
 - Amazon, Humble: Add screenshot and video URLs
 - Big Fish, Humble: Set expired trials/subscriptions as IsOwned=false
 - EGS: Add Categories to Genres metadata
-- EGS, IGClient: Add ability to only collect games (not software)
-- GOG, Legacy: Add ability to gather unowned games
+- EGS, IGClient: Respect new GamesOnly=true flag
+- GOG, Legacy: Gather unowned games unless OwnedOnly=true
 - Riot, WargamingNet: Add getters for data directories
 
 ### Changed
 
 - Upstream: Update dependencies
-- Move new and existing FindAllGames() flags into a new Settings class
 - Rename Handlers enum to Handler; expand ability to report problems by changing GameData `bool HasProblem` to `IList<Problem>? Problems`
 - GOG: Simplify database deserialization
 
@@ -43,8 +47,6 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 - Amazon: Fix to add a few missing games (that aren't in the GameProductInfo database for some reason)
 - Amazon, Paradox: Use Dictionary.TryAdd() and Dictionary.TryGetValue() where available
 - Legacy: Add a workaround for installed games going missing from the launcher
-
-## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
 ## [4.2.0-7](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.6...v4.2.0.7) - 2024-03-12
 
