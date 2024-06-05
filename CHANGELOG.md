@@ -126,11 +126,14 @@ Initial release of GameCollector
 
 # Upstream Changelog
 
-## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.0...HEAD)
-
-- Upgrade deps
+## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.1...HEAD)
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
+
+## [4.2.1] - 2024-06-05
+
+- Steam: fixed exception ([#133](https://github.com/erri120/GameFinder/issues/133)).
+- Upgrade deps
 
 ## [4.2.0](https://github.com/erri120/GameFinder/compare/v4.1.0...v4.2.0) - 2024-01-28
 
