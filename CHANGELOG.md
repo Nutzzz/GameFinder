@@ -18,6 +18,12 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
+## [4.2.1-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...HEAD) - UNRELEASED
+
+### Changed
+
+- Upstream: Update dependencies
+
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
 ## [4.2.0-8](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.7...v4.2.0.8) - 2024-04-15
