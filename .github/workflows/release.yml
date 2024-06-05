@@ -27,7 +27,7 @@ jobs:
         echo "current_semver=$current_semver" >> $env:GITHUB_OUTPUT
         echo "current_dotnetver=$current_dotnetver" >> $env:GITHUB_OUTPUT
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Print Debug Info
       run: dotnet --info
@@ -57,7 +57,7 @@ jobs:
 
     - name: Download artifact (Linux)
       id: download-artifact-linux
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v4
       with:
         workflow: .github/workflows/ci.yml
         branch: main
@@ -68,7 +68,7 @@ jobs:
 
     - name: Download artifact (Windows)
       id: download-artifact-windows
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v4
       with:
         workflow: .github/workflows/ci.yml
         branch: main
@@ -79,7 +79,7 @@ jobs:
 
     - name: Download artifact (macOS)
       id: download-artifact-macos
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v4
       with:
         workflow: .github/workflows/ci.yml
         branch: main
@@ -93,7 +93,7 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
