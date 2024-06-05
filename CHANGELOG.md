@@ -20,6 +20,10 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ## [4.2.1-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...HEAD) - UNRELEASED
 
+### Added
+
+- Amazon, EA, GOG, Rockstar: Add info and support website URLs
+
 ### Changed
 
 - Upstream: Update dependencies

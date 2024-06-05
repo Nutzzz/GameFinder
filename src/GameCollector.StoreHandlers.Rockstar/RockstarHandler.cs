@@ -85,6 +85,8 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
         }
 
         using var unKey = localMachine32.OpenSubKey(UninstallRegKey);
+        if (unKey is null)
+            yield return new ErrorMessage($"Error opening registry key {UninstallRegKey}");
 
         var subKeyNames = rockstarKey.GetSubKeyNames().ToArray();
         if (subKeyNames.Length == 0)
@@ -99,13 +101,15 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
                 !subKeyName.Equals("Rockstar Games Launcher", StringComparison.OrdinalIgnoreCase) &&
                 !subKeyName.Equals("Rockstar Games Social Club", StringComparison.OrdinalIgnoreCase))
             {
-                yield return ParseRockstarKey(rockstarKey, unKey, subKeyName, _fileSystem);
+                if (unKey is not null)
+                    yield return ParseRockstarKey(rockstarKey, unKey, subKeyName);
             }
         }
     }
 
-    private static OneOf<RockstarGame, ErrorMessage> ParseRockstarKey(IRegistryKey rockstarKey, IRegistryKey? unKey, string subKeyName, IFileSystem fileSystem)
+    private OneOf<RockstarGame, ErrorMessage> ParseRockstarKey(IRegistryKey rockstarKey, IRegistryKey unKey, string subKeyName)
     {
+
         try
         {
             using var subKey = rockstarKey.OpenSubKey(subKeyName);
@@ -118,43 +122,7 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
             if (!Path.IsPathRooted(strPath))
                 return new ErrorMessage($"{strPath} is not a valid path");
 
-            var id = "";
-            var path = fileSystem.FromUnsanitizedFullPath(strPath);
-            AbsolutePath exe = new();
-            AbsolutePath uninst = new();
-            var uninstArgs = "";
-
-            var (name, strExe, strUninst) = ParseUninstallKey(unKey, path);
-
-            if (!string.IsNullOrEmpty(strUninst))
-            {
-                if (strUninst.Contains("\" ", StringComparison.Ordinal))
-                {
-                    var uninstExe = strUninst[..strUninst.IndexOf("\" ", StringComparison.Ordinal)].Trim('\"');
-                    if (Path.IsPathRooted(uninstExe))
-                    {
-                        uninst = fileSystem.FromUnsanitizedFullPath(uninstExe);
-                        uninstArgs = strUninst[(strUninst.IndexOf("\" ", StringComparison.Ordinal) + 2)..];
-                    }
-                    if (strUninst.Contains("-uninstall=", StringComparison.Ordinal))
-                        id = strUninst[..(strUninst.LastIndexOf("-uninstall=", StringComparison.Ordinal) + 11)];
-                }
-            }
-            else
-                id = path.FileName;
-
-            if (string.IsNullOrEmpty(name))
-                name = subKeyName;
-            if (string.IsNullOrEmpty(strExe))
-                exe = Utils.FindExe(path, fileSystem, name);
-
-            return new RockstarGame(
-                Id: RockstarGameId.From(id),
-                Name: subKeyName,
-                InstallFolder: path,
-                Launch: exe,
-                Uninstall: uninst,
-                UninstallArgs: uninstArgs);
+            return ParseUninstallKey(unKey, subKeyName, _fileSystem.FromUnsanitizedFullPath(strPath));
         }
         catch (Exception e)
         {
@@ -162,12 +130,13 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
         }
     }
 
-    private static (string? name, string? exe, string? uninst) ParseUninstallKey(IRegistryKey? uninstallKey, AbsolutePath rockstarPath)
+    private OneOf<RockstarGame, ErrorMessage> ParseUninstallKey(IRegistryKey uninstallKey, string strId, AbsolutePath path)
     {
         try
         {
-            if (uninstallKey is null)
-                return new();
+            AbsolutePath exe = default;
+            AbsolutePath uninst = default;
+            var uninstArgs = "";
 
             var subKeyNames = uninstallKey.GetSubKeyNames().ToArray();
             foreach (var subKeyName in subKeyNames)
@@ -177,17 +146,63 @@ public class RockstarHandler : AHandler<RockstarGame, RockstarGameId>
                     continue;
 
                 if (subKey.TryGetString("InstallLocation", out var loc) &&
-                    loc.Equals(rockstarPath.GetFullPath(), StringComparison.OrdinalIgnoreCase))
+                    loc.Equals(path.GetFullPath(), StringComparison.OrdinalIgnoreCase))
                 {
                     subKey.TryGetString("DisplayName", out var name);
-                    subKey.TryGetString("DisplayIcon", out var exe);
-                    subKey.TryGetString("UninstallString", out var uninst);
-                    return (name, exe, uninst);
+                    subKey.TryGetString("DisplayIcon", out var strExe);
+                    subKey.TryGetString("HelpLink", out var help);
+                    subKey.TryGetString("Publisher", out var pub);
+                    subKey.TryGetString("Readme", out var read);
+                    subKey.TryGetString("UninstallString", out var strUninst);
+                    subKey.TryGetString("URLInfoAbout", out var info);
+
+                    if (!string.IsNullOrEmpty(strUninst))
+                    {
+                        if (strUninst.Contains("\" ", StringComparison.Ordinal))
+                        {
+                            var uninstExe = strUninst[..strUninst.IndexOf("\" ", StringComparison.Ordinal)].Trim('\"');
+                            if (Path.IsPathRooted(uninstExe))
+                            {
+                                uninst = _fileSystem.FromUnsanitizedFullPath(uninstExe);
+                                uninstArgs = strUninst[(strUninst.IndexOf("\" ", StringComparison.Ordinal) + 2)..];
+                            }
+                            if (string.IsNullOrEmpty(strId) && strUninst.Contains("-uninstall=", StringComparison.Ordinal))
+                                strId = strUninst[..(strUninst.LastIndexOf("-uninstall=", StringComparison.Ordinal) + 11)];
+                        }
+                    }
+                    else if (string.IsNullOrEmpty(strId))
+                        strId = path.FileName;
+
+                    if (string.IsNullOrEmpty(name))
+                        name = strId;
+                    if (string.IsNullOrEmpty(strExe))
+                        exe = Utils.FindExe(path, _fileSystem, name);
+
+                    return new RockstarGame(
+                        Id: RockstarGameId.From(strId),
+                        Name: name ?? "",
+                        InstallFolder: path,
+                        Launch: exe,
+                        Uninstall: uninst,
+                        UninstallArgs: uninstArgs,
+                        Publisher: pub ?? "",
+                        UrlInfoAbout: info ?? read ?? "",
+                        HelpLink: help ?? "");
                 }
             }
-        }
-        catch (Exception) { }
 
-        return new();
+            // InstallFolder not found in Uninstall registry
+            exe = Utils.FindExe(path, _fileSystem);
+
+            return new RockstarGame(
+                Id: RockstarGameId.From(strId),
+                Name: strId ?? "",
+                InstallFolder: path,
+                Launch: exe);
+        }
+        catch (Exception e)
+        {
+            return new ErrorMessage(e, $"Exception while parsing registry key {uninstallKey}");
+        }
     }
 }

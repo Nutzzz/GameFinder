@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using GameFinder.Common;
 using JetBrains.Annotations;
 using NexusMods.Paths;
@@ -13,13 +15,19 @@ namespace GameCollector.StoreHandlers.Rockstar;
 /// <param name="Launch"></param>
 /// <param name="Uninstall"></param>
 /// <param name="UninstallArgs"></param>
+/// <param name="Publisher"></param>
+/// <param name="UrlInfoAbout"></param>
+/// <param name="HelpLink"></param>
 [PublicAPI]
 public record RockstarGame(RockstarGameId Id,
                       string Name,
                       AbsolutePath InstallFolder,
                       AbsolutePath Launch = new(),
                       AbsolutePath Uninstall = new(),
-                      string UninstallArgs = "") :
+                      string UninstallArgs = "",
+                      string Publisher = "",
+                      string UrlInfoAbout = "",
+                      string HelpLink = "") :
     GameData(Handler: Handler.StoreHandler_Rockstar,
              GameId: Id.ToString(),
              GameName: Name,
@@ -27,4 +35,10 @@ public record RockstarGame(RockstarGameId Id,
              Launch: Launch,
              Icon: Launch,
              Uninstall: Uninstall,
-             UninstallArgs: UninstallArgs);
+             UninstallArgs: UninstallArgs,
+             Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+             {
+                 ["Publisher"] = new() { Publisher },
+                 ["WebInfo"] = new() { UrlInfoAbout },
+                 ["WebSupport"] = new() { HelpLink },
+             });

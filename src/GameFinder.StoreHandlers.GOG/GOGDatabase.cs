@@ -116,6 +116,8 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 var imageUrl = "";
                 var imageWideUrl = "";
                 var iconUrl = "";
+                var storeUrl = "";
+                var supportUrl = "";
                 var isHidden = false;
                 List<string> tags = new();
 
@@ -124,7 +126,9 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                     var links = JsonSerializer.Deserialize<LinksJson>(game.Links, JsonSerializerOptions);
                     imageWideUrl = links?.Logo?.Href;
                     imageUrl = links?.BoxArtImage?.Href;
-                    iconUrl = links?.IconSquare?.Href;
+                    iconUrl = links?.IconSquare?.Href ?? links?.Icon?.Href;
+                    storeUrl = links?.Store?.Href;
+                    supportUrl = links?.Support?.Href ?? links?.Forum?.Href ?? links?.Store?.Href;
                 }
                 if (string.IsNullOrEmpty(imageWideUrl))
                 {
@@ -230,6 +234,8 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                         Tags: tags,
                         MyRating: myRating,
                         ParentId: parentId,
+                        StoreUrl: storeUrl ?? "",
+                        SupportUrl: supportUrl ?? "",
                         BoxArtUrl: imageUrl ?? "",
                         LogoUrl: imageWideUrl ?? "",
                         IconUrl: iconUrl ?? ""));

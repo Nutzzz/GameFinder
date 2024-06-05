@@ -135,6 +135,8 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                             Tags: db.Tags,
                             MyRating: db.MyRating,
                             ReleaseDate: db.ReleaseDate,
+                            StoreUrl: db.StoreUrl,
+                            SupportUrl: db.SupportUrl,
                             BoxArtUrl: db.BoxArtUrl,
                             LogoUrl: db.LogoUrl,
                             IconUrl: db.IconUrl));
@@ -213,6 +215,9 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
             //subKey.TryGetString("launchCommand", out var launch);
             subKey.TryGetString("launchParam", out var launchParam);
             subKey.TryGetString("uninstallCommand", out var uninst);
+            subKey.TryGetString("supportLink", out var support);
+            if (!string.IsNullOrEmpty(support) && !support.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                support = "http://www.gog.com/support/" + support;
 
             AbsolutePath exePath = default;
             if (exe is not null)
@@ -229,6 +234,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 UninstallCommand: Path.IsPathRooted(uninst) ? _fileSystem.FromUnsanitizedFullPath(uninst) : new(),
                 IsInstalled: exePath != default && exePath.FileExists,
                 IsOwned: true,
+                SupportUrl: support ?? "",
                 ParentId: parentId
             );
         }

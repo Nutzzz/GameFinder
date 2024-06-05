@@ -11,6 +11,7 @@ using GameCollector.SQLiteUtils;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GameCollector.StoreHandlers.Amazon;
 
@@ -134,6 +135,8 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     Developers: ownedGame?.Developers,
                     ProductPublisher: ownedGame?.ProductPublisher,
                     EsrbRating: ownedGame?.EsrbRating ?? EsrbRating.NO_RATING,
+                    WebInfo: ownedGame?.WebInfo,
+                    WebSupport: ownedGame?.WebSupport,
                     GameModes: ownedGame?.GameModes,
                     Genres: ownedGame?.Genres
                 );
@@ -165,6 +168,8 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                         Developers: game.Developers,
                         ProductPublisher: game.ProductPublisher,
                         EsrbRating: game.EsrbRating,
+                        WebInfo: game.WebInfo,
+                        WebSupport: game.WebSupport,
                         GameModes: game.GameModes,
                         Genres: game.Genres
                     );
@@ -294,6 +299,8 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
                     Developers: product.DevelopersJson ?? "",
                     ProductPublisher: product.ProductPublisher,
                     EsrbRating: ageRating,
+                    WebInfo: GetWebInfo(product.ExternalWebsitesJson ?? ""),
+                    WebSupport: GetWebSupport(product.ExternalWebsitesJson ?? ""),
                     GameModes: product.GameModesJson ?? "",
                     Genres: product.GenresJson ?? ""
                 ));
@@ -301,6 +308,87 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
         }
 
         return ownedDict;
+    }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
+    private static string? GetWebInfo(string json)
+    {
+        using var doc = JsonDocument.Parse(json, new() { AllowTrailingCommas = true, });
+        var websites = doc.Deserialize<ExternalWebsites>();
+
+        if (websites is null)
+            return null;
+
+        if (!IsInvalid(websites.Official))
+            return websites.Official;
+        if (!IsInvalid(websites.Wikia))
+            return websites.Wikia;
+        if (!IsInvalid(websites.Igdb))
+            return websites.Igdb;
+        if (!IsInvalid(websites.Wikipedia))
+            return websites.Wikipedia;
+        if (!IsInvalid(websites.Steam))
+            return websites.Steam;
+        if (!IsInvalid(websites.Epicgames))
+            return websites.Epicgames;
+        if (!IsInvalid(websites.Gog))
+            return websites.Gog;
+        if (!IsInvalid(websites.Itch))
+            return websites.Itch;
+        if (!IsInvalid(websites.Android))
+            return websites.Android;
+        if (!IsInvalid(websites.Ipad))
+            return websites.Ipad;
+        if (!IsInvalid(websites.Iphone))
+            return websites.Iphone;
+        if (!IsInvalid(websites.Instagram))
+            return websites.Instagram;
+        if (!IsInvalid(websites.Youtube))
+            return websites.Youtube;
+        if (!IsInvalid(websites.Twitter))
+            return websites.Twitter;
+        if (!IsInvalid(websites.Twitch))
+            return websites.Twitch;
+        if (!IsInvalid(websites.Reddit))
+            return websites.Reddit;
+        if (!IsInvalid(websites.Facebook))
+            return websites.Facebook;
+        return "https://www.twitch.tv/";
+    }
+
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = $"{nameof(JsonSerializerOptions)} uses {nameof(SourceGenerationContext)} for type information.")]
+    private static string? GetWebSupport(string json)
+    {
+        using var doc = JsonDocument.Parse(json, new() { AllowTrailingCommas = true, });
+        var websites = doc.Deserialize<ExternalWebsites>();
+
+        if (websites is null)
+            return null;
+
+        if (!IsInvalid(websites.Support))
+            return websites.Support;
+        if (!IsInvalid(websites.Twitch))
+            return websites.Twitch;
+        if (!IsInvalid(websites.Reddit))
+            return websites.Reddit;
+        if (!IsInvalid(websites.Facebook))
+            return websites.Facebook;
+        if (!IsInvalid(websites.Official))
+            return websites.Official;
+        return "https://www.twitch.tv/";
+    }
+
+    private static bool IsInvalid(string? website)
+    {
+        return string.IsNullOrEmpty(website) ||
+            website.Equals("null", StringComparison.OrdinalIgnoreCase) ||
+            website.Equals("https://www.twitch.tv/", StringComparison.Ordinal);
     }
 
     private OneOf<AmazonGame, ErrorMessage>[] ParseRegistry()
@@ -440,12 +528,15 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
 
             if (!subKey.TryGetString("DisplayIcon", out var launch)) launch = "";
 
+            if (!subKey.TryGetString("Publisher", out var pub)) pub = "";
+
             return new AmazonGame(
                 ProductId: AmazonGameId.From(gameId),
                 ProductTitle: name,
                 InstallDirectory: Path.IsPathRooted(path) ? fileSystem.FromUnsanitizedFullPath(path) : new(),
                 Command: Path.IsPathRooted(launch) ? fileSystem.FromUnsanitizedFullPath(launch) : new(),
-                Uninstall: Path.IsPathRooted(uninst) ? fileSystem.FromUnsanitizedFullPath(uninst) : new()
+                Uninstall: Path.IsPathRooted(uninst) ? fileSystem.FromUnsanitizedFullPath(uninst) : new(),
+                ProductPublisher: pub
             );
         }
         catch (Exception e)

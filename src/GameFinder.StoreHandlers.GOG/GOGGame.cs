@@ -27,6 +27,8 @@ namespace GameCollector.StoreHandlers.GOG;
 /// <param name="MyRating"></param>
 /// <param name="ParentId"></param>
 /// <param name="ReleaseDate"></param>
+/// <param name="StoreUrl"></param>
+/// <param name="SupportUrl"></param>
 /// <param name="BoxArtUrl"></param>
 /// <param name="LogoUrl"></param>
 /// <param name="IconUrl"></param>
@@ -48,6 +50,8 @@ public record GOGGame(GOGGameId Id,
                       ushort? MyRating = null,
                       GOGGameId? ParentId = default,
                       DateTime? ReleaseDate = null,
+                      string StoreUrl = "",
+                      string SupportUrl = "",
                       string BoxArtUrl = "",
                       string LogoUrl = "",
                       string IconUrl = "") :
@@ -71,6 +75,8 @@ public record GOGGame(GOGGameId Id,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["ReleaseDate"] = new() { ReleaseDate is null ? "" : ((DateTime)ReleaseDate).ToString(CultureInfo.InvariantCulture) },
+                 ["WebInfo"] = new() { StoreUrl },
+                 ["WebSupport"] = new() { SupportUrl },
                  ["ImageUrl"] = new() { BoxArtUrl },
                  ["ImageWideUrl"] = new() { LogoUrl },
                  ["IconUrl"] = new() { IconUrl },

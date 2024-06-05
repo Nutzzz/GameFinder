@@ -14,9 +14,13 @@ internal record LimitedDetails
 
 [UsedImplicitly]
 internal record LinksJson(
-    LinkUrl? Logo,
     LinkUrl? BoxArtImage,
-    LinkUrl? IconSquare
+    LinkUrl? Forum,
+    LinkUrl? Icon,
+    LinkUrl? IconSquare,
+    LinkUrl? Logo,
+    LinkUrl? Store,
+    LinkUrl? Support
 );
 
 [UsedImplicitly]

@@ -19,6 +19,8 @@ namespace GameCollector.StoreHandlers.EADesktop;
 /// <param name="IsInstalled"></param>
 /// <param name="IsDLC"></param>
 /// <param name="Publisher"></param>
+/// <param name="WebInfo"></param>
+/// <param name="WebSupport"></param>
 /// <param name="BaseSlug">Slug name of the game.</param>
 /// <param name="ContentIDs"></param>
 [PublicAPI]
@@ -31,6 +33,8 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
                             bool IsInstalled = true,
                             bool IsDLC = false,
                             string Publisher = "",
+                            string WebInfo = "",
+                            string WebSupport = "",
                             string BaseSlug = "",
                             IList<string>? ContentIDs = null) :
     GameData(Handler: Handler.StoreHandler_EADesktop,
@@ -47,6 +51,8 @@ public record EADesktopGame(EADesktopGameId EADesktopGameId,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
                  ["Publishers"] = new() { Publisher ?? "", },
+                 ["WebInfo"] = new() { WebInfo ?? "" },
+                 ["WebSupport"] = new() { WebSupport ?? "", },
                  ["BaseSlug"] = new() { BaseSlug },
                  ["ContentIDs"] = ContentIDs?.ToList<string>() ?? new(),
              })

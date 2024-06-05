@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json;
 using GameFinder.Common;
 using JetBrains.Annotations;
@@ -30,6 +29,8 @@ namespace GameCollector.StoreHandlers.Amazon;
 /// <param name="Developers"></param>
 /// <param name="ProductPublisher"></param>
 /// <param name="EsrbRating"></param>
+/// <param name="WebInfo"></param>
+/// <param name="WebSupport"></param>
 /// <param name="GameModes"></param>
 /// <param name="Genres"></param>
 [PublicAPI]
@@ -51,6 +52,8 @@ public record AmazonGame(AmazonGameId ProductId,
                          string? Developers = "",
                          string? ProductPublisher = null,
                          EsrbRating EsrbRating = (EsrbRating)(-1),
+                         string? WebInfo = "",
+                         string? WebSupport = "",
                          string? GameModes = "",
                          string? Genres = "") :
     GameData(Handler: Handler.StoreHandler_Amazon,
@@ -71,6 +74,8 @@ public record AmazonGame(AmazonGameId ProductId,
                  ["LogoUrl"] = new() { ProductLogoUrl ?? "", },
                  ["Screenshots"] = string.IsNullOrEmpty(Screenshots) ? new() : GetJsonArray(@Screenshots ?? ""),
                  ["Videos"] = string.IsNullOrEmpty(Videos) ? new() : GetJsonArray(@Videos ?? ""),
+                 ["WebInfo"] = string.IsNullOrEmpty(WebInfo) ? new() : GetJsonArray(@WebInfo ?? ""),
+                 ["WebSupport"] = string.IsNullOrEmpty(WebSupport) ? new() : GetJsonArray(@WebSupport ?? ""),
                  ["Developers"] = string.IsNullOrEmpty(Developers) ? new() : GetJsonArray(@Developers ?? ""),
                  ["Publishers"] = new() { ProductPublisher ?? "", },
                  ["AgeRating"] = new() { EsrbRating == (EsrbRating)(-1) ? "" : EsrbRating.ToString(), },

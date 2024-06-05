@@ -20,6 +20,8 @@ internal record ProductInfo
 
     public string? EsrbRating { get; init; }
 
+    public string? ExternalWebsitesJson { get; init; }
+
     public string? GameModesJson { get; init; }
 
     public string? GenresJson { get; init; }
