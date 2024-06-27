@@ -59,7 +59,7 @@ The [example project](./other/GameFinder.Example) uses every available store han
 
 ### Dolphin/MAME
 
-These handlers both require you pass the path to the emulator executable.
+These handlers both require you pass an AbsolutePath to the emulator executable when instantiating the handler class, e.g., `new MAMEHandler(fileSystem, mamePath)`.
 
 ### Oculus
 
