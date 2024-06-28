@@ -43,7 +43,7 @@ jobs:
 
     - name: Get Changelog Entry
       id: changelog_reader
-      uses: mindsers/changelog-reader-action@v2.2.2
+      uses: mindsers/changelog-reader-action@v2
       with:
         validation_level: warn
         version: ${{ steps.tag_name.outputs.current_semver }}
@@ -57,7 +57,7 @@ jobs:
 
     - name: Download artifact (Linux)
       id: download-artifact-linux
-      uses: dawidd6/action-download-artifact@v4
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: .github/workflows/ci.yml
         branch: main
@@ -68,7 +68,7 @@ jobs:
 
     - name: Download artifact (Windows)
       id: download-artifact-windows
-      uses: dawidd6/action-download-artifact@v4
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: .github/workflows/ci.yml
         branch: main
@@ -79,7 +79,7 @@ jobs:
 
     - name: Download artifact (macOS)
       id: download-artifact-macos
-      uses: dawidd6/action-download-artifact@v4
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: .github/workflows/ci.yml
         branch: main
