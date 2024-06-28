@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com).
 
 Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used.
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.1...HEAD)
 
 **TODO**:
 
@@ -18,7 +18,9 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
-## [4.2.2-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...HEAD) - UNRELEASED
+## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+## [4.2.3-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...v4.2.3.1) - 2024-06-28
 
 ### Added
 
@@ -26,9 +28,9 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ### Changed
 
+- Change Settings class argument names to match internal variable names.
+- Upstream: Steam: find snap installation
 - Upstream: Update dependencies
-
-## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
 ## [4.2.0-8](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.7...v4.2.0.8) - 2024-04-15
 
