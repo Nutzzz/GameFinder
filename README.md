@@ -52,13 +52,14 @@ The [example project](./other/GameFinder.Example) uses every available store han
 ## GameCollector Issues
 
 - Known issues: See [GameCollector issues here](https://github.com/Nutzzz/GameCollector/issues) or [upstream GameFinder issues here](https://github.com/erri120/GameFinder/issues). Please do not submit bugs/requests for GameCollector on GameFinder's GitHub.
-- DLCs/clones: When an entry is detected as a DLC addon (or a clone in the MAME handler), the BaseGame field is set to the ID of the main game (or sometimes the string "False" when the relationship can't be determined). To hide DLCs from the consumer application, use FindAllGames(baseOnly: true), or do not use entries with a non-null BaseGame.
-- Owned not-installed games: Some handlers can find owned not-installed games. To support this feature for Steam games, [see note below](#steam). To show only installed games, use FindAllGames(installedOnly: true), or do not use entries where IsInstalled is False.
-- Unowned games: A few handlers can find all entries in the launcher database. Unowned games are not collected by default, but using FindAllGames(ownedOnly: false) will add these entries with IsOwned set to False.
+- DLCs/clones: When an entry is detected as a DLC addon (or a clone in the MAME handler), the `string? GameData.BaseGame` field is set to the ID of the main game (or sometimes the string "False" when the relationship can't be determined). To hide DLCs from the consumer application, use `FindAllGames(Settings)` where `bool Settings.BaseOnly = true`, or do not use entries where `string? GameData.BaseGame != null`.
+- Owned not-installed games: Some handlers can find owned not-installed games. To support this feature for Steam games, [see note below](#steam). To hide not-installed games, use `FindAllGames(Settings)` where `bool Settings.InstalledOnly = true`, or do not use entries where `bool GameData.IsInstalled == false`.
+- Unowned games: A few handlers can find all entries in the launcher database. To show only owned games, use `FindAllGames(Settings)` where `bool Settings.OwnedOnly = true`, or do not use entries where `bool GameData.IsOwned == false`.
+- Non-game items: Some handlers can find non-game (e.g., applications) items. To show only games, use `FindAllGames(Settings)` where `bool Settings.GamesOnly = true`, or parse the item's `List<string> GameData.Genres` for the appropriate string values.
 
 ### Dolphin/MAME
 
-These handlers both require you pass the path to the emulator executable.
+These handlers both require you pass an AbsolutePath to the emulator executable when instantiating the handler class, e.g., `new MAMEHandler(fileSystem, mamePath)`.
 
 ### Oculus
 
