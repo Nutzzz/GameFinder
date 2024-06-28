@@ -89,7 +89,7 @@ jobs:
         if_no_artifact_found: warn
 
     - name: Append .app to macOS binary
-      run: mv "/macOS/GameCollector" "/macOS/GameCollector.app"
+      run: mv macOS/GameCollector macOS/GameCollector.app
 
     - name: Create Release
       id: create_release
