@@ -90,10 +90,10 @@ jobs:
 
     - name: Append .app to macOS binary
       run: mv macOS/GameCollector macOS/GameCollector.app
+      continue-on-error: true
 
     - name: Create Release
       id: create_release
-      if: always()
       uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
