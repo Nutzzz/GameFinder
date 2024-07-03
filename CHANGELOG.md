@@ -20,7 +20,13 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
-## [4.2.3-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...v4.2.3.1) - 2024-06-28
+## [4.2.3-2](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.1...v4.2.3.2) - 2024-07-03
+
+### Fixed
+
+- Amazon: Fixed crash when returning default website
+
+## [4.2.3-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.0.8...v4.2.3.1) - 2024-07-03
 
 ### Added
 

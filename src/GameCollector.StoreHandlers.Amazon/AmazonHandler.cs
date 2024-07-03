@@ -356,7 +356,7 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
             return websites.Reddit;
         if (!IsInvalid(websites.Facebook))
             return websites.Facebook;
-        return "https://www.twitch.tv/";
+        return "[\"https://www.twitch.tv/\"]";
     }
 
     [UnconditionalSuppressMessage(
@@ -381,14 +381,13 @@ public class AmazonHandler : AHandler<AmazonGame, AmazonGameId>
             return websites.Facebook;
         if (!IsInvalid(websites.Official))
             return websites.Official;
-        return "https://www.twitch.tv/";
+        return "[\"https://www.twitch.tv/\"]";
     }
 
-    private static bool IsInvalid(string? website)
+    private static bool IsInvalid(string? websites)
     {
-        return string.IsNullOrEmpty(website) ||
-            website.Equals("null", StringComparison.OrdinalIgnoreCase) ||
-            website.Equals("https://www.twitch.tv/", StringComparison.Ordinal);
+        return string.IsNullOrEmpty(websites) ||
+            websites.Equals("null", StringComparison.OrdinalIgnoreCase);
     }
 
     private OneOf<AmazonGame, ErrorMessage>[] ParseRegistry()
