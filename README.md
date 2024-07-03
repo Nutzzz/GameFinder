@@ -69,7 +69,7 @@ If the Oculus service is running (as it does even when the program is not open),
 
 GameCollector adds a `FindClient()` function to get the path to a given store client's executable.
 
-The TGame implementations of GameCollector's handlers inherit a generic GameData record. Unfortunately, no handler populates all of the fields, and many only provide a few:
+The TGame implementations of GameCollector's handlers inherit a generic GameData record. Unfortunately, no handler populates all of the following fields, and many only provide a few:
   - `enum Handler`
   - `string GameId`
   - `string GameName`
