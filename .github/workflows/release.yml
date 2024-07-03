@@ -49,12 +49,6 @@ jobs:
         version: ${{ steps.tag_name.outputs.current_semver }}
         path: ./CHANGELOG.md
 
-    - name: Push to NuGet
-      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-
-    - name: Push to GitHub Packages
-      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Nutzzz/index.json
-
     - name: Download artifact (Linux)
       id: download-artifact-linux
       uses: dawidd6/action-download-artifact@v6
@@ -88,10 +82,6 @@ jobs:
         path: macOS
         if_no_artifact_found: warn
 
-    - name: Append .app to macOS binary
-      run: mv macOS/GameCollector macOS/GameCollector.app
-      continue-on-error: true
-
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v2
@@ -108,4 +98,11 @@ jobs:
         files: |
           Linux/GameCollector
           Windows/GameCollector.exe
-          macOS/GameCollector.app
+          macOS/GameCollector
+
+    - name: Push to GitHub Packages
+      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Nutzzz/index.json
+      continue-on-error: true
+
+    - name: Push to NuGet
+      run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
