@@ -57,7 +57,7 @@ jobs:
         branch: main
         name: GameFinder\.Example-Linux-.*
         name_is_regexp: true
-        path: Linux
+        path: ./Linux
         if_no_artifact_found: warn
 
     - name: Download artifact (Windows)
@@ -68,7 +68,7 @@ jobs:
         branch: main
         name: GameFinder\.Example-Windows-.*
         name_is_regexp: true
-        path: Windows
+        path: ./Windows
         if_no_artifact_found: warn
 
     - name: Download artifact (macOS)
@@ -79,7 +79,7 @@ jobs:
         branch: main
         name: GameFinder\.Example-macOS-.*
         name_is_regexp: true
-        path: macOS
+        path: ./macOS
         if_no_artifact_found: warn
 
     - name: Create Release
@@ -96,9 +96,9 @@ jobs:
         draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
         #prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
         files: |
-          Linux/GameCollector
-          Windows/GameCollector.exe
-          macOS/GameCollector
+          ./Linux/GameCollector
+          ./Windows/GameCollector.exe
+          ./macOS/GameCollector
 
     - name: Push to GitHub Packages
       run: dotnet nuget push **/*.nupkg --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Nutzzz/index.json
