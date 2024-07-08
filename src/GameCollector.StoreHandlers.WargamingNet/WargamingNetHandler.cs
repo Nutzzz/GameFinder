@@ -104,6 +104,12 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
         List<string> appPaths = new();
 
         var appData = GetGameCenterPath().Combine("apps");
+        if (!appData.DirectoryExists())
+        {
+            yield return new ErrorMessage($"The directory {appData.GetFullPath()} does not exist!");
+            yield break;
+        }
+        
         var appFiles = appData.EnumerateFiles(Extension.None, recursive: true).ToArray();
         foreach (var appFile in appFiles)
         {

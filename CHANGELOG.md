@@ -26,6 +26,10 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 - Upstream: Steam: find Flatpak installation
 
+### Fixed
+
+- Paradox, Plarium, WargamingNet: Fixed crash when client is not installed
+
 ## [4.2.3-2](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.1...v4.2.3.2) - 2024-07-03
 
 ### Fixed
@@ -53,7 +57,7 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 - Non-game software can be hidden with `Settings.GamesOnly`
 - Amazon: Add InstallDate
 - Amazon, Humble: Add screenshot and video URLs
-- Big Fish, Humble: Set expired trials/subscriptions as IsOwned=false
+- BigFish, Humble: Set expired trials/subscriptions as IsOwned=false
 - EGS: Add Categories to Genres metadata
 - EGS, IGClient: Respect new GamesOnly=true flag
 - GOG, Legacy: Gather unowned games unless OwnedOnly=true
@@ -139,7 +143,7 @@ Initial release of GameCollector
 - Added emulators:
   - Dolphin, MAME
 - Added additional store launchers:
-  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, IGClient, itch, Legacy, Oculus, Paradox, Plarium, Riot, RobotCache, Rockstar, Ubisoft, Wargaming.net
+  - Amazon, Arc, Battle.net, Big Fish, Game Jolt, Humble, Indiegala, itch, Legacy, Oculus, Paradox, Plarium, Riot, RobotCache, Rockstar, Ubisoft, Wargaming.net
 - Add `FindClient()` to get path to store client executable.
 - EADesktop handler now attempts to get a proper game title from the Registry.
 

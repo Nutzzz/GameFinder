@@ -92,6 +92,12 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
     {
         var pdxPath = GetParadoxV2Path();
         var userFile = pdxPath.Combine("userSettings.json");
+        if (!userFile.FileExists)
+        {
+            yield return new ErrorMessage($"The file {userFile.GetFullPath()} does not exist!");
+            yield break;
+        }
+
         using var userStream = userFile.Read();
         var userSettings = JsonSerializer.Deserialize<UserSettings>(userStream, JsonSerializerOptions);
         if (userSettings is null)
@@ -122,6 +128,12 @@ public class ParadoxHandler : AHandler<ParadoxGame, ParadoxGameId>
         }
 
         var metaFile = pdxPath.Combine("game-metadata").Combine("game-metadata");
+        if (!metaFile.FileExists)
+        {
+            yield return new ErrorMessage($"The file {metaFile.GetFullPath()} does not exist!");
+            yield break;
+        }
+
         using var metaStream = metaFile.Read();
         var metadata = JsonSerializer.Deserialize<GameMetadata>(metaStream, JsonSerializerOptions);
         if (metadata is not null && metadata.Data is not null && metadata.Data.Games is not null)

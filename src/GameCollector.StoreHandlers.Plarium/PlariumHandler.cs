@@ -94,6 +94,12 @@ public class PlariumHandler : AHandler<PlariumGame, PlariumGameId>
     public override IEnumerable<OneOf<PlariumGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var jsonFile = GetPlariumPlayPath().Combine("gamestorage.gsfn");
+        if (!jsonFile.FileExists)
+        {
+            yield return new ErrorMessage($"The file {jsonFile.GetFullPath()} does not exist!");
+            yield break;
+        }
+
         using var stream = jsonFile.Read();
         var gameStorage = JsonSerializer.Deserialize<GameStorage>(stream, JsonSerializerOptions);
         if (gameStorage is null)

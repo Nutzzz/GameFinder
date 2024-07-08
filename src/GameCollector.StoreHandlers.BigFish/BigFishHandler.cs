@@ -82,7 +82,7 @@ public class BigFishHandler : AHandler<BigFishGame, BigFishGameId>
         using var bfgInstKey = localMachine32.OpenSubKey(Path.Combine(BigFishRegKey, "Persistence", "Install"));
         if (bfgDbKey is null && bfgInstKey is null)
         {
-            yield return new ErrorMessage("Unable to open registry");
+            yield return new ErrorMessage($"Unable to open HKEY_LOCAL_MACHINE\\{BigFishRegKey}");
             yield break;
         }
 
