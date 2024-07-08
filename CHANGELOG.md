@@ -144,9 +144,13 @@ Initial release of GameCollector
 
 # Upstream Changelog
 
-## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.3...HEAD)
+## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.4...HEAD)
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
+
+## [4.2.4](https://github.com/erri120/GameFinder/compare/v4.2.3...v4.2.4) - 2024-07-04
+
+- Steam: find Flatpak installation
 
 ## [4.2.3](https://github.com/erri120/GameFinder/compare/v4.2.2...v4.2.3) - 2024-06-25
 
