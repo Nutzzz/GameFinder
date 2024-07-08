@@ -20,6 +20,12 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
+## [4.2.4-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.2...v4.2.4.1) - 2024-07-08
+
+### Added
+
+- Upstream: Steam: find Flatpak installation
+
 ## [4.2.3-2](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.1...v4.2.3.2) - 2024-07-03
 
 ### Fixed
