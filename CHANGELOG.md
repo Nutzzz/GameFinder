@@ -18,6 +18,12 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
+## [4.2.4-2](https://github.com/Nutzzz/GameCollector/compare/v4.2.4.1...v4.2.4.2) - UNRELEASED
+
+### Added
+
+- Add Winget package handler to detect both installed apps and show free game packages
+
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
 ## [4.2.4-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.2...v4.2.4.1) - 2024-07-08
