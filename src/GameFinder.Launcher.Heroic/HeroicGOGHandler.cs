@@ -6,12 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using GameFinder.Common;
-using GameFinder.StoreHandlers.GOG;
+using GameCollector.StoreHandlers.GOG;
 using JetBrains.Annotations;
 using NexusMods.Paths;
 using OneOf;
 
-namespace GameFinder.Launcher.Heroic;
+namespace GameCollector.Launcher.Heroic;
 
 [PublicAPI]
 public class HeroicGOGHandler : AHandler<GOGGame, GOGGameId>
@@ -39,7 +39,13 @@ public class HeroicGOGHandler : AHandler<GOGGame, GOGGameId>
     public override IEqualityComparer<GOGGameId>? IdEqualityComparer => null;
 
     /// <inheritdoc/>
-    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames()
+    public override AbsolutePath FindClient()
+    {
+        return default;
+    }
+
+    /// <inheritdoc/>
+    public override IEnumerable<OneOf<GOGGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
         var configDirectory = FindConfigDirectory(_fileSystem)
             .FirstOrDefault(path => path.DirectoryExists());
