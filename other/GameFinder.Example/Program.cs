@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using GameFinder.Common;
+using GameFinder.Launcher.Heroic;
 using GameFinder.RegistryUtils;
 using GameCollector.StoreHandlers.EADesktop;
 using GameCollector.StoreHandlers.EADesktop.Crypto;
@@ -125,6 +126,7 @@ public static class Program
             options.Epic = true;
             options.GameJolt = true;
             options.GOG = true;
+            options.Heroic = true;
             options.Humble = true;
             options.IG = true;
             options.Itch = true;
@@ -217,6 +219,7 @@ public static class Program
         if (OperatingSystem.IsLinux())
         {
             if (options.Steam) tasks.Add(Task.Run(() => RunSteamHandler(settings, realFileSystem, registry: null, options.SteamAPI), cancelToken));
+            if (options.Heroic) tasks.Add(Task.Run(() => RunHeroicGOGHandler(realFileSystem), cancelToken));
 
             tasks.Add(Task.Run(() =>
             {
@@ -272,6 +275,13 @@ public static class Program
         var logger = _provider.CreateLogger(nameof(GOGHandler));
         var handler = new GOGHandler(registry, fileSystem);
         LogGamesAndErrors(handler.FindAllGames(settings), logger);
+    }
+
+    private static void RunHeroicGOGHandler(IFileSystem fileSystem)
+    {
+        var logger = _provider.CreateLogger(nameof(HeroicGOGHandler));
+        var handler = new HeroicGOGHandler(fileSystem);
+        LogGamesAndErrors(handler.FindAllGames(), logger);
     }
 
     private static void RunEGSHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
