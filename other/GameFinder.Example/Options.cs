@@ -46,6 +46,9 @@ public class Options
     [Option("gog", HelpText = "Search for GOG GALAXY games", Hidden = true, Group = "Handlers")]
     public bool GOG { get; set; } = false;
 
+    [Option("heroic", HelpText = "Search for games from Heroic", Hidden = true, Group = "Handlers")]
+    public bool Heroic { get; set; } = false;
+
     [Option("humble", HelpText = "Search for Humble App games", Hidden = true, Group = "Handlers")]
     public bool Humble { get; set; } = false;
 

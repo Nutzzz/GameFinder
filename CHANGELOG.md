@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com).
 
 Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used.
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.1...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.3.1.1...HEAD)
 
 **TODO**:
 
@@ -25,6 +25,16 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 - Add Winget package handler to detect both installed apps and show free game packages
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+## [4.3.1-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.4.1...v4.3.1.1) - 2024-10-01
+
+### Added
+
+- Upstream: Adds support for Heroic
+
+### Changed
+
+- Upstream: Heroic: pass along the wine prefix
 
 ## [4.2.4-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.3.2...v4.2.4.1) - 2024-07-08
 
@@ -163,6 +173,14 @@ Initial release of GameCollector
 ## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.4...HEAD)
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
+
+## [4.3.1](https://github.com/erri120/GameFinder/compare/v4.3.0...v4.3.1) - 2024-10-01
+
+- Heroic: pass along the wine prefix
+
+## [4.3.0](https://github.com/erri120/GameFinder/compare/v4.2.4...v4.3.0) - 2024-09-28
+
+Adds support for Heroic.
 
 ## [4.2.4](https://github.com/erri120/GameFinder/compare/v4.2.3...v4.2.4) - 2024-07-04
 
