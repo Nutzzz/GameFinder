@@ -129,6 +129,11 @@ public enum Handler
     [Description("GameCollector.StoreHandlers.WargamingNet")]
     StoreHandler_WargamingNet,
     /// <summary>
+    /// Heroic launcher handler
+    /// </summary>
+    [Description("GameCollector.Launcher.Heroic")]
+    Launcher_Heroic,
+    /// <summary>
     /// Dolphin Emulator emulation handler
     /// </summary>
     [Description("GameCollector.EmuHandlers.Dolphin")]
