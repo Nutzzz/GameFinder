@@ -16,9 +16,14 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 **WIP**:
 
+- Add [PkgHandlers](https://github.com/Nutzzz/GameCollector/pull/40) to find installed software, and to download free games
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
+
+## [4.3.2-1](https://github.com/Nutzzz/GameCollector/compare/v4.3.1.1...v4.3.2.1) - 2024-10-09
+
+- Upstream: Heroic: validate that file exists before parsing
 
 ## [4.3.1-1](https://github.com/Nutzzz/GameCollector/compare/v4.2.4.1...v4.3.1.1) - 2024-10-01
 
