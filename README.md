@@ -1,4 +1,4 @@
-![Logo](https://github.com/Nutzzz/GameCollector/raw/main/GameCollector.png)
+![Logo](https://raw.githubusercontent.com/Nutzzz/GameCollector/main/GameCollector.png)
 # GameCollector
 #### a fork of [GameFinder](https://github.com/erri120/GameFinder)
 
