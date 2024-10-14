@@ -109,7 +109,7 @@ public class WargamingNetHandler : AHandler<WargamingNetGame, WargamingNetGameId
             yield return new ErrorMessage($"The directory {appData.GetFullPath()} does not exist!");
             yield break;
         }
-        
+
         var appFiles = appData.EnumerateFiles(Extension.None, recursive: true).ToArray();
         foreach (var appFile in appFiles)
         {

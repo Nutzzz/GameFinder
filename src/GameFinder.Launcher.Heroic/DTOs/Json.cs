@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace GameFinder.Launcher.Heroic.DTOs;
+namespace GameCollector.Launcher.Heroic.DTOs;
 
 internal record Installed(
     [property: JsonPropertyName("platform")] string Platform,

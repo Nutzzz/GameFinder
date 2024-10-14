@@ -16,6 +16,7 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 **WIP**:
 
+- Add [PkgHandlers](https://github.com/Nutzzz/GameCollector/pull/40) to find installed software, and to download free games
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
 
 ## [4.2.4-2](https://github.com/Nutzzz/GameCollector/compare/v4.2.4.1...v4.2.4.2) - UNRELEASED
@@ -173,6 +174,10 @@ Initial release of GameCollector
 ## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.4...HEAD)
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
+
+## [4.3.2](https://github.com/erri120/GameFinder/compare/v4.3.1...v4.3.2) - 2024-10-07
+
+- Heroic: validate that file exists before parsing ([#155](https://github.com/erri120/GameFinder/pull/155)). Thanks @MistaOmega!
 
 ## [4.3.1](https://github.com/erri120/GameFinder/compare/v4.3.0...v4.3.1) - 2024-10-01
 

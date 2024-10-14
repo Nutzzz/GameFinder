@@ -63,7 +63,7 @@ public class RobotCacheHandler : AHandler<RobotCacheGame, RobotCacheGameId>
     {
         try
         {
-            // could get client path from HKEY_CLASSES_ROOT\RobotCache\shell\open\command\(Default)
+            // TODO: could get client path from HKEY_CLASSES_ROOT\RobotCache\shell\open\command\(Default)
             // or just use protocol "RobotCache://"
         }
         catch (Exception) { }

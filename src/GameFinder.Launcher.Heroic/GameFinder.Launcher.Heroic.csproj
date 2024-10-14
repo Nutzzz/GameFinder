@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <AssemblyName>GameCollector.Launcher.Heroic</AssemblyName>
         <IsTrimmable>false</IsTrimmable>
     </PropertyGroup>
 

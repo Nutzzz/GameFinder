@@ -1,8 +1,8 @@
-using GameFinder.StoreHandlers.GOG;
-using GameFinder.Wine;
+using GameCollector.StoreHandlers.GOG;
+using GameCollector.Wine;
 using NexusMods.Paths;
 
-namespace GameFinder.Launcher.Heroic;
+namespace GameCollector.Launcher.Heroic;
 
 public record HeroicGOGGame(
     GOGGameId Id,

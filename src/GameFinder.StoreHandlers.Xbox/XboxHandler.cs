@@ -47,7 +47,7 @@ public class XboxHandler : AHandler<XboxGame, XboxGameId>
     /// <inheritdoc/>
     public override AbsolutePath FindClient()
     {
-        // Could use "msxbox://" or @"explorer.exe shell:AppsFolder\Microsoft.WindowsStore_8wekyb3d8bbwe!App"
+        // TODO: Could use "msxbox://" or @"explorer.exe shell:AppsFolder\Microsoft.WindowsStore_8wekyb3d8bbwe!App"
         return default;
     }
 

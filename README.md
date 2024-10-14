@@ -1,4 +1,4 @@
-![Logo](https://github.com/Nutzzz/GameCollector/raw/main/GameCollector.png)
+![Logo](https://raw.githubusercontent.com/Nutzzz/GameCollector/main/GameCollector.png)
 # GameCollector
 #### a fork of [GameFinder](https://github.com/erri120/GameFinder)
 
@@ -20,7 +20,7 @@ The following launchers, emulators, and package managers are supported:
 | [Epic Games Store](#epic-games-store) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.EGS)](https://www.nuget.org/packages/GameCollector.StoreHandlers.EGS) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.EGS?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.EGS) |
 | Game Jolt Client | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.GameJolt)](https://www.nuget.org/packages/GameCollector.StoreHandlers.GameJolt) |
 | [GOG Galaxy](#gog-galaxy) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.GOG)](https://www.nuget.org/packages/GameCollector.StoreHandlers.GOG) [![Nuget](https://img.shields.io/nuget/v/GameFinder.StoreHandlers.GOG?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.StoreHandlers.GOG) |
-| Heroic (GOG) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.Launcher.Heroic)](https://www.nuget.org/packages/GameCollector.Launcher.Heroic [![Nuget](https://img.shields.io/nuget/v/GameFinder.Launcher.Heroic?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.Launcher.Heroic)
+| Heroic (GOG) | [![Nuget](https://img.shields.io/nuget/v/GameCollector.Launcher.Heroic)](https://www.nuget.org/packages/GameCollector.Launcher.Heroic) [![Nuget](https://img.shields.io/nuget/v/GameFinder.Launcher.Heroic?color=red&label=upstream)](https://www.nuget.org/packages/GameFinder.Launcher.Heroic)
 | Humble App | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Humble)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Humble) |
 | Indiegala IGClient | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.IGClient)](https://www.nuget.org/packages/GameCollector.StoreHandlers.IGClient) |
 | itch | [![Nuget](https://img.shields.io/nuget/v/GameCollector.StoreHandlers.Itch)](https://www.nuget.org/packages/GameCollector.StoreHandlers.Itch) |
