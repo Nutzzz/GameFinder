@@ -462,7 +462,7 @@ public static class Program
     private static void RunWingetHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(WingetHandler));
-        var handler = new WingetHandler(registry, fileSystem);
+        var handler = new WingetHandler(registry, fileSystem, logger); //, logger);
         LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 

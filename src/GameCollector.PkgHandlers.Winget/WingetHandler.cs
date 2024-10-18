@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+//using System.Security.Principal;
 using System.Text;
 using GameFinder.Common;
 using GameFinder.RegistryUtils;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using NexusMods.Paths;
 using OneOf;
 
@@ -21,11 +23,12 @@ namespace GameCollector.PkgHandlers.Winget;
 [PublicAPI]
 public class WingetHandler : AHandler<WingetGame, WingetGameId>
 {
-    internal const string TagQuery = "game";
+    internal const string DefaultQuery = "game";
     internal const string UninstallRegKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall";
 
     private readonly IRegistry _registry;
     private readonly IFileSystem _fileSystem;
+    private ILogger? _logger;
 
     //private WindowsPackageManagerFactory? _winGetFactory = null;
 
@@ -34,6 +37,7 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         UseShellExecute = false,
         RedirectStandardOutput = true,
         StandardOutputEncoding = Encoding.UTF8,
+        StandardErrorEncoding = Encoding.UTF8,
         WindowStyle = ProcessWindowStyle.Hidden,
         CreateNoWindow = true,
     };
@@ -52,10 +56,11 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
     /// <see cref="FileSystem.Shared"/>. For tests either use <see cref="InMemoryFileSystem"/>,
     /// a custom implementation or just a mock of the interface.
     /// </param>
-    public WingetHandler(IRegistry registry, IFileSystem fileSystem)
+    public WingetHandler(IRegistry registry, IFileSystem fileSystem, ILogger? logger = null)
     {
         _registry = registry;
         _fileSystem = fileSystem;
+        _logger = logger;
 
         if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041, 0))
         {
@@ -89,7 +94,7 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
     /// <inheritdoc/>
     public override IEnumerable<OneOf<WingetGame, ErrorMessage>> FindAllGames(Settings? settings = null)
     {
-        return FindAllGames(settings?.InstalledOnly ?? false);
+        return FindAllGames(settings?.InstalledOnly ?? false, settings?.OwnedOnly ?? false, settings?.GamesOnly ?? false);
     }
 
     /// <summary>
@@ -97,9 +102,17 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
     /// will always be a non-null game or a non-null error message.
     /// </summary>
     /// <param name="installedOnly"></param>
+    /// <param name="ownedOnly"></param>
+    /// <param name="gamesOnly"></param>
+    /// <param name="query"></param>
     /// <param name="expandPackage">Get additional information about winget/msstore packages</param>
     /// <returns></returns>
-    public IEnumerable<OneOf<WingetGame, ErrorMessage>> FindAllGames(bool? installedOnly = false, bool? expandPackage = false)
+    public IEnumerable<OneOf<WingetGame, ErrorMessage>> FindAllGames(
+        bool installedOnly = false,
+        bool ownedOnly = false,
+        bool gamesOnly = false,
+        string? query = DefaultQuery,
+        bool expandPackage = false)
     {
         if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041, 0))
         {
@@ -114,7 +127,7 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         }
         */
 
-        Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> games = new();
+        Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> installed = new();
 
         // Create Package Manager and get available catalogs
         //var manager = _winGetFactory.CreatePackageManager();
@@ -123,13 +136,13 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         /*
         foreach (var catalog in availableCatalogs.ToArray())
         {
-            // Create a filter to search for packages with "game" tag
             //var filterList = _winGetFactory.CreateFindPackagesOptions();
+            // Create a filter to search for packages with query ["game" default]
 
             // Add the query to the filter
             var tagFilter = _winGetFactory.CreatePackageMatchFilter();
             tagFilter.Field = PackageMatchField.Tag;
-            tagFilter.Value = TagQuery;
+            tagFilter.Value = query;
             filterList.Filters.Add(tagFilter);
 
             // Find the packages with the filters
@@ -140,7 +153,7 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
                 var pkg = match.CatalogPackage;
                 var id = WingetGameId.From(pkg.Id);
 
-                games.Add(id, new WingetGame(
+                installed.Add(id, new WingetGame(
                     Id: id,
                     Name: pkg.Name,
                     InstallDirectory: default,
@@ -156,43 +169,67 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         // Get all installed items
         //var installedCatalogs = manager.GetLocalPackageCatalog;
 
-        foreach (var item in GetInstalled(expandPackage))
+        if (!gamesOnly)
         {
-            if (item.IsT0)
+            //installed = GetInstalled();
+            installed = GetInstalledParse(expandPackage);
+            foreach (var item in installed)
             {
-                if (!games.ContainsKey(item.AsT0.Id))
-                    continue;
-
-                yield return new WingetGame(
-                    Id: item.AsT0.Id,
-                    Name: item.AsT0.Name,
-                    InstallDirectory: default,
-                    IsInstalled: true,
-                    //PkgTags: item.CatalogPackage.Tags,
-                    //Source: item.CatalogPackage.Source,
-                    InstalledVersion: item.AsT0.InstalledVersion,
-                    DefaultVersion: item.AsT0.DefaultVersion
-                );
+                if (item.Value.IsT0)
+                {
+                    yield return new WingetGame(
+                        Id: item.Key,
+                        Name: item.Value.AsT0.Name,
+                        InstallDirectory: default,
+                        IsInstalled: true,
+                        IsOwned: true,
+                        //PkgTags: item.CatalogPackage.Tags,
+                        //Source: item.CatalogPackage.Source,
+                        InstalledVersion: item.Value.AsT0.InstalledVersion,
+                        DefaultVersion: item.Value.AsT0.DefaultVersion
+                    );
+                }
+                else yield return item.Value.AsT1;
             }
-            else yield return item.AsT1;
         }
 
         //var freeGames = SearchFreeGames();
 
+        if (!installedOnly && !string.IsNullOrEmpty(query))
+        {
+            foreach (var game in SearchFreeGamesParse(query, expandPackage))
+            {
+                if (!installed.ContainsKey(game.Key))
+                {
+                    if (game.Value.IsT0)
+                    {
+                        yield return new WingetGame(
+                            Id: game.Key,
+                            Name: game.Value.AsT0.Name,
+                            InstallDirectory: default,
+                            IsInstalled: false,
+                            IsOwned: false,
+                            DefaultVersion: game.Value.AsT0.DefaultVersion
+                        );
+                    }
+                    else yield return game.Value.AsT1;
+                }
+            }
+        }
     }
 
-    private IEnumerable<OneOf<WingetGame, ErrorMessage>> GetInstalled()
+    private Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> GetInstalled()
     {
         if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041, 0))
         {
-            yield return new ErrorMessage("Only supported on Windows 10.0.19041.0 or later.");
-            yield break;
+            _logger?.LogDebug("***Only supported on Windows 10.0.19041.0 or later.");
+            return new() { [WingetGameId.From("")] = new ErrorMessage("Only supported on Windows 10.0.19041.0 or later.") };
         }
         /*
         if (_winGetFactory is null)
         {
-            yield return new ErrorMessage("Could not access Windows Package Manager.");
-            yield break;
+            _logger?.LogDebug("***Could not access Windows Package Manager.");
+            return new() { [WingetGameId.From("")] = new ErrorMessage("Could not access Windows Package Manager.") };
         }
         */
 
@@ -212,7 +249,7 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         {
             var selectedRemoteCatalogRef = winGetManager.GetPackageCatalogs().ToArray()[selectedIndex];
 
-            //Console.WriteLine($"Searching on package catalog {selectedRemoteCatalogRef.Info.Name} ");
+            //_logger?.LogDebug($"Searching on package catalog {selectedRemoteCatalogRef.Info.Name} ");
 
             var createCompositePackageCatalogOptions = _winGetFactory.CreateCreateCompositePackageCatalogOptions();
             createCompositePackageCatalogOptions.Catalogs.Add(selectedRemoteCatalogRef);
@@ -242,16 +279,17 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         foreach (var match in taskResult.Matches.ToArray())
         {
             var pkg = match.CatalogPackage;
-            //Console.WriteLine($"Package {pkg.Name} is available Online: " + pkg.DefaultInstallVersion.PackageCatalog.Info.Name);
+            //_logger?.LogDebug($"Package {pkg.Name} is available Online: " + pkg.DefaultInstallVersion.PackageCatalog.Info.Name);
             yield return new WingetGame(
                 Id: WingetGameId.From(pkg.Id),
                 Name: pkg.Name,
                 InstallDirectory: default,
                 IsInstalled: pkg.DefaultInstallVersion != null,
+                IsOwned: pkg.DefaultInstallVersion != null,
                 //PackageTags: pkg.Tags???,
                 Source: pkg.DefaultInstallVersion?.Channel, // is this winget vs. msstore?
                 PackageName: pkg.DefaultInstallVersion?.PackageCatalog.Info.Name,
-                ProductCodes: pkg.DefaultInstallVersion?.ProductCodes.ToList(),
+                //ProductCodes: pkg.DefaultInstallVersion?.ProductCodes.ToList(),
                 Publisher: pkg.InstalledVersion.Publisher,
                 InstalledVersion: pkg.InstalledVersion.DisplayName,
                 DefaultVersion: pkg.DefaultInstallVersion?.DisplayName);
@@ -259,33 +297,46 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         */
 
         // End enumeration
+        return new();
     }
 
-    private IEnumerable<OneOf<WingetGame, ErrorMessage>> GetInstalled(bool? expandPackage)
+    private Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> GetInstalled(bool? expandPackage)
+    {
+        Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> installed = new();
+        return installed;
+    }
+
+    private Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> GetInstalledParse(bool expandPackage)
     {
         //*************************************
         Console.OutputEncoding = Encoding.UTF8;
         //*************************************
 
+        Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> installed = new();
+
         var wingetExe = FindClient();
         if (wingetExe == default)
         {
-            yield return new ErrorMessage("Winget not installed");
-            yield break;
+            _logger?.LogDebug("***Winget not installed");
+            return new() { [WingetGameId.From("")] = new ErrorMessage("Winget not installed") };
         }
 
         using var process = new Process();
         process.StartInfo = _startInfo;
         process.StartInfo.FileName = wingetExe.GetFullPath();
         process.StartInfo.Arguments = "list --nowarn --disable-interactivity";
+        process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+        process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
         process.Start();
         var output = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
 
         if (string.IsNullOrEmpty(output))
         {
-            yield return new ErrorMessage("No output from winget");
-            yield break;
+            _logger?.LogDebug("***No output from winget");
+            return new() { [WingetGameId.From("")] = new ErrorMessage("No output from winget") };
         }
 
         List<int> colPos = new();
@@ -309,31 +360,47 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
             }
             else if (i > 1 && !string.IsNullOrWhiteSpace(line)) // skip separator line
             {
-                var name = line[colPos[0]..colPos[1]].Trim();
-                var strId = line[colPos[1]..colPos[2]].Trim();
-                var id = WingetGameId.From(strId);
-                var version = line[colPos[2]..colPos[3]].Trim();
-                var available = line[colPos[3]..colPos[4]].Trim();
-                var source = line[colPos[4]..].Trim();
+                string name = "", strId = "", version = "", available = "";
+                string? source = null;
+                WingetGameId id = default;
+                // TODO: This doesn't work if there are surrogate pairs in the string
+                if (line.Length > colPos[1])
+                    name = line[colPos[0]..colPos[1]].Trim();
+                if (line.Length > colPos[2])
+                {
+                    strId = line[colPos[1]..colPos[2]].Trim();
+                    id = WingetGameId.From(strId);
+                }
+                if (line.Length > colPos[3])
+                    version = line[colPos[2]..colPos[3]].Trim();
+                if (line.Length > colPos[4])
+                {
+                    available = line[colPos[3]..colPos[4]].Trim();
+                    source = line[colPos[4]..].Trim();
+                }
 
                 if (string.IsNullOrWhiteSpace(source)) // non-package install
                 {
-                    if (expandPackage != true)
+                    if (!expandPackage)
                     {
-                        Console.WriteLine("  " + name);
-                        yield return new WingetGame(
+                        if (installed.TryAdd(id, new WingetGame(
                             Id: id,
                             Name: name,
                             InstallDirectory: default,
                             IsInstalled: true,
-                            InstalledVersion: version);
+                            IsOwned: true,
+                            InstalledVersion: version)))
+                        {
+                            _logger?.LogDebug("  " + name);
+                        }
                         i++;
                         continue;
                     }
 
                     if (name.EndsWith('…') || strId.EndsWith('…') || version.EndsWith('…'))
                     {
-                        (name, strId, version) = Relist(name, strId, version);
+                        (name, strId, version) = Relist(name, strId, version, source);
+                        strId = strId.TrimEnd('…');
                         id = WingetGameId.From(strId);
                     }
 
@@ -342,84 +409,105 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
                         var game = ParseRegistry(strId);
                         if (game.IsT0)
                         {
-                            Console.WriteLine("@ " + name);
-                            yield return new WingetGame(
+                            if (installed.TryAdd(id, new WingetGame(
                                 Id: id,
                                 Name: name,
                                 InstallDirectory: game.AsT0.InstallDirectory,
                                 Launch: game.AsT0.Launch,
                                 Uninstall: game.AsT0.Uninstall,
                                 IsInstalled: true,
+                                IsOwned: true,
                                 InstallDate: game.AsT0.InstallDate,
                                 Publisher: game.AsT0.Publisher,
                                 SupportUrl: game.AsT0.SupportUrl,
                                 Homepage: game.AsT0.Homepage,
-                                InstalledVersion: version);
+                                InstalledVersion: version)))
+                            {
+                                _logger?.LogDebug("@ " + name);
+                            }
                             i++;
                             continue;
                         }
 
-                        yield return game.AsT1;
+                        if (installed.TryAdd(id, game.AsT1))
+                        {
+                            _logger?.LogDebug("***" + game.AsT1.Message);
+                        }
+                        i++;
                     }
 
-                    Console.WriteLine("? " + name);
-                    yield return new WingetGame(
+                    if (installed.TryAdd(id, new WingetGame(
                         Id: id,
                         Name: name,
                         InstallDirectory: default,
                         IsInstalled: true,
-                        InstalledVersion: version);
-                }
-                else // package install
-                {
-                    if (expandPackage != true)
+                        IsOwned: true,
+                        InstalledVersion: version)))
                     {
-                        if (name.EndsWith('…') || strId.EndsWith('…') || version.EndsWith('…'))
-                        {
-                            (name, strId, version) = Relist(name, strId, version);
-                            id = WingetGameId.From(strId);
-                        }
-                        Console.WriteLine("  " + name);
-                        yield return new WingetGame(
-                            Id: id,
-                            Name: name,
-                            InstallDirectory: default,
-                            IsInstalled: true,
-                            Source: source,
-                            InstalledVersion: version,
-                            DefaultVersion: available);
-                        i++;
-                        continue;
+                        _logger?.LogDebug("? " + name);
                     }
+                    i++;
+                    continue;
+                }
 
-                    if (strId.EndsWith('…'))
+                //else [package install]
+
+                if (!expandPackage)
+                {
+                    if (name.EndsWith('…') || strId.EndsWith('…') || version.EndsWith('…'))
                     {
-                        (name, strId, version) = Relist(name, strId, version);
+                        (name, strId, version) = Relist(name, strId, version, source);
+                        strId = strId.TrimEnd('…');
                         id = WingetGameId.From(strId);
                     }
-                    yield return GetPackageInfo(colPos, line, search: false);
+
+                    if (installed.TryAdd(id, new WingetGame(
+                        Id: id,
+                        Name: name,
+                        InstallDirectory: default,
+                        IsInstalled: true,
+                        IsOwned: true,
+                        Source: source,
+                        InstalledVersion: version,
+                        DefaultVersion: available)))
+                    {
+                        _logger?.LogDebug("  " + name);
+                    }
+                    i++;
+                    continue;
+                }
+
+                if (strId.EndsWith('…'))
+                {
+                    (name, strId, version) = Relist(name, strId, version, source);
+                    strId = strId.TrimEnd('…');
+                    id = WingetGameId.From(strId);
+                }
+                if (installed.TryAdd(id, GetPackageInfo(colPos, line, search: false)))
+                {
+                    _logger?.LogDebug("  " + name);
                 }
             }
+
             i++;
         }
+        _logger?.LogDebug("GetInstalledParse(): " + i + " apps");
+
+        return installed;
     }
 
-    private (string, string, string) Relist(string name, string id, string version)
+    private (string, string, string) Relist(string name, string id, string version, string? source)
     {
-        var subName = name;
-        if (name.EndsWith('…'))
-            subName = name[..^1];
-        var subId = id;
-        if (id.EndsWith('…'))
-            subId = id[..^1];
-
         var wingetExe = FindClient();
+
+        if (string.IsNullOrWhiteSpace(source))
+            source = "winget";
 
         using var process = new Process();
         process.StartInfo = _startInfo;
         process.StartInfo.FileName = wingetExe.GetFullPath();
-        //process.StartInfo.Arguments = $"list --name \"{subName}\" --nowarn --disable-interactivity";
-        process.StartInfo.Arguments = $"list --id \"{subId}\" --nowarn --disable-interactivity";
+        //process.StartInfo.Arguments = $"list --name \"{name.TrimEnd('…')}\" --source {source} --nowarn --disable-interactivity";
+        process.StartInfo.Arguments = $"list --id \"{id.TrimEnd('…')}\" --source {source} --nowarn --disable-interactivity";
         process.Start();
         var listOutput = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
@@ -445,17 +533,23 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
             }
             else if (i > 1 && !string.IsNullOrWhiteSpace(listLine))  // skip separator line
             {
-                name = listLine[listCols[0]..listCols[1]].Trim();
-                id = listLine[listCols[1]..listCols[2]].Trim();
-                version = listLine[listCols[2]..];
+                // TODO: This doesn't work if there are surrogate pairs in the string
+                if (listLine.Length > listCols[1])
+                    name = listLine[listCols[0]..listCols[1]].Trim();
+                if (listLine.Length > listCols[2])
+                {
+                    id = listLine[listCols[1]..listCols[2]].Trim();
+                    version = listLine[listCols[2]..].Trim();
+                }
             }
+
             i++;
         }
 
         return (name, id, version);
     }
 
-    private Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> SearchFreeGames(bool expandPackage = false)
+    private Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> SearchFreeGamesParse(string query = DefaultQuery, bool expandPackage = false)
     {
         Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> freeGames = new();
 
@@ -464,13 +558,14 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         using var process = new Process();
         process.StartInfo = _startInfo;
         process.StartInfo.FileName = wingetExe.GetFullPath();
-        process.StartInfo.Arguments = "search --tag game --nowarn --disable-interactivity";
+        process.StartInfo.Arguments = $"search --tag {query} --source winget --nowarn --disable-interactivity";
         process.Start();
         var output = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
 
         if (string.IsNullOrEmpty(output))
         {
+            _logger?.LogDebug("***No output from winget");
             return new() { [WingetGameId.From("")] = new ErrorMessage("No output from winget") };
         }
 
@@ -495,29 +590,50 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
             }
             else if (i > 1 && !string.IsNullOrWhiteSpace(line)) // skip separator line
             {
-                var name = line[colPos[0]..colPos[1]].Trim();
-                var strId = line[colPos[1]..colPos[2]].Trim();
-                var id = WingetGameId.From(strId);
-                var available = line[colPos[2]..colPos[3]].Trim();
-                //var match = line[colPos[3]..colPos[4]].Trim();
-                var source = line[colPos[4]..].Trim();
+                string name = "", strId = "", available = "", match = "";
+                string? source = null;
+                WingetGameId id = default;
+                // TODO: This doesn't work if there are surrogate pairs in the string
+                if (line.Length > colPos[1])
+                    name = line[colPos[0]..colPos[1]].Trim();
+                if (line.Length > colPos[2])
+                {
+                    strId = line[colPos[1]..colPos[2]].Trim();
+                    id = WingetGameId.From(strId);
+                }
+                if (line.Length > colPos[3])
+                    available = line[colPos[2]..colPos[3]].Trim();
+                if (line.Length > colPos[4])
+                {
+                    match = line[colPos[3]..colPos[4]].Trim();
+                    source = line[colPos[4]..].Trim();
+                }
 
                 if (!expandPackage)
                 {
-                    freeGames.Add(id, new WingetGame(
+                    if (freeGames.TryAdd(id, new WingetGame(
                         Id: id,
                         Name: name,
                         InstallDirectory: default,
                         IsInstalled: false,
-                        DefaultVersion: available));
-                    i++;
+                        IsOwned: false,
+                        DefaultVersion: available)))
+                    {
+                        _logger?.LogDebug("* " + name);
+                        i++;
+                    }
                     continue;
                 }
 
-                freeGames.Add(id, GetPackageInfo(colPos, line, search: true));
+                if (freeGames.TryAdd(id, GetPackageInfo(colPos, line, search: true)))
+                {
+                    _logger?.LogDebug("*@" + name);
+                }
             }
+
             i++;
         }
+        _logger?.LogDebug("SearchFreeGamesParse(): " + i + " games");
 
         return freeGames;
     }
@@ -526,28 +642,30 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
     {
         // id syntax = "ARP\[Machine|User]\[X64|X86]\
 
-        var regKeyName = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\";
-        var baseKey = _registry.OpenBaseKey(RegistryHive.LocalMachine);
+        string? regKeyName; // = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\";
+        IRegistryKey baseKey; // = _registry.OpenBaseKey(RegistryHive.LocalMachine);
         if (id.StartsWith(@"ARP\Machine\X64\", StringComparison.Ordinal))
         {
-            regKeyName += id[@"ARP\Machine\X64\".Length..];
+            regKeyName = UninstallRegKey + id[@"ARP\Machine\X64\".Length..];
             baseKey = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
         }
         else if (id.StartsWith(@"ARP\Machine\X86\", StringComparison.Ordinal))
         {
-            regKeyName += id[@"ARP\Machine\X86\".Length..];
+            regKeyName = UninstallRegKey + id[@"ARP\Machine\X86\".Length..];
             baseKey = _registry.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
         }
         else if (id.StartsWith(@"ARP\User\X64\", StringComparison.Ordinal))
         {
-            regKeyName += id[@"ARP\User\X64\".Length..];
+            regKeyName = UninstallRegKey + id[@"ARP\User\X64\".Length..];
             baseKey = _registry.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
         }
         else if (id.StartsWith(@"ARP\User\X86\", StringComparison.Ordinal))
         {
-            regKeyName += id[@"ARP\User\X86\".Length..];
+            regKeyName = UninstallRegKey + id[@"ARP\User\X86\".Length..];
             baseKey = _registry.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32);
         }
+        else
+            return new ErrorMessage("Did not find expected \"ARP\\[Machine|User]\\[X64|X86]\\\" registry key prefix in id " + id);
 
         try
         {
@@ -747,16 +865,18 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
                 isTags = true;
             else if (pkgLine.StartsWith("  Installer Url: ", StringComparison.Ordinal))
                 installerUrl = pkgLine["  Installer Url: ".Length..];
+
             i++;
         }
 
-        Console.WriteLine("> " + name);
+        _logger?.LogDebug("> " + name);
         return new WingetGame(
             Id: id,
             Name: name,
             InstallDirectory: default,
             InstallerUrl: installerUrl,
             IsInstalled: true,
+            IsOwned: true,
             Description: description,
             Publisher: publisher,
             Author: author,
