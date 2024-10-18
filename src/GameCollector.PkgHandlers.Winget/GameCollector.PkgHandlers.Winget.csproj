@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <Description>Library for finding installed apps and available packages via Windows Package Manager.</Description>
+        <Description>Library for finding installed apps and available game packages via Windows Package Manager.</Description>
         <PackageTags>winget windows-package-manager games</PackageTags>
     </PropertyGroup>
 

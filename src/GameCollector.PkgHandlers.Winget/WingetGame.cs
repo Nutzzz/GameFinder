@@ -16,6 +16,7 @@ namespace GameCollector.PkgHandlers.Winget;
 /// <param name="InstallerUrl"></param>
 /// <param name="Uninstall"></param>
 /// <param name="IsInstalled"></param>
+/// <param name="IsOwned"></param>
 /// <param name="InstallDate"></param>
 /// <param name="Description"></param>
 /// <param name="Publisher"></param>
@@ -40,6 +41,7 @@ public record WingetGame(WingetGameId Id,
                          string? InstallerUrl = "",
                          AbsolutePath Uninstall = new(),
                          bool IsInstalled = true,
+                         bool IsOwned = true,
                          DateTime? InstallDate = null,
                          string? Description = "",
                          string? Publisher = "",
@@ -64,6 +66,7 @@ public record WingetGame(WingetGameId Id,
              Icon: Launch,
              Uninstall: Uninstall,
              IsInstalled: IsInstalled,
+             IsOwned: IsOwned,
              InstallDate: InstallDate,
              Metadata: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
              {
