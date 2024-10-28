@@ -297,6 +297,7 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         */
 
         // End enumeration
+        return new();
     }
 
     private Dictionary<WingetGameId, OneOf<WingetGame, ErrorMessage>> GetInstalled(bool? expandPackage)
@@ -324,6 +325,10 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
         process.StartInfo = _startInfo;
         process.StartInfo.FileName = wingetExe.GetFullPath();
         process.StartInfo.Arguments = "list --nowarn --disable-interactivity";
+        process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+        process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
         process.Start();
         var output = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
@@ -637,8 +642,8 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
     {
         // id syntax = "ARP\[Machine|User]\[X64|X86]\
 
-        var regKeyName = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\";
-        var baseKey = _registry.OpenBaseKey(RegistryHive.LocalMachine);
+        string? regKeyName; // = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\";
+        IRegistryKey baseKey; // = _registry.OpenBaseKey(RegistryHive.LocalMachine);
         if (id.StartsWith(@"ARP\Machine\X64\", StringComparison.Ordinal))
         {
             regKeyName = UninstallRegKey + id[@"ARP\Machine\X64\".Length..];
@@ -659,6 +664,8 @@ public class WingetHandler : AHandler<WingetGame, WingetGameId>
             regKeyName = UninstallRegKey + id[@"ARP\User\X86\".Length..];
             baseKey = _registry.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32);
         }
+        else
+            return new ErrorMessage("Did not find expected \"ARP\\[Machine|User]\\[X64|X86]\\\" registry key prefix in id " + id);
 
         try
         {
