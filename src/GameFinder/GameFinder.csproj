@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <AssemblyName>GameCollector</AssemblyName>
+        <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -46,9 +47,12 @@
         <ProjectReference Include="..\GameCollector.StoreHandlers.Rockstar\GameCollector.StoreHandlers.Rockstar.csproj" />
         <ProjectReference Include="..\GameCollector.StoreHandlers.Ubisoft\GameCollector.StoreHandlers.Ubisoft.csproj" />
         <ProjectReference Include="..\GameCollector.StoreHandlers.WargamingNet\GameCollector.StoreHandlers.WargamingNet.csproj" />
-        <ProjectReference Include="..\GameCollector.PkgHandlers.Winget\GameCollector.PkgHandlers.Winget.csproj" />
         <ProjectReference Include="..\GameCollector.EmuHandlers.Dolphin\GameCollector.EmuHandlers.Dolphin.csproj" />
         <ProjectReference Include="..\GameCollector.EmuHandlers.MAME\GameCollector.EmuHandlers.MAME.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows10.0.19041.0'">
+        <ProjectReference Include="..\GameCollector.PkgHandlers.Winget\GameCollector.PkgHandlers.Winget.csproj" />
     </ItemGroup>
 
 </Project>

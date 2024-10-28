@@ -37,7 +37,9 @@ using GameCollector.StoreHandlers.RobotCache;
 using GameCollector.StoreHandlers.Rockstar;
 using GameCollector.StoreHandlers.Ubisoft;
 using GameCollector.StoreHandlers.WargamingNet;
+#if WIN64
 using GameCollector.PkgHandlers.Winget;
+#endif
 using GameCollector.EmuHandlers.Dolphin;
 using GameCollector.EmuHandlers.MAME;
 //using GameCollector.DataHandlers.TheGamesDb;
@@ -52,7 +54,6 @@ using FileSystem = NexusMods.Paths.FileSystem;
 using IFileSystem = NexusMods.Paths.IFileSystem;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-[assembly: ExcludeFromCodeCoverage]
 namespace GameCollector;
 
 public static class Program
@@ -127,7 +128,7 @@ public static class Program
             options.Epic = true;
             options.GameJolt = true;
             options.GOG = true;
-            options.Heroic = true;
+            options.Heroic = OperatingSystem.IsLinux();
             options.Humble = true;
             options.IG = true;
             options.Itch = true;
@@ -141,11 +142,12 @@ public static class Program
             options.RobotCache = true;
             options.Rockstar = true;
             options.Steam = true;
-            //options.TheGamesDB = true;    // WIP
+            options.TheGamesDB = false;     // WIP
             options.Ubisoft = true;
             options.Wargaming = true;
-            options.Winget = true;
+            options.Winget = OperatingSystem.IsWindows();   // Requires TargetFramework net8.0-windows10.0.19041.0
             options.Xbox = true;
+            options.Wine = OperatingSystem.IsLinux();
         }
 
         if (OperatingSystem.IsWindows())
@@ -188,9 +190,9 @@ public static class Program
             if (options.Rockstar) tasks.Add(Task.Run(() => RunRockstarHandler(settings, windowsRegistry, realFileSystem), cancelToken));
             if (options.Ubisoft || options.Uplay) tasks.Add(Task.Run(() => RunUbisoftHandler(settings, windowsRegistry, realFileSystem), cancelToken));
             if (options.Wargaming || options.WargamingNet) tasks.Add(Task.Run(() => RunWargamingNetHandler(settings, windowsRegistry, realFileSystem), cancelToken));
-
+#if WIN64
             if (options.Winget) tasks.Add(Task.Run(() => RunWingetHandler(settings, windowsRegistry, realFileSystem), cancelToken));
-
+#endif
             if (options.Dolphin is not null)
             {
                 tasks.Add(Task.Run(() =>
@@ -459,12 +461,20 @@ public static class Program
         var handler = new WargamingNetHandler(registry, fileSystem);
         LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
+
+#if WIN64
     private static void RunWingetHandler(Settings settings, IRegistry registry, IFileSystem fileSystem)
     {
         var logger = _provider.CreateLogger(nameof(WingetHandler));
-        var handler = new WingetHandler(registry, fileSystem, logger); //, logger);
-        LogGamesAndErrors(handler.FindAllGames(settings), logger);
+        if (OperatingSystem.IsWindows())
+        {
+            var handler = new WingetHandler(registry, fileSystem, logger); //, logger);
+            LogGamesAndErrors(handler.FindAllGames(settings), logger);
+        }
+        else
+            logger.LogError("Handler requires Windows-only target.");
     }
+#endif
 
     private static void RunDolphinHandler(Settings settings, IRegistry registry, IFileSystem fileSystem, AbsolutePath path)
     {
@@ -480,15 +490,16 @@ public static class Program
         LogGamesAndErrors(handler.FindAllGames(settings), logger);
     }
 
-    /*
     private static async void RunTheGamesDbHandler(IFileSystem fileSystem, string? tgdbApi, Settings settings)
     {
-        var logger = _provider.CreateLogger(nameof(TheGamesDbHandler));
+        var logger = _provider.CreateLogger("TheGamesDbHandler");
+        logger.LogError("Handler not yet implemented.");
+        /*
         //var handler = new TheGamesDbHandler(fileSystem, tgdbApi, registry: null, logger);
         var handler = new TheGamesDbHandler(fileSystem, registry: null, logger);
         LogGamesAndErrors(handler.FindAllGames(settings), logger);
+        */
     }
-    */
 
     private static List<AWinePrefix> LogWinePrefixes<TWinePrefix>(IWinePrefixManager<TWinePrefix> prefixManager, ILogger logger)
     where TWinePrefix : AWinePrefix
