@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com).
 
 Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used.
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.3.1.1...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.4.0.1...HEAD)
 
 **TODO**:
 
@@ -21,7 +21,20 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
+## [4.4.0-1](https://github.com/erri120/GameFinder/compare/v4.3.2.1...v4.4.0.1) - 2024-12-11
+
+### Added
+
+- Upstream: GOG & Heroic (GOG): Add `BuildId`
+- Steam: Check for empty manifest file
+
+### Fixed
+
+- Upstream: Wine: `users` instead of `Users`
+
 ## [4.3.2-1](https://github.com/Nutzzz/GameCollector/compare/v4.3.1.1...v4.3.2.1) - 2024-10-09
+
+### Changed
 
 - Upstream: Heroic: validate that file exists before parsing
 
@@ -169,9 +182,17 @@ Initial release of GameCollector
 
 # Upstream Changelog
 
-## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.2.4...HEAD)
+## [Unreleased](https://github.com/erri120/GameFinder/compare/v4.4.0...HEAD)
 
 ## [Released](https://github.com/erri120/GameFinder/releases)
+
+## [4.4.0](https://github.com/erri120/GameFinder/compare/v4.3.4...v4.4.0) - 2024-12-10
+
+- GOG & Heroic (GOG): Add `BuildId`
+
+## [4.3.3](https://github.com/erri120/GameFinder/compare/v4.3.2...v4.3.3) - 2024-10-31
+
+- Wine: `users` instead of `Users`
 
 ## [4.3.2](https://github.com/erri120/GameFinder/compare/v4.3.1...v4.3.2) - 2024-10-07
 

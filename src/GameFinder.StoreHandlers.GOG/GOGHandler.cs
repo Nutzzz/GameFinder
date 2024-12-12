@@ -122,6 +122,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                             Id: dbGame.Key,
                             Name: db.Name,
                             Path: db.Path == default ? reg.Path : db.Path,
+                            BuildId: db.BuildId,
                             Launch: db.Launch == default ? (reg.Exe.FileExists ? reg.Exe : new()) : db.Launch,
                             LaunchParam: string.IsNullOrEmpty(db.LaunchParam) ? reg.LaunchParam : db.LaunchParam,
                             LaunchUrl: db.LaunchUrl,
@@ -201,6 +202,11 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 return new ErrorMessage($"{subKey.GetName()} doesn't have a string value \"path\"");
             }
 
+            if (!subKey.TryGetString("buildId", out var buildId))
+            {
+                return new ErrorMessage($"{subKey.GetName()} doesn't have a string value \"buildId\"");
+            }
+
             GOGGameId parentId = default;
             subKey.TryGetString("dependsOn", out var sParent);
             if (!string.IsNullOrEmpty(sParent))
@@ -227,6 +233,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 Id: id,
                 Name: name,
                 Path: Path.IsPathRooted(path) ? _fileSystem.FromUnsanitizedFullPath(path) : new(),
+                BuildId: buildId,
                 Launch: exePath,
                 LaunchUrl: $"goggalaxy://openGameView/{sId}",
                 LaunchParam: launchParam ?? "",

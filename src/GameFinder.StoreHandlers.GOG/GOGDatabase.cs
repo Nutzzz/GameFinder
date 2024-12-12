@@ -227,6 +227,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                         Id: id,
                         Name: name ?? (key ?? ""),
                         Path: new(),
+                        BuildId: "",
                         LaunchUrl: $"goggalaxy://openGameView/{sId}",
                         IsInstalled: false,
                         IsOwned: false,
@@ -247,6 +248,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                 var launchParam = "";
                 var exe = "";
                 string? path = null;
+                var buildId = "";
                 var installDate = DateTime.MinValue;
                 var lastRun = DateTime.MinValue;
                 var releaseDate = DateTime.MinValue;
@@ -259,6 +261,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                         p.ProductId.Equals(sId, StringComparison.Ordinal)))
                     {
                         path = prod.InstallationPath;
+                        buildId = prod.BuildId ?? "";
 
                         DateTime.TryParseExact(
                             prod.InstallationDate,
@@ -277,6 +280,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                                 Id: id,
                                 Name: name ?? (key ?? ""),
                                 Path: new(),
+                                BuildId: buildId,
                                 LaunchUrl: $"goggalaxy://openGameView/{sId}",
                                 IsInstalled: false,
                                 IsOwned: true,
@@ -364,6 +368,7 @@ public partial class GOGHandler : AHandler<GOGGame, GOGGameId>
                     Id: id,
                     Name: name ?? (key ?? ""),
                     Path: installPath,
+                    BuildId: buildId,
                     Launch: launchPath,
                     LaunchParam: launchParam,
                     Exe: exePath,
