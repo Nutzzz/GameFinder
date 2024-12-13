@@ -150,7 +150,7 @@ public partial class SteamHandler : AHandler<SteamGame, AppId>
                     IsInstalled: true
                 );
 
-                installedGames.Add(steamGame.AppId, steamGame);
+                installedGames.TryAdd(steamGame.AppId, steamGame);
             }
         }
 

@@ -13,6 +13,7 @@ namespace GameCollector.StoreHandlers.GOG;
 /// <param name="Id"></param>
 /// <param name="Name"></param>
 /// <param name="Path"></param>
+/// <param name="BuildId"></param>
 /// <param name="Launch"></param>
 /// <param name="LaunchParam"></param>
 /// <param name="LaunchUrl"></param>
@@ -36,6 +37,7 @@ namespace GameCollector.StoreHandlers.GOG;
 public record GOGGame(GOGGameId Id,
                       string Name,
                       AbsolutePath Path,
+                      string BuildId,
                       AbsolutePath Launch = new(),
                       string LaunchParam = "",
                       string LaunchUrl = "",
@@ -80,4 +82,5 @@ public record GOGGame(GOGGameId Id,
                  ["ImageUrl"] = new() { BoxArtUrl },
                  ["ImageWideUrl"] = new() { LogoUrl },
                  ["IconUrl"] = new() { IconUrl },
+                 ["BuildId"] = new() { BuildId },
              });

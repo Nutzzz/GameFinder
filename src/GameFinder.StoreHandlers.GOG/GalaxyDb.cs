@@ -63,6 +63,7 @@ internal record InstalledBaseProducts
 {
     public string? ProductId { get; init; }
     public string? InstallationPath { get; init; }
+    public string? BuildId { get; init; }
     public string? InstallationDate { get; init; }
 }
 

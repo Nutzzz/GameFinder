@@ -19,6 +19,7 @@ jobs:
 
   build:
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -68,3 +69,4 @@ jobs:
         name: GameFinder.Example-${{ env.os }}-${{ github.sha }}
         path: ${{ github.workspace }}/bin/${{ runner.os }}/GameCollector*
         if-no-files-found: error
+        overwrite: true
