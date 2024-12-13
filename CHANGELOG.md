@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com).
 
 Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [Semantic Versioning](https://semver.org), for the moment this project simply uses GameFinder's version number and adds a new digit to the end. Where normally a fourth digit would be used for hotfixes or pre-release versions, because GameCollector is still in its infancy, breaking changes may occur between point releases. Because the scope of this project is so much larger than upstream, eventually a different versioning scheme will need to be used.
 
-## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.4.0.1...HEAD)
+## [Unreleased](https://github.com/Nutzzz/GameCollector/compare/v4.4.0.2...HEAD)
 
 **TODO**:
 
@@ -16,8 +16,13 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 **WIP**:
 
-- Add [PkgHandlers](https://github.com/Nutzzz/GameCollector/pull/40) to find installed software, and to download free games
 - Add [DataHandlers](https://github.com/Nutzzz/GameCollector/pull/13) to download metadata and images from online sources
+
+## [4.4.0-2](https://github.com/Nutzzz/GameCollector/compare/v4.4.0.1...v4.4.0.2) - UNRELEASED
+
+### Added
+
+- Add Winget package handler to detect installed apps and free game packages
 
 ## [Released](https://github.com/Nutzzz/GameCollector/releases)
 
@@ -27,6 +32,8 @@ Though upstream [GameFinder](https://github.com/erri120/GameFinder) adheres to [
 
 - Upstream: GOG & Heroic (GOG): Add `BuildId`
 - Steam: Check for empty manifest file
+
+## [4.3.3-1](https://github.com/Nutzzz/GameCollector/compare/v4.3.2.1...v4.3.3.1) - 2024-10-09
 
 ### Fixed
 
